@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dragon Farm Records — Booking Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span class="logo-icon">🐉</span>
+        <span class="logo-text">Dragon Farm Records</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#artists">Artists</a></li>
+        <li><a href="#venue-finder">Venues</a></li>
+        <li><a href="#sync">Sync</a></li>
+        <li><a href="#book" class="nav-cta">Book Now</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="#artists">Artists</a>
+      <a href="#venue-finder">Venues</a>
+      <a href="#sync">Sync</a>
+      <a href="#book">Book Now</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Nashville, TN · Est. 2024</p>
+      <h1 class="hero-title">Book the<br/><span class="gold">Dragon Farm</span><br/>Roster</h1>
+      <p class="hero-sub">Independent multi-genre label spanning Hip-Hop, Reggae & Country.<br/>We bring the fire to your stage.</p>
+      <div class="hero-actions">
+        <a href="#book" class="btn btn-gold">Book an Artist</a>
+        <a href="#artists" class="btn btn-ghost">View Roster</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">2</span><span class="stat-label">Debut Singles</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-num">3</span><span class="stat-label">Genres</span></div>
+        <div class="stat-div"></div>
+        <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Energy</span></div>
+      </div>
+    </div>
+    <div class="hero-scroll">scroll</div>
+  </section>
+
+  <!-- ARTISTS -->
+  <section id="artists">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-tag">The Roster</p>
+        <h2>Dragon Farm Artists</h2>
+        <p class="section-sub">Two acts. Two sounds. One label on fire.</p>
+      </div>
+
+      <div class="artists-grid">
+        <!-- Artist 1 -->
+        <div class="artist-card">
+          <div class="artist-genre-badge country-reggae">Country · Reggae</div>
+          <div class="artist-avatar tc">TC</div>
+          <h3 class="artist-name">Timothy Chance<br/><span class="and">& Rasta Country</span></h3>
+          <p class="artist-bio">A genre-defying fusion of Country soul and Reggae roots. Timothy Chance and Rasta Country bring an unforgettable live experience that crosses every line — fiddles meet riddims, boots meet the dance floor.</p>
+          <div class="artist-single">
+            <span class="single-label">Debut Single</span>
+            <span class="single-title">Mr. Iron Man (Live)</span>
+            <span class="single-meta">UPC: 820200992949</span>
+          </div>
+          <div class="artist-tags">
+            <span class="tag">Festivals</span>
+            <span class="tag">Clubs</span>
+            <span class="tag">Bars</span>
+            <span class="tag">Private Events</span>
+          </div>
+          <a href="#book" class="btn btn-outline artist-btn">Book This Act</a>
+        </div>
+
+        <!-- Artist 2 -->
+        <div class="artist-card">
+          <div class="artist-genre-badge hiphop">Hip-Hop · Conscious</div>
+          <div class="artist-avatar pnc">PNC</div>
+          <h3 class="artist-name">Poetic Nocturnal<br/><span class="and">Creatures</span></h3>
+          <p class="artist-bio">Conscious Hip-Hop with depth, intention, and cultural resonance. Poetic Nocturnal Creatures blend spoken word artistry with hard beats and vivid storytelling — built for listeners who think and move.</p>
+          <div class="artist-single">
+            <span class="single-label">Debut Single</span>
+            <span class="single-title">Peace Pipe</span>
+            <span class="single-meta">UPC: 820200962904</span>
+          </div>
+          <div class="artist-tags">
+            <span class="tag">Colleges</span>
+            <span class="tag">Dispensaries</span>
+            <span class="tag">Festivals</span>
+            <span class="tag">Smoke Shops</span>
+          </div>
+          <a href="#book" class="btn btn-outline artist-btn">Book This Act</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VENUE FINDER -->
+  <section id="venue-finder">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-tag">AI Powered</p>
+        <h2>Venue Finder</h2>
+        <p class="section-sub">Search venues, get contacts, discover booking opportunities — powered by AI.</p>
+      </div>
+
+      <div class="finder-box">
+        <div class="finder-controls">
+          <div class="finder-row">
+            <div class="field-group">
+              <label for="vf-city">City / State</label>
+              <input type="text" id="vf-city" placeholder="e.g. Nashville, TN" />
+            </div>
+            <div class="field-group">
+              <label for="vf-genre">Genre / Vibe</label>
+              <select id="vf-genre">
+                <option value="">All Genres</option>
+                <option value="Country">Country</option>
+                <option value="Reggae">Reggae</option>
+                <option value="Hip-Hop">Hip-Hop</option>
+                <option value="Country-Reggae fusion">Country-Reggae Fusion</option>
+                <option value="Conscious Hip-Hop">Conscious Hip-Hop</option>
+                <option value="Multi-genre">Multi-Genre</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="vf-type">Venue Type</label>
+              <select id="vf-type">
+                <option value="">All Types</option>
+                <option value="bar or club">Bar / Club</option>
+                <option value="festival">Festival</option>
+                <option value="dispensary">Dispensary</option>
+                <option value="smoke shop">Smoke Shop</option>
+                <option value="college venue">College Venue</option>
+                <option value="outdoor amphitheater">Outdoor / Amphitheater</option>
+                <option value="private event space">Private Event Space</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-gold finder-btn" id="find-venues-btn">Find Venues →</button>
+        </div>
+
+        <div class="finder-results" id="finder-results">
+          <div class="finder-empty">
+            <span class="finder-empty-icon">🗺️</span>
+            <p>Enter a city and hit <strong>Find Venues</strong> to discover booking opportunities with AI.</p>
+          </div>
+        </div>
+
+        <div class="api-note">
+          <span>⚡</span>
+          <span>Powered by Claude AI · Configure your API key in <code>config.js</code></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SYNC DEALS -->
+  <section id="sync">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-tag">Licensing</p>
+        <h2>Sync & Licensing</h2>
+        <p class="section-sub">Place Dragon Farm music in film, TV, ads, games and more.</p>
+      </div>
+
+      <div class="sync-grid">
+        <div class="sync-card">
+          <div class="sync-icon">🎬</div>
+          <h4>Film & TV</h4>
+          <p>Both artists are available for sync licensing in film, television, and streaming platform placements. Our catalog spans Country-Reggae fusion and conscious Hip-Hop — perfect for editorial, documentary, and drama.</p>
+          <ul class="sync-list">
+            <li>Full master + sync rights available</li>
+            <li>Custom edits on request</li>
+            <li>Competitive indie licensing rates</li>
+          </ul>
+        </div>
+        <div class="sync-card">
+          <div class="sync-icon">📱</div>
+          <h4>Ads & Digital</h4>
+          <p>Looking for authentic, culture-forward sound for campaigns? Dragon Farm artists bring genuine energy to brand partnerships — especially in cannabis, lifestyle, wellness, and outdoor markets.</p>
+          <ul class="sync-list">
+            <li>Social media & digital ad licensing</li>
+            <li>Brand partnership deals welcome</li>
+            <li>Cannabis-friendly catalog</li>
+          </ul>
+        </div>
+        <div class="sync-card">
+          <div class="sync-icon">🎮</div>
+          <h4>Games & Interactive</h4>
+          <p>From indie games to AAA titles, our multi-genre catalog brings versatile energy to interactive media. Both acts are open to exclusive game soundtrack deals and non-exclusive placements.</p>
+          <ul class="sync-list">
+            <li>Background & feature placements</li>
+            <li>Exclusive deals considered</li>
+            <li>Quick clearance turnaround</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sync-cta-box">
+        <div class="sync-cta-text">
+          <h3>Ready to license?</h3>
+          <p>Send us details about your project and we'll get you cleared fast.</p>
+        </div>
+        <a href="#book" class="btn btn-gold">Start a Sync Deal</a>
+      </div>
+
+      <!-- AI Sync Assistant -->
+      <div class="sync-ai-box">
+        <div class="sync-ai-header">
+          <span class="sync-ai-badge">AI Assistant</span>
+          <h4>Not sure what you need? Ask our sync advisor.</h4>
+        </div>
+        <div class="sync-chat" id="sync-chat">
+          <div class="chat-msg assistant">
+            Hey! I'm the Dragon Farm sync advisor. Tell me about your project and I'll let you know which tracks might work and what kind of license you'd need. 🎵
+          </div>
+        </div>
+        <div class="sync-input-row">
+          <input type="text" id="sync-input" placeholder="Describe your project (e.g. 30-sec YouTube ad for a cannabis brand...)" />
+          <button class="btn btn-gold" id="sync-send-btn">Ask →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING FORM -->
+  <section id="book">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-tag">Let's Talk</p>
+        <h2>Book an Artist</h2>
+        <p class="section-sub">Promoters, venues, festival bookers — fill this out and we'll be in touch within 48 hours.</p>
+      </div>
+
+      <div class="book-layout">
+        <div class="book-form-wrap">
+          <form id="booking-form" class="booking-form">
+            <div class="form-row">
+              <div class="field-group">
+                <label for="bf-name">Your Name *</label>
+                <input type="text" id="bf-name" required placeholder="Jane Smith" />
+              </div>
+              <div class="field-group">
+                <label for="bf-org">Organization / Venue *</label>
+                <input type="text" id="bf-org" required placeholder="The Bluebird Cafe" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field-group">
+                <label for="bf-email">Email *</label>
+                <input type="email" id="bf-email" required placeholder="booking@venue.com" />
+              </div>
+              <div class="field-group">
+                <label for="bf-phone">Phone</label>
+                <input type="tel" id="bf-phone" placeholder="(615) 555-0100" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field-group">
+                <label for="bf-artist">Artist *</label>
+                <select id="bf-artist" required>
+                  <option value="">Select an artist</option>
+                  <option value="Timothy Chance and Rasta Country">Timothy Chance and Rasta Country</option>
+                  <option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option>
+                  <option value="Both">Both Artists</option>
+                  <option value="Open">Open — Recommend One</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="bf-type">Event Type *</label>
+                <select id="bf-type" required>
+                  <option value="">Select type</option>
+                  <option>Bar / Club Night</option>
+                  <option>Festival</option>
+                  <option>Dispensary Event</option>
+                  <option>College Show</option>
+                  <option>Private Event</option>
+                  <option>Outdoor / Amphitheater</option>
+                  <option>Sync / Licensing</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="field-group">
+                <label for="bf-date">Event Date</label>
+                <input type="date" id="bf-date" />
+              </div>
+              <div class="field-group">
+                <label for="bf-budget">Estimated Budget</label>
+                <select id="bf-budget">
+                  <option value="">Prefer not to say</option>
+                  <option>Under $500</option>
+                  <option>$500 – $1,500</option>
+                  <option>$1,500 – $5,000</option>
+                  <option>$5,000 – $10,000</option>
+                  <option>$10,000+</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-group full">
+              <label for="bf-location">Event Location / City</label>
+              <input type="text" id="bf-location" placeholder="Nashville, TN" />
+            </div>
+            <div class="field-group full">
+              <label for="bf-details">Tell Us About Your Event</label>
+              <textarea id="bf-details" rows="5" placeholder="Describe your event, audience size, vibe, any special requirements..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-gold submit-btn" id="submit-btn">Send Booking Inquiry →</button>
+            <div class="form-success" id="form-success">
+              ✅ Your inquiry has been sent! We'll be in touch within 48 hours.
+            </div>
+          </form>
+        </div>
+
+        <div class="book-sidebar">
+          <div class="sidebar-card">
+            <h4>Contact Us Directly</h4>
+            <div class="contact-item">
+              <span class="contact-icon">📧</span>
+              <div>
+                <p class="contact-label">Booking Email</p>
+                <a href="mailto:booking@dragonfarmrecords.com" class="contact-val">booking@dragonfarmrecords.com</a>
+              </div>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon">📍</span>
+              <div>
+                <p class="contact-label">Based In</p>
+                <p class="contact-val">Nashville, TN</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon">⏱️</span>
+              <div>
+                <p class="contact-label">Response Time</p>
+                <p class="contact-val">Within 48 hours</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <h4>We Play Well With</h4>
+            <div class="compat-tags">
+              <span class="tag">Dispensaries</span>
+              <span class="tag">Smoke Shops</span>
+              <span class="tag">Festivals</span>
+              <span class="tag">Bars & Clubs</span>
+              <span class="tag">Colleges</span>
+              <span class="tag">Outdoor Events</span>
+              <span class="tag">Private Parties</span>
+              <span class="tag">Brand Activations</span>
+            </div>
+          </div>
+
+          <div class="sidebar-card mascot-card">
+            <div class="mascot-inner">
+              <span class="mascot-emoji">🐉</span>
+              <div>
+                <p class="mascot-name">CD — Chance the Dragon</p>
+                <p class="mascot-desc">Brand ambassador & social media mascot of Dragon Farm Records.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="footer-logo">🐉 Dragon Farm Records</span>
+          <p class="footer-tagline">Nashville, TN · Hip-Hop · Reggae · Country</p>
+        </div>
+        <div class="footer-links">
+          <a href="#artists">Roster</a>
+          <a href="#venue-finder">Venues</a>
+          <a href="#sync">Sync</a>
+          <a href="#book">Booking</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Dragon Farm Records. All rights reserved.</p>
+        <p>Booking inquiries: <a href="mailto:booking@dragonfarmrecords.com">booking@dragonfarmrecords.com</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
