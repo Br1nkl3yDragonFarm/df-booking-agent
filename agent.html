@@ -884,22 +884,19 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 
 // ---- AI ----
 async function ai(system,userMessage,maxTokens=1500){
-  const key=localStorage.getItem('df_api_key');
-  if(!key){showKeyModal();return''}
+  // Try Netlify function first, fall back to direct if key stored locally
+  const localKey=localStorage.getItem('df_api_key');
+  const endpoint=localKey?'https://api.anthropic.com/v1/messages':'/.netlify/functions/ai-proxy';
+  const hdrs={'Content-Type':'application/json'};
+  if(localKey){hdrs['x-api-key']=localKey;hdrs['anthropic-version']='2023-06-01';hdrs['anthropic-dangerous-direct-browser-access']='true';}
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':key,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:userMessage}]})
-    });
+    const res=await fetch(endpoint,{method:'POST',headers:hdrs,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:userMessage}]})});
     const data=await res.json();
-    if(data.error) return `Error: ${data.error.message||data.error}`;
-    return data.content?.[0]?.text||'';
+    if(data.error) return `Error: ${data.error.message||JSON.stringify(data.error)}`;
+    // Netlify function returns {text:'...'}, Anthropic direct returns {content:[{text:'...'}]}
+    if(data.text) return data.text;
+    if(data.content?.[0]?.text) return data.content[0].text;
+    return JSON.stringify(data);
   }catch(err){return`Connection error: ${err.message}`}
 }
 
