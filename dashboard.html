@@ -957,7 +957,7 @@ Base suggestions on real knowledge of the music industry in the requested area.`
 
   let venues = [];
   try {
-    venues = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const m1 = raw.match(/\[[\s\S]*\]/); venues = JSON.parse(m1 ? m1[0] : raw.replace(/```json|```/g, '').trim());
   } catch {
     document.getElementById('venue-results').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(raw)}</p></div>`;
     return;
@@ -1072,7 +1072,7 @@ Make it personal, professional, and compelling. Include the artist's unique sell
 
   let parsed;
   try {
-    parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const m2 = raw.match(/\{[\s\S]*\}/); parsed = JSON.parse(m2 ? m2[0] : raw.replace(/```json|```/g, '').trim());
   } catch {
     preview.textContent = raw;
     return;
