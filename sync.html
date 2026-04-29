@@ -661,7 +661,7 @@ Include music supervisors, licensing directors, and decision-makers with realist
   btn.disabled = false;
 
   let opps = [];
-  try { opps = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+  try { const _m = raw.match(/\[[\s\S]*\]/); opps = JSON.parse(_m ? _m[0] : raw.replace(/```json|```/g,'').trim()); }
   catch { document.getElementById('opp-results').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(raw)}</p></div>`; return; }
 
   oppResults = opps;
@@ -767,7 +767,7 @@ Reference the specific ISRC/UPC codes. Be professional and concise — music sup
   btn.disabled = false;
 
   let parsed;
-  try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+  try { const _p = raw.match(/\{[\s\S]*\}/); parsed = JSON.parse(_p ? _p[0] : raw.replace(/```json|```/g,'').trim()); }
   catch { document.getElementById('pitch-preview').textContent = raw; return; }
 
   currentPitch = { subject: parsed.subject, body: parsed.body, contact, company, email: '' };
