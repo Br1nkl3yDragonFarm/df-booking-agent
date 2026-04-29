@@ -6,6 +6,21 @@
   directory = "netlify/functions"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard.html"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/sync.html"
+  to = "/sync.html"
+  status = 200
+
+[[redirects]]
+  from = "/hub.html"
+  to = "/hub.html"
   status = 200
