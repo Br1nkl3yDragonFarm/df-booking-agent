@@ -1327,7 +1327,9 @@ async function callAI(system, userMessage, maxTokens = 1500) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, system, messages: [{ role: 'user', content: userMessage }] })
     });
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { return 'AI service error. Please try again.'; }
     if (!res.ok) return `Error: ${data.error?.message || res.statusText}`;
     return data.content?.[0]?.text || 'No response.';
   } catch (err) {
