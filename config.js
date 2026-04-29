@@ -15,7 +15,6 @@
 // ============================================================
 
 const DRAGON_FARM_CONFIG = {
-  ANTHROPIC_API_KEY: "YOUR_API_KEY_HERE",
   LABEL_NAME: "Dragon Farm Records",
   LABEL_CITY: "Nashville, TN",
   ARTISTS: [
