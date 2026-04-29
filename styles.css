@@ -721,6 +721,9 @@ section {
   gap: 1.25rem;
   margin-bottom: 2.5rem;
 }
+@media (max-width: 768px) {
+  .sync-grid { grid-template-columns: 1fr !important; }
+}
 
 .sync-card {
   background: var(--forest);

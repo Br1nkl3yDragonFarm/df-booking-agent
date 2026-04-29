@@ -405,6 +405,23 @@
     </div>
   </footer>
 
+
+<script>
+// Hamburger menu - inline fix
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobile-menu');
+  if (btn && menu) {
+    btn.addEventListener('click', function() {
+      menu.classList.toggle('open');
+    });
+    menu.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() { menu.classList.remove('open'); });
+    });
+  }
+});
+</script>
+
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
