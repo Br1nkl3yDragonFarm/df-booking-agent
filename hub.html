@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dragon Farm — Command Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #06090a; --deep: #0a0f10; --surface: #0f1618; --card: #131c1e;
+      --gold: #c8922a; --gold-light: #e0a832; --gold-pale: #f5d07a;
+      --green: #2ab464; --purple: #8250ff; --blue: #4a9eff;
+      --cream: #e8dfc8; --gray: #6b7f80; --gray-light: #a0b4b5;
+      --border-gold: rgba(200,146,42,0.2); --border-green: rgba(42,180,100,0.15);
+      --border-purple: rgba(130,80,255,0.18);
+      --font-d: 'Bebas Neue', sans-serif; --font-b: 'DM Sans', sans-serif; --font-m: 'DM Mono', monospace;
+      --r: 8px; --r2: 14px;
+    }
+    html, body { height: 100%; }
+    body { background: var(--black); color: var(--cream); font-family: var(--font-b); font-size: 15px; line-height: 1.6; overflow-x: hidden; }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--deep); } ::-webkit-scrollbar-thumb { background: #2a3a2f; border-radius: 3px; }
+
+    /* ===== PASSWORD GATE ===== */
+    #gate {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--black);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      transition: opacity 0.4s ease;
+    }
+    #gate.hide { opacity: 0; pointer-events: none; }
+
+    .gate-inner {
+      text-align: center;
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .gate-dragon { width: 150px; height: 150px; margin: 0 auto 1.25rem; animation: float 3s ease-in-out infinite; } .gate-dragon img { width: 100%; height: 100%; object-fit: contain; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+    .gate-title { font-family: var(--font-d); font-size: 2.5rem; letter-spacing: 0.06em; color: var(--gold-light); line-height: 1; margin-bottom: 0.4rem; }
+    .gate-sub { font-family: var(--font-m); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray); margin-bottom: 2.5rem; }
+
+    .gate-input-wrap { position: relative; margin-bottom: 1rem; }
+    .gate-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--r2);
+      padding: 1rem 3rem 1rem 1.25rem;
+      color: var(--cream);
+      font-family: var(--font-m);
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .gate-input:focus { border-color: var(--gold); }
+    .gate-input.error { border-color: #e05252; animation: shake 0.3s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+    .gate-toggle {
+      position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--gray); cursor: pointer; font-size: 1rem;
+    }
+
+    .gate-btn {
+      width: 100%;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: var(--r2);
+      padding: 1rem;
+      font-family: var(--font-d);
+      font-size: 1.3rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .gate-btn:hover { background: var(--gold-light); transform: translateY(-2px); }
+
+    .gate-error { font-size: 0.8rem; color: #e05252; margin-top: 0.75rem; min-height: 1.2rem; font-family: var(--font-m); }
+
+    .gate-bg {
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(19,58,29,0.3) 0%, transparent 70%),
+        radial-gradient(ellipse 30% 30% at 80% 20%, rgba(200,146,42,0.06) 0%, transparent 60%);
+    }
+
+    /* ===== MAIN HUB ===== */
+    #hub { display: none; min-height: 100vh; }
+    #hub.show { display: block; animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* TOPBAR */
+    .topbar {
+      background: var(--deep);
+      border-bottom: 1px solid var(--border-gold);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 0.75rem; }
+    .topbar-logo { font-size: 1.5rem; }
+    .topbar-name { font-family: var(--font-d); font-size: 1.3rem; letter-spacing: 0.06em; color: var(--gold-light); }
+    .topbar-tag { font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); }
+    .topbar-right { display: flex; align-items: center; gap: 1.25rem; }
+    .live-dot { display: flex; align-items: center; gap: 6px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+    .live-label { font-family: var(--font-m); font-size: 0.65rem; letter-spacing: 0.12em; color: var(--green); text-transform: uppercase; }
+    .logout-btn { background: none; border: 1px solid rgba(255,255,255,0.1); border-radius: var(--r); padding: 0.35rem 0.9rem; color: var(--gray); font-size: 0.78rem; cursor: pointer; font-family: var(--font-b); transition: all 0.15s; }
+    .logout-btn:hover { color: var(--cream); border-color: rgba(255,255,255,0.25); }
+
+    /* CONTENT */
+    .content { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+    /* HERO STRIP */
+    .hero-strip {
+      background: linear-gradient(135deg, var(--card) 0%, rgba(19,58,29,0.4) 100%);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--r2);
+      padding: 2rem 2.5rem;
+      margin-bottom: 2.5rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+    }
+    .hero-text h1 { font-family: var(--font-d); font-size: 2rem; letter-spacing: 0.05em; color: var(--cream); margin-bottom: 0.25rem; }
+    .hero-text p { font-size: 0.9rem; color: var(--gray-light); font-weight: 300; }
+    .hero-stats { display: flex; gap: 2rem; }
+    .hstat { text-align: center; }
+    .hstat-num { font-family: var(--font-d); font-size: 1.8rem; color: var(--gold-light); line-height: 1; }
+    .hstat-label { font-family: var(--font-m); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); margin-top: 3px; }
+    .hstat-div { width: 1px; background: var(--border-gold); align-self: stretch; }
+
+    /* TOOL CARDS */
+    .tools-label { font-family: var(--font-m); font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray); margin-bottom: 1rem; }
+    .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2.5rem; }
+
+    .tool-card {
+      border-radius: var(--r2);
+      padding: 1.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .tool-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .tool-card:hover { transform: translateY(-4px); }
+
+    .tool-card-venue { background: var(--card); border: 1px solid var(--border-green); }
+    .tool-card-venue:hover { border-color: var(--green); box-shadow: 0 8px 30px rgba(42,180,100,0.1); }
+
+    .tool-card-sync { background: var(--card); border: 1px solid var(--border-purple); }
+    .tool-card-sync:hover { border-color: var(--purple); box-shadow: 0 8px 30px rgba(130,80,255,0.1); }
+
+    .tool-card-public { background: var(--card); border: 1px solid var(--border-gold); }
+    .tool-card-public:hover { border-color: var(--gold); box-shadow: 0 8px 30px rgba(200,146,42,0.1); }
+
+    .tool-icon { font-size: 2.5rem; }
+    .tool-label { font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; }
+    .tool-label-green { color: var(--green); }
+    .tool-label-purple { color: var(--purple); }
+    .tool-label-gold { color: var(--gold-light); }
+    .tool-name { font-family: var(--font-d); font-size: 1.6rem; letter-spacing: 0.04em; color: var(--cream); line-height: 1.1; margin-bottom: 0.5rem; }
+    .tool-desc { font-size: 0.83rem; color: var(--gray-light); font-weight: 300; line-height: 1.6; }
+    .tool-features { display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
+    .tool-feature { font-size: 0.75rem; color: var(--gray); display: flex; align-items: center; gap: 6px; }
+    .tool-feature::before { content: '→'; color: var(--gold); font-size: 0.65rem; }
+    .tool-arrow { position: absolute; bottom: 1.5rem; right: 1.5rem; font-size: 1.2rem; opacity: 0.3; transition: opacity 0.2s; }
+    .tool-card:hover .tool-arrow { opacity: 1; }
+
+    /* STATS STRIP */
+    .stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2.5rem; }
+    .mini-stat { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--r2); padding: 1rem 1.25rem; }
+    .mini-stat-num { font-family: var(--font-d); font-size: 1.8rem; line-height: 1; margin-bottom: 2px; }
+    .mini-stat-label { font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); }
+
+    /* CATALOG */
+    .catalog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .catalog-card { background: var(--card); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--r2); padding: 1.25rem; }
+    .catalog-card-title { font-weight: 500; font-size: 0.95rem; margin-bottom: 4px; }
+    .catalog-card-artist { font-size: 0.78rem; color: var(--gray); margin-bottom: 8px; }
+    .catalog-meta { display: flex; flex-direction: column; gap: 3px; }
+    .catalog-meta span { font-family: var(--font-m); font-size: 0.65rem; color: var(--gray); }
+    .catalog-meta span strong { color: var(--gray-light); }
+
+    /* SETTINGS PANEL */
+    .settings-panel { background: var(--card); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--r2); padding: 1.5rem; margin-top: 2.5rem; }
+    .settings-panel h3 { font-family: var(--font-d); font-size: 1.2rem; letter-spacing: 0.04em; color: var(--cream); margin-bottom: 1rem; }
+    .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row-label { font-size: 0.88rem; color: var(--cream); }
+    .settings-row-sub { font-size: 0.75rem; color: var(--gray); margin-top: 2px; }
+
+    .change-pw-input { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--r); padding: 0.5rem 0.85rem; color: var(--cream); font-family: var(--font-m); font-size: 0.85rem; outline: none; width: 180px; }
+    .change-pw-input:focus { border-color: var(--gold); }
+    .btn-sm { padding: 0.4rem 1rem; border-radius: var(--r); font-size: 0.8rem; cursor: pointer; border: none; font-family: var(--font-b); transition: all 0.15s; }
+    .btn-gold-sm { background: var(--gold); color: var(--black); }
+    .btn-gold-sm:hover { background: var(--gold-light); }
+    .btn-ghost-sm { background: transparent; color: var(--gray-light); border: 1px solid rgba(255,255,255,0.12); }
+    .btn-ghost-sm:hover { color: var(--cream); }
+
+    @media (max-width: 768px) {
+      .tools-grid { grid-template-columns: 1fr; }
+      .stats-strip { grid-template-columns: 1fr 1fr; }
+      .catalog-grid { grid-template-columns: 1fr; }
+      .hero-strip { flex-direction: column; text-align: center; }
+      .hero-stats { justify-content: center; }
+      .content { padding: 1.5rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="gate-bg"></div>
+
+<!-- ===== PASSWORD GATE ===== -->
+<div id="gate">
+  <div class="gate-inner">
+    <div class="gate-dragon"><img src="logo.jpg" alt="Dragon Farm Records" /></div>
+    <div class="gate-title">Dragon Farm</div>
+    <div class="gate-sub">Command Center · Private Access</div>
+
+    <div class="gate-input-wrap">
+      <input type="password" id="pw-input" class="gate-input" placeholder="Enter password" autocomplete="off" />
+      <button class="gate-toggle" id="pw-toggle" onclick="togglePw()">👁</button>
+    </div>
+    <button class="gate-btn" onclick="checkPassword()">ENTER →</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
+
+<!-- ===== MAIN HUB ===== -->
+<div id="hub">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo"><img src="logo.jpg" alt="Dragon Farm" style="width:38px;height:38px;object-fit:contain;border-radius:50%;" /></div>
+      <div>
+        <div class="topbar-name">Dragon Farm Records</div>
+        <div class="topbar-tag">Command Center</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-dot">
+        <div class="dot"></div>
+        <div class="live-label">Live · dragonfarmgrowth.net</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Lock 🔒</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- HERO STRIP -->
+    <div class="hero-strip">
+      <div class="hero-text">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem"><img src="logo.jpg" alt="Dragon Farm Records" style="width:56px;height:56px;object-fit:contain;border-radius:50%;flex-shrink:0"><h1 style="margin:0">Welcome Back</h1></div>
+        <p>Nashville, TN · Independent Multi-Genre Label · Hip-Hop · Reggae · Country</p>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat">
+          <div class="hstat-num" id="hs-venue">0</div>
+          <div class="hstat-label">Venue Leads</div>
+        </div>
+        <div class="hstat-div"></div>
+        <div class="hstat">
+          <div class="hstat-num" id="hs-sync">0</div>
+          <div class="hstat-label">Sync Leads</div>
+        </div>
+        <div class="hstat-div"></div>
+        <div class="hstat">
+          <div class="hstat-num" id="hs-booked">0</div>
+          <div class="hstat-label">Booked</div>
+        </div>
+        <div class="hstat-div"></div>
+        <div class="hstat">
+          <div class="hstat-num" id="hs-licensed">0</div>
+          <div class="hstat-label">Licensed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS STRIP -->
+    <div class="stats-strip">
+      <div class="mini-stat">
+        <div class="mini-stat-num" id="st-venue" style="color:var(--green)">0</div>
+        <div class="mini-stat-label">Venue Pipeline</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-num" id="st-contacted" style="color:var(--gold-light)">0</div>
+        <div class="mini-stat-label">Contacted</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-num" id="st-sync" style="color:var(--purple)">0</div>
+        <div class="mini-stat-label">Sync Pipeline</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-num" id="st-pitched" style="color:#b08fff">0</div>
+        <div class="mini-stat-label">Pitches Sent</div>
+      </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="tools-label">Your Tools</div>
+    <div class="tools-grid">
+
+      <!-- BOOKING AGENT -->
+      <a href="dashboard.html" class="tool-card tool-card-venue">
+        <div class="tool-icon">🎤</div>
+        <div>
+          <div class="tool-label tool-label-green">Booking Agent</div>
+          <div class="tool-name">Venue &<br/>Booking Hub</div>
+          <div class="tool-desc">Find venues nationwide, track every lead, write outreach emails, and manage your full booking pipeline.</div>
+        </div>
+        <div class="tool-features">
+          <div class="tool-feature">AI Venue Finder — any city, any type</div>
+          <div class="tool-feature">Email Composer — AI writes the pitch</div>
+          <div class="tool-feature">Lead Tracker CRM</div>
+          <div class="tool-feature">Booked shows tracker</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </a>
+
+      <!-- SYNC AGENT -->
+      <a href="sync.html" class="tool-card tool-card-sync">
+        <div class="tool-icon">🎬</div>
+        <div>
+          <div class="tool-label tool-label-purple">Sync Agent</div>
+          <div class="tool-name">Film · TV ·<br/>Games · Brands</div>
+          <div class="tool-desc">Find music supervisors and sync opportunities across all media. Pitch your catalog to film, TV, video games, and ad agencies.</div>
+        </div>
+        <div class="tool-features">
+          <div class="tool-feature">Opportunity Finder — AI searches all media</div>
+          <div class="tool-feature">Pitch Composer — professional sync emails</div>
+          <div class="tool-feature">Sync Pipeline CRM</div>
+          <div class="tool-feature">Licensed placements tracker</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </a>
+
+      <!-- PUBLIC SITE -->
+      <a href="index.html" class="tool-card tool-card-public" target="_blank">
+        <div class="tool-icon">🌐</div>
+        <div>
+          <div class="tool-label tool-label-gold">Public Site</div>
+          <div class="tool-name">Booking<br/>Hub Site</div>
+          <div class="tool-desc">Your public-facing booking page. Venues and promoters come here to learn about your artists and submit booking inquiries.</div>
+        </div>
+        <div class="tool-features">
+          <div class="tool-feature">Artist roster — TC&RC + PNC</div>
+          <div class="tool-feature">Public venue finder</div>
+          <div class="tool-feature">Sync licensing info</div>
+          <div class="tool-feature">Booking inquiry form</div>
+        </div>
+        <div class="tool-arrow">↗</div>
+      </a>
+
+    </div>
+
+    <!-- CATALOG -->
+    <div class="tools-label">Sync Catalog</div>
+    <div class="catalog-grid" style="margin-bottom:2.5rem">
+      <div class="catalog-card">
+        <div class="catalog-card-title" style="color:var(--gold-light)">Mr. Iron Man (Live)</div>
+        <div class="catalog-card-artist">Timothy Chance and Rasta Country · Country-Reggae</div>
+        <div class="catalog-meta">
+          <span><strong>ISRC:</strong> QM6N22632890</span>
+          <span><strong>UPC:</strong> 820200992949</span>
+          <span><strong>Best for:</strong> Westerns, road films, outdoor brands, lifestyle</span>
+          <span><strong>Rights:</strong> Master + Sync available · Dragon Farm Records</span>
+        </div>
+      </div>
+      <div class="catalog-card">
+        <div class="catalog-card-title" style="color:var(--green)">Peace Pipe</div>
+        <div class="catalog-card-artist">Poetic Nocturnal Creatures · Conscious Hip-Hop</div>
+        <div class="catalog-meta">
+          <span><strong>ISRC:</strong> QM6N22632979</span>
+          <span><strong>UPC:</strong> 820200962904</span>
+          <span><strong>Best for:</strong> Cannabis brands, social docs, indie film, conscious lifestyle</span>
+          <span><strong>Rights:</strong> Master + Sync available · Dragon Farm Records</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="settings-panel">
+      <h3>⚙️ Settings</h3>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">Change Password</div>
+          <div class="settings-row-sub">Update your Command Center password</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <input type="password" class="change-pw-input" id="new-pw" placeholder="New password" />
+          <button class="btn-sm btn-gold-sm" onclick="changePassword()">Save</button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">Booking Email</div>
+          <div class="settings-row-sub">Update the email shown on your public site</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          <input type="email" class="change-pw-input" id="booking-email" placeholder="booking@..." style="width:210px" />
+          <button class="btn-sm btn-gold-sm" onclick="saveEmail()">Save</button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label">Clear All Data</div>
+          <div class="settings-row-sub">Remove all leads from booking and sync pipelines</div>
+        </div>
+        <button class="btn-sm btn-ghost-sm" onclick="clearAllData()" style="color:#e05252;border-color:rgba(224,82,82,0.3)">Clear Data</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DRAGON FARM COMMAND CENTER
+// ============================================================
+
+const DEFAULT_PW = 'DragonFarm2025';
+const PW_KEY = 'df_hub_password';
+const SESSION_KEY = 'df_hub_auth';
+
+// ---- PASSWORD LOGIC ----
+function getPassword() {
+  return localStorage.getItem(PW_KEY) || DEFAULT_PW;
+}
+
+function checkPassword() {
+  const input = document.getElementById('pw-input').value;
+  const err = document.getElementById('gate-error');
+  if (input === getPassword()) {
+    sessionStorage.setItem(SESSION_KEY, 'true');
+    document.getElementById('gate').classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('hub').classList.add('show');
+      loadStats();
+    }, 400);
+    err.textContent = '';
+  } else {
+    document.getElementById('pw-input').classList.add('error');
+    err.textContent = 'Incorrect password. Try again.';
+    setTimeout(() => document.getElementById('pw-input').classList.remove('error'), 500);
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function togglePw() {
+  const input = document.getElementById('pw-input');
+  const btn = document.getElementById('pw-toggle');
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
+}
+
+function logout() {
+  if (!confirm('Lock the Command Center?')) return;
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+function changePassword() {
+  const newPw = document.getElementById('new-pw').value.trim();
+  if (!newPw || newPw.length < 4) { alert('Password must be at least 4 characters.'); return; }
+  localStorage.setItem(PW_KEY, newPw);
+  document.getElementById('new-pw').value = '';
+  showToast('Password updated ✓');
+}
+
+function saveEmail() {
+  const email = document.getElementById('booking-email').value.trim();
+  if (!email) return;
+  localStorage.setItem('df_booking_email', email);
+  document.getElementById('booking-email').value = '';
+  showToast('Booking email saved ✓');
+}
+
+function clearAllData() {
+  if (!confirm('This will delete ALL leads in both booking and sync pipelines. Are you sure?')) return;
+  localStorage.removeItem('df_leads');
+  localStorage.removeItem('df_sync_leads');
+  loadStats();
+  showToast('All pipeline data cleared');
+}
+
+// ---- STATS ----
+function loadStats() {
+  const venueLeads = JSON.parse(localStorage.getItem('df_leads') || '[]');
+  const syncLeads = JSON.parse(localStorage.getItem('df_sync_leads') || '[]');
+  const booked = venueLeads.filter(l => l.status === 'booked').length;
+  const licensed = syncLeads.filter(l => l.status === 'licensed').length;
+  const contacted = venueLeads.filter(l => ['contacted','interested','booked','followup'].includes(l.status)).length;
+  const pitched = syncLeads.filter(l => ['pitched','reviewing','licensed'].includes(l.status)).length;
+
+  document.getElementById('hs-venue').textContent = venueLeads.length;
+  document.getElementById('hs-sync').textContent = syncLeads.length;
+  document.getElementById('hs-booked').textContent = booked;
+  document.getElementById('hs-licensed').textContent = licensed;
+  document.getElementById('st-venue').textContent = venueLeads.length;
+  document.getElementById('st-contacted').textContent = contacted;
+  document.getElementById('st-sync').textContent = syncLeads.length;
+  document.getElementById('st-pitched').textContent = pitched;
+
+  const savedEmail = localStorage.getItem('df_booking_email');
+  if (savedEmail) document.getElementById('booking-email').placeholder = savedEmail;
+}
+
+// ---- TOAST ----
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;background:#131c1e;border:1px solid rgba(42,180,100,0.4);border-radius:8px;padding:0.75rem 1.25rem;color:#e8dfc8;font-size:0.85rem;z-index:999;animation:slideIn 0.2s ease';
+  t.textContent = '✓ ' + msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ---- ENTER KEY ----
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+// ---- AUTO-LOGIN if session active ----
+if (sessionStorage.getItem(SESSION_KEY) === 'true') {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('hub').classList.add('show');
+  loadStats();
+}
+
+// ---- FOCUS ----
+setTimeout(() => document.getElementById('pw-input').focus(), 100);
+</script>
+</body>
+</html>
