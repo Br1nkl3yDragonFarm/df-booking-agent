@@ -27,20 +27,10 @@ window.addEventListener('scroll', () => {
 
 // ---- ANTHROPIC API HELPER ----
 async function askClaude(systemPrompt, userMessage) {
-  const key = (typeof DRAGON_FARM_CONFIG !== 'undefined') ? DRAGON_FARM_CONFIG.ANTHROPIC_API_KEY : '';
-  if (!key || key === 'YOUR_API_KEY_HERE') {
-    return '⚠️ Please add your Anthropic API key to config.js to enable AI features.';
-  }
-
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`/.netlify/functions/ai-proxy`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
@@ -48,14 +38,12 @@ async function askClaude(systemPrompt, userMessage) {
         messages: [{ role: 'user', content: userMessage }]
       })
     });
-
     if (!response.ok) {
       const err = await response.json();
       return `API error: ${err.error?.message || response.statusText}`;
     }
-
     const data = await response.json();
-    return data.content?.[0]?.text || 'No response received.';
+    return data.content?.[0]?.text || 'No response received.;
   } catch (err) {
     return `Error connecting to AI: ${err.message}`;
   }
