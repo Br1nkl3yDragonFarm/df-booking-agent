@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dragon Farm — Sync Agent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #06090a; --deep: #0a0f10; --surface: #0f1618; --card: #131c1e; --card2: #172023;
+      --border: rgba(130, 80, 255, 0.14); --border2: rgba(130, 80, 255, 0.28);
+      --purple: #8250ff; --purple-dim: #5a35b5; --purple-glow: rgba(130,80,255,0.08);
+      --gold: #c8922a; --gold-light: #e0a832;
+      --green: #2ab464; --blue: #4a9eff; --red: #e05252;
+      --cream: #e8dfc8; --gray: #6b7f80; --gray-light: #a0b4b5;
+      --font-d: 'Bebas Neue', sans-serif; --font-b: 'DM Sans', sans-serif; --font-m: 'DM Mono', monospace;
+      --r: 8px; --r2: 12px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--cream); font-family: var(--font-b); font-size: 15px; line-height: 1.6; overflow-x: hidden; }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--deep); } ::-webkit-scrollbar-thumb { background: var(--purple-dim); border-radius: 3px; }
+
+    .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { background: var(--deep); border-right: 1px solid var(--border); padding: 1.5rem 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+    .sidebar-brand { padding: 0 1.25rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    .brand-name { font-family: var(--font-d); font-size: 1.1rem; letter-spacing: 0.06em; color: var(--gold-light); line-height: 1.1; }
+    .brand-sub { font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--purple); margin-top: 3px; }
+    .nav-label { font-family: var(--font-m); font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray); padding: 0.5rem 1.25rem 0.25rem; }
+    .nav-section { padding: 0 0.75rem; margin-bottom: 0.5rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; border-radius: var(--r); cursor: pointer; color: var(--gray-light); font-size: 0.88rem; transition: all 0.15s; border: 1px solid transparent; }
+    .nav-item:hover { background: var(--surface); color: var(--cream); }
+    .nav-item.active { background: rgba(130,80,255,0.1); color: var(--purple); border-color: var(--border); }
+    .nav-item .nav-icon { font-size: 1rem; width: 18px; text-align: center; }
+    .nav-badge { margin-left: auto; background: var(--purple); color: #fff; font-family: var(--font-m); font-size: 0.6rem; padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+    .sidebar-footer { margin-top: auto; padding: 1rem 1.25rem 0; border-top: 1px solid var(--border); }
+    .sidebar-footer a { display: block; font-size: 0.78rem; color: var(--gray); text-decoration: none; margin-bottom: 0.4rem; transition: color 0.15s; }
+    .sidebar-footer a:hover { color: var(--gold-light); }
+
+    /* MAIN */
+    .main { overflow-y: auto; }
+    .topbar { background: var(--deep); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .topbar-title { font-family: var(--font-d); font-size: 1.3rem; letter-spacing: 0.05em; color: var(--cream); }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--purple); animation: pulse 2s infinite; }
+    .status-label { font-family: var(--font-m); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--purple); text-transform: uppercase; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+    /* PAGES */
+    .page { display: none; padding: 2rem; }
+    .page.active { display: block; }
+
+    /* STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.25rem; }
+    .stat-card-label { font-family: var(--font-m); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.5rem; }
+    .stat-card-num { font-family: var(--font-d); font-size: 2.2rem; color: var(--purple); line-height: 1; }
+    .stat-card-sub { font-size: 0.75rem; color: var(--gray); margin-top: 4px; }
+
+    .section-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .section-hdr h2 { font-family: var(--font-d); font-size: 1.4rem; letter-spacing: 0.05em; color: var(--cream); }
+    .section-hdr p { font-size: 0.82rem; color: var(--gray); margin-top: 2px; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 0.55rem 1.2rem; border-radius: var(--r); font-family: var(--font-b); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; text-decoration: none; }
+    .btn-purple { background: var(--purple); color: #fff; }
+    .btn-purple:hover { background: #9b6fff; transform: translateY(-1px); }
+    .btn-gold { background: var(--gold); color: var(--black); }
+    .btn-gold:hover { background: var(--gold-light); }
+    .btn-outline { background: transparent; color: var(--cream); border: 1px solid var(--border2); }
+    .btn-outline:hover { background: var(--surface); }
+    .btn-ghost { background: transparent; color: var(--gray-light); border: 1px solid var(--border); font-size: 0.78rem; padding: 0.4rem 0.9rem; }
+    .btn-ghost:hover { color: var(--cream); border-color: var(--border2); }
+    .btn-danger { background: rgba(224,82,82,0.15); color: var(--red); border: 1px solid rgba(224,82,82,0.25); font-size: 0.78rem; padding: 0.4rem 0.9rem; }
+    .btn-danger:hover { background: rgba(224,82,82,0.25); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* FORMS */
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-family: var(--font-m); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); }
+    .field input, .field select, .field textarea { background: rgba(0,0,0,0.4); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.6rem 0.85rem; color: var(--cream); font-family: var(--font-b); font-size: 0.88rem; outline: none; transition: border-color 0.15s; width: 100%; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--purple); }
+    .field input::placeholder, .field textarea::placeholder { color: var(--gray); opacity: 0.6; }
+    .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7f80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 2rem; -webkit-appearance: none; cursor: pointer; }
+    .field select option { background: var(--deep); }
+    .field textarea { resize: vertical; min-height: 90px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    /* FINDER */
+    .finder-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .finder-controls { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 0.75rem; align-items: end; }
+
+    /* CATEGORY CARDS */
+    .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    .category-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.25rem; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .category-card:hover { border-color: var(--purple); transform: translateY(-2px); }
+    .category-card.selected { border-color: var(--purple); background: var(--purple-glow); }
+    .category-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .category-name { font-family: var(--font-d); font-size: 1rem; letter-spacing: 0.04em; color: var(--cream); margin-bottom: 3px; }
+    .category-desc { font-size: 0.72rem; color: var(--gray); }
+
+    /* RESULTS TABLE */
+    .results-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); overflow: hidden; }
+    .results-header { padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .results-count { font-family: var(--font-m); font-size: 0.72rem; color: var(--gray); }
+
+    .opp-table { width: 100%; border-collapse: collapse; }
+    .opp-table th { text-align: left; padding: 0.65rem 1rem; font-family: var(--font-m); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); border-bottom: 1px solid var(--border); background: var(--surface); }
+    .opp-table td { padding: 0.75rem 1rem; font-size: 0.85rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .opp-table tr:last-child td { border-bottom: none; }
+    .opp-table tr:hover td { background: var(--surface); }
+
+    .opp-name { font-weight: 500; color: var(--cream); }
+    .opp-company { font-size: 0.78rem; color: var(--gray-light); margin-top: 2px; }
+
+    .type-badge { display: inline-block; font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 10px; }
+    .type-film { background: rgba(130,80,255,0.15); color: #b08fff; border: 1px solid rgba(130,80,255,0.3); }
+    .type-tv { background: rgba(74,158,255,0.12); color: var(--blue); border: 1px solid rgba(74,158,255,0.25); }
+    .type-game { background: rgba(42,180,100,0.12); color: var(--green); border: 1px solid rgba(42,180,100,0.25); }
+    .type-ad { background: rgba(200,146,42,0.12); color: var(--gold-light); border: 1px solid rgba(200,146,42,0.25); }
+    .type-brand { background: rgba(224,82,82,0.1); color: #ff9090; border: 1px solid rgba(224,82,82,0.2); }
+
+    .opp-note { font-size: 0.78rem; color: var(--gray); font-style: italic; max-width: 240px; }
+    .opp-actions { display: flex; gap: 6px; white-space: nowrap; }
+
+    .spinner { width: 18px; height: 18px; border: 2px solid var(--border2); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state { padding: 3rem; text-align: center; color: var(--gray); font-size: 0.9rem; }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+    /* COMPOSER */
+    .composer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .composer-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.5rem; }
+    .composer-box h3 { font-family: var(--font-d); font-size: 1.1rem; letter-spacing: 0.04em; color: var(--cream); margin-bottom: 1rem; }
+    .email-preview { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1.25rem; font-size: 0.85rem; line-height: 1.75; color: var(--cream); white-space: pre-wrap; min-height: 300px; max-height: 500px; overflow-y: auto; }
+    .email-preview.placeholder { color: var(--gray); font-style: italic; }
+
+    /* CRM */
+    .crm-controls { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .crm-search input { background: var(--card); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.55rem 0.9rem; color: var(--cream); font-family: var(--font-b); font-size: 0.88rem; outline: none; width: 100%; min-width: 200px; }
+    .crm-search input:focus { border-color: var(--purple); }
+    .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill { font-family: var(--font-m); font-size: 0.65rem; letter-spacing: 0.08em; padding: 4px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border); color: var(--gray); background: transparent; transition: all 0.15s; }
+    .pill:hover { border-color: var(--border2); color: var(--cream); }
+    .pill.active { background: rgba(130,80,255,0.12); border-color: var(--purple); color: var(--purple); }
+    .pill.gold { background: rgba(200,146,42,0.12); border-color: var(--gold); color: var(--gold-light); }
+
+    .lead-table { width: 100%; border-collapse: collapse; }
+    .lead-table th { text-align: left; padding: 0.65rem 1rem; font-family: var(--font-m); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); border-bottom: 1px solid var(--border); background: var(--surface); }
+    .lead-table td { padding: 0.8rem 1rem; font-size: 0.85rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .lead-table tr:last-child td { border-bottom: none; }
+    .lead-table tr:hover td { background: var(--surface); cursor: pointer; }
+
+    .status-badge { display: inline-block; font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 10px; }
+    .status-new { background: rgba(74,158,255,0.12); color: var(--blue); border: 1px solid rgba(74,158,255,0.25); }
+    .status-pitched { background: rgba(130,80,255,0.12); color: #b08fff; border: 1px solid rgba(130,80,255,0.25); }
+    .status-reviewing { background: rgba(200,146,42,0.12); color: var(--gold-light); border: 1px solid rgba(200,146,42,0.25); }
+    .status-licensed { background: rgba(42,180,100,0.25); color: #36d678; border: 1px solid var(--green); }
+    .status-passed { background: rgba(224,82,82,0.1); color: var(--red); border: 1px solid rgba(224,82,82,0.2); }
+    .status-followup { background: rgba(180,120,255,0.12); color: #b47fff; border: 1px solid rgba(180,120,255,0.25); }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 2rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); border: 1px solid var(--border2); border-radius: var(--r2); padding: 2rem; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .modal-header h3 { font-family: var(--font-d); font-size: 1.4rem; letter-spacing: 0.04em; color: var(--cream); }
+    .modal-close { background: none; border: none; color: var(--gray); font-size: 1.4rem; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+    .modal-close:hover { color: var(--cream); background: var(--surface); }
+    .modal-form { display: flex; flex-direction: column; gap: 1rem; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem; }
+
+    /* TOAST */
+    .toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { background: var(--card2); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.75rem 1.25rem; font-size: 0.85rem; color: var(--cream); animation: slideIn 0.2s ease; display: flex; align-items: center; gap: 0.5rem; }
+    .toast.success { border-color: rgba(42,180,100,0.4); }
+    .toast.error { border-color: rgba(224,82,82,0.4); }
+    @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+    /* TRACK CARDS */
+    .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .track-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: border-color 0.15s; }
+    .track-card:hover { border-color: var(--purple); }
+    .track-card.selected { border-color: var(--purple); background: var(--purple-glow); }
+    .track-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-d); font-size: 0.7rem; letter-spacing: 0.04em; flex-shrink: 0; }
+    .track-tc { background: rgba(200,146,42,0.15); border: 1px solid var(--gold); color: var(--gold-light); }
+    .track-pnc { background: rgba(42,180,100,0.15); border: 1px solid var(--green); color: var(--green); }
+    .track-name { font-size: 0.85rem; font-weight: 500; color: var(--cream); }
+    .track-detail { font-size: 0.72rem; color: var(--gray); }
+
+    @media (max-width: 768px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .finder-controls { grid-template-columns: 1fr 1fr; }
+      .stats-row, .category-grid { grid-template-columns: 1fr 1fr; }
+      .composer-grid, .track-grid { grid-template-columns: 1fr; }
+      .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div style="font-size:1.4rem;margin-bottom:4px;">🎬</div>
+      <div class="brand-name">Dragon Farm<br/>Records</div>
+      <div class="brand-sub">Sync Agent</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Dashboard</div>
+      <div class="nav-item active" data-page="overview"><span class="nav-icon">📊</span> Overview</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Find Deals</div>
+      <div class="nav-item" data-page="finder"><span class="nav-icon">🔍</span> Opportunity Finder</div>
+      <div class="nav-item" data-page="composer"><span class="nav-icon">✉️</span> Pitch Composer</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Manage</div>
+      <div class="nav-item" data-page="crm"><span class="nav-icon">📋</span> Sync Pipeline <span class="nav-badge" id="crm-badge">0</span></div>
+      <div class="nav-item" data-page="licensed"><span class="nav-icon">🏆</span> Licensed <span class="nav-badge" id="licensed-badge" style="background:var(--green)">0</span></div>
+    </div>
+    <div class="sidebar-footer">
+      <a href="dashboard.html">← Booking Agent</a>
+      <a href="index.html">← Public Site</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Sync Overview</div>
+      <div class="topbar-right">
+        <div class="status-dot"></div>
+        <div class="status-label">Sync Agent</div>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="page active" id="page-overview">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-label">Opportunities</div><div class="stat-card-num" id="stat-total">0</div><div class="stat-card-sub">in pipeline</div></div>
+        <div class="stat-card"><div class="stat-card-label">Pitched</div><div class="stat-card-num" id="stat-pitched" style="color:var(--gold-light)">0</div><div class="stat-card-sub">pitches sent</div></div>
+        <div class="stat-card"><div class="stat-card-label">Reviewing</div><div class="stat-card-num" id="stat-reviewing" style="color:#b08fff">0</div><div class="stat-card-sub">under consideration</div></div>
+        <div class="stat-card"><div class="stat-card-label">Licensed</div><div class="stat-card-num" id="stat-licensed" style="color:var(--green)">0</div><div class="stat-card-sub">placements secured</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+        <div>
+          <div class="section-hdr"><div><h2>Recent Opportunities</h2><p>Latest sync leads</p></div><button class="btn btn-ghost" onclick="showPage('crm')">View All</button></div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
+            <div id="recent-list"><div class="empty-state"><div class="empty-icon">🎬</div><p>No sync leads yet.<br/>Use Opportunity Finder to discover placements.</p></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-hdr"><div><h2>Quick Actions</h2><p>Start finding sync deals</p></div></div>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+              <div><div style="font-weight:500;color:var(--cream);margin-bottom:3px;">Find Opportunities</div><div style="font-size:0.78rem;color:var(--gray);">Film, TV, games, brands nationwide</div></div>
+              <button class="btn btn-purple" onclick="showPage('finder')">Search →</button>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+              <div><div style="font-weight:500;color:var(--cream);margin-bottom:3px;">Write a Sync Pitch</div><div style="font-size:0.78rem;color:var(--gray);">AI writes your music supervisor email</div></div>
+              <button class="btn btn-outline" onclick="showPage('composer')">Compose →</button>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;">
+              <div><div style="font-weight:500;color:var(--cream);margin-bottom:3px;">Add Opportunity Manually</div><div style="font-size:0.78rem;color:var(--gray);">Enter a lead you already found</div></div>
+              <button class="btn btn-ghost" onclick="openAddLead()">Add Lead +</button>
+            </div>
+          </div>
+
+          <!-- Catalog quick ref -->
+          <div style="margin-top:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.25rem;">
+            <div style="font-family:var(--font-m);font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gray);margin-bottom:0.75rem;">Sync Catalog</div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem;">
+              <div style="padding:0.6rem 0.75rem;background:var(--surface);border-radius:var(--r);border:1px solid var(--border);">
+                <div style="font-size:0.82rem;font-weight:500;color:var(--gold-light);">Mr. Iron Man (Live)</div>
+                <div style="font-size:0.72rem;color:var(--gray);">Timothy Chance & Rasta Country · Country-Reggae · ISRC: QM6N22632890</div>
+                <div style="font-size:0.7rem;color:var(--gray);margin-top:3px;">Best for: Westerns, road films, lifestyle brands, outdoor campaigns</div>
+              </div>
+              <div style="padding:0.6rem 0.75rem;background:var(--surface);border-radius:var(--r);border:1px solid var(--border);">
+                <div style="font-size:0.82rem;font-weight:500;color:var(--green);">Peace Pipe</div>
+                <div style="font-size:0.72rem;color:var(--gray);">Poetic Nocturnal Creatures · Conscious Hip-Hop · ISRC: QM6N22632979</div>
+                <div style="font-size:0.7rem;color:var(--gray);margin-top:3px;">Best for: Cannabis brands, social docs, indie films, conscious lifestyle ads</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPPORTUNITY FINDER -->
+    <div class="page" id="page-finder">
+      <div class="section-hdr" style="margin-bottom:1.25rem;">
+        <div><h2>Opportunity Finder</h2><p>AI finds sync licensing targets across all media categories</p></div>
+      </div>
+
+      <!-- Category selector -->
+      <div class="category-grid">
+        <div class="category-card selected" data-cat="Film & TV" onclick="selectCat(this)">
+          <div class="category-icon">🎬</div>
+          <div class="category-name">Film & TV</div>
+          <div class="category-desc">Music supervisors, indie films, streaming shows</div>
+        </div>
+        <div class="category-card" data-cat="Video Games" onclick="selectCat(this)">
+          <div class="category-icon">🎮</div>
+          <div class="category-name">Video Games</div>
+          <div class="category-desc">Game studios, indie devs, soundtrack licensing</div>
+        </div>
+        <div class="category-card" data-cat="Advertising & Brands" onclick="selectCat(this)">
+          <div class="category-icon">📱</div>
+          <div class="category-name">Ads & Brands</div>
+          <div class="category-desc">Ad agencies, brand campaigns, social media</div>
+        </div>
+        <div class="category-card" data-cat="All Categories" onclick="selectCat(this)">
+          <div class="category-icon">🌐</div>
+          <div class="category-name">All Categories</div>
+          <div class="category-desc">Cast a wide net across all media</div>
+        </div>
+      </div>
+
+      <div class="finder-box">
+        <div class="finder-controls">
+          <div class="field">
+            <label>Search Focus (optional)</label>
+            <input type="text" id="sf-focus" placeholder="e.g. indie films, cannabis brands, horror games, Netflix..." />
+          </div>
+          <div class="field">
+            <label>Track to Pitch</label>
+            <select id="sf-track">
+              <option value="both">Both Tracks</option>
+              <option value="Mr. Iron Man (Live)">Mr. Iron Man (Live)</option>
+              <option value="Peace Pipe">Peace Pipe</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Budget Level</label>
+            <select id="sf-budget">
+              <option value="all budgets">All Budgets</option>
+              <option value="indie / micro budget">Indie / Micro Budget</option>
+              <option value="mid-budget">Mid-Budget</option>
+              <option value="major / studio">Major / Studio</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Results</label>
+            <select id="sf-count">
+              <option value="6">6</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+            </select>
+          </div>
+          <button class="btn btn-purple" id="find-btn" style="align-self:flex-end;padding:0.6rem 1.5rem;">Search</button>
+        </div>
+      </div>
+
+      <div class="results-box">
+        <div class="results-header">
+          <span class="results-count" id="results-count">No search yet</span>
+          <button class="btn btn-ghost" id="add-all-btn" style="display:none" onclick="addAllToLeads()">Add All to Pipeline</button>
+        </div>
+        <div id="opp-results">
+          <div class="empty-state"><div class="empty-icon">🎬</div><p>Select a category above and tap <strong>Search</strong> to find sync opportunities.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PITCH COMPOSER -->
+    <div class="page" id="page-composer">
+      <div class="section-hdr" style="margin-bottom:1.25rem;">
+        <div><h2>Pitch Composer</h2><p>AI writes professional sync licensing pitches for music supervisors and studios</p></div>
+      </div>
+
+      <div class="composer-grid">
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          <div class="composer-box">
+            <h3>Pitch Details</h3>
+            <div style="display:flex;flex-direction:column;gap:1rem;">
+              <div class="form-row">
+                <div class="field"><label>Supervisor / Studio Name *</label><input type="text" id="pm-contact" placeholder="Alexandra Chen" /></div>
+                <div class="field"><label>Company / Production</label><input type="text" id="pm-company" placeholder="Netflix · A24 · EA Games" /></div>
+              </div>
+              <div class="form-row">
+                <div class="field">
+                  <label>Project Type</label>
+                  <select id="pm-type">
+                    <option>Film</option><option>TV Series</option><option>Streaming Show</option>
+                    <option>Video Game</option><option>Advertisement</option><option>Brand Campaign</option>
+                    <option>Documentary</option><option>YouTube / Digital</option><option>Other</option>
+                  </select>
+                </div>
+                <div class="field"><label>Project Name (if known)</label><input type="text" id="pm-project" placeholder="e.g. Untitled Western Drama" /></div>
+              </div>
+              <div class="field">
+                <label>Track to Pitch</label>
+                <select id="pm-track">
+                  <option value="both">Both Tracks</option>
+                  <option value="Mr. Iron Man (Live) by Timothy Chance and Rasta Country">Mr. Iron Man (Live) — Timothy Chance & Rasta Country</option>
+                  <option value="Peace Pipe by Poetic Nocturnal Creatures">Peace Pipe — Poetic Nocturnal Creatures</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>License Type Needed</label>
+                <select id="pm-license">
+                  <option>Sync + Master (Full License)</option>
+                  <option>Sync Only</option>
+                  <option>Background Use</option>
+                  <option>Feature Placement</option>
+                  <option>Exclusive License</option>
+                  <option>Not Sure — Open to Discussion</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Pitch Tone</label>
+                <select id="pm-tone">
+                  <option>Professional & Concise</option>
+                  <option>Enthusiastic & Creative</option>
+                  <option>Cannabis-Culture Friendly</option>
+                  <option>Indie & Authentic</option>
+                </select>
+              </div>
+              <div class="field"><label>Additional Context</label><textarea id="pm-notes" rows="3" placeholder="Why this track fits their project, genre overlap, mood..."></textarea></div>
+              <button class="btn btn-purple" id="compose-btn" style="width:100%">✨ Generate Pitch</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          <div class="composer-box">
+            <h3>Generated Pitch</h3>
+            <div id="pitch-subject" style="font-family:var(--font-m);font-size:0.72rem;color:var(--gray);margin-bottom:0.5rem;"></div>
+            <div id="pitch-preview" class="email-preview placeholder">Your AI sync pitch will appear here. Fill in the details and tap Generate.</div>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
+              <button class="btn btn-green" id="copy-btn" style="display:none" onclick="copyPitch()">📋 Copy Pitch</button>
+              <button class="btn btn-outline" id="mail-btn" style="display:none" onclick="openMailto()">📧 Open in Mail</button>
+              <button class="btn btn-ghost" id="save-btn" style="display:none" onclick="saveFromPitch()">+ Add to Pipeline</button>
+            </div>
+          </div>
+
+          <div class="composer-box">
+            <h3>Load from Pipeline</h3>
+            <p style="font-size:0.82rem;color:var(--gray);margin-bottom:1rem;">Auto-fill from an existing sync lead.</p>
+            <select id="load-lead-select" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:0.6rem 0.85rem;color:var(--cream);font-family:var(--font-b);font-size:0.88rem;outline:none;margin-bottom:0.75rem;"><option value="">Select a lead...</option></select>
+            <button class="btn btn-outline" style="width:100%" onclick="loadLeadIntoComposer()">Load Lead →</button>
+          </div>
+
+          <!-- Catalog reference -->
+          <div class="composer-box">
+            <h3>Catalog Reference</h3>
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem;">
+                <div style="font-weight:500;color:var(--gold-light);font-size:0.85rem;">Mr. Iron Man (Live)</div>
+                <div style="font-size:0.72rem;color:var(--gray);margin-top:2px;">ISRC: QM6N22632890 · UPC: 820200992949</div>
+                <div style="font-size:0.72rem;color:var(--gray);">Genre: Country-Reggae · Mood: Energetic, Rootsy, Authentic</div>
+                <div style="font-size:0.7rem;color:var(--gray);margin-top:4px;font-style:italic;">Master + sync rights available through Dragon Farm Records</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem;">
+                <div style="font-weight:500;color:var(--green);font-size:0.85rem;">Peace Pipe</div>
+                <div style="font-size:0.72rem;color:var(--gray);margin-top:2px;">ISRC: QM6N22632979 · UPC: 820200962904</div>
+                <div style="font-size:0.72rem;color:var(--gray);">Genre: Conscious Hip-Hop · Mood: Thoughtful, Cultural, Smooth</div>
+                <div style="font-size:0.7rem;color:var(--gray);margin-top:4px;font-style:italic;">Master + sync rights available through Dragon Farm Records</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYNC PIPELINE CRM -->
+    <div class="page" id="page-crm">
+      <div class="section-hdr" style="margin-bottom:1rem;">
+        <div><h2>Sync Pipeline</h2><p>Track every opportunity from pitch to placement</p></div>
+        <button class="btn btn-purple" onclick="openAddLead()">+ Add Opportunity</button>
+      </div>
+      <div class="crm-controls">
+        <div class="crm-search"><input type="text" id="crm-search" placeholder="Search supervisors, studios, projects..." oninput="renderLeads()" /></div>
+        <div class="filter-pills">
+          <div class="pill active" data-filter="all" onclick="setFilter('all')">All</div>
+          <div class="pill" data-filter="new" onclick="setFilter('new')">New</div>
+          <div class="pill" data-filter="pitched" onclick="setFilter('pitched')">Pitched</div>
+          <div class="pill" data-filter="reviewing" onclick="setFilter('reviewing')">Reviewing</div>
+          <div class="pill gold" data-filter="licensed" onclick="setFilter('licensed')">Licensed ✓</div>
+          <div class="pill" data-filter="followup" onclick="setFilter('followup')">Follow Up</div>
+          <div class="pill" data-filter="passed" onclick="setFilter('passed')">Passed</div>
+        </div>
+        <button class="btn btn-ghost" onclick="exportLeads()">⬇ Export CSV</button>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
+        <table class="lead-table">
+          <thead><tr><th>Supervisor / Studio</th><th>Project</th><th>Category</th><th>Track</th><th>Contact</th><th>Status</th><th>Added</th><th>Actions</th></tr></thead>
+          <tbody id="leads-tbody"><tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🎬</div><p>No sync leads yet.</p></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LICENSED -->
+    <div class="page" id="page-licensed">
+      <div class="section-hdr" style="margin-bottom:1.25rem;">
+        <div><h2>Licensed Placements</h2><p>Confirmed sync deals</p></div>
+      </div>
+      <div id="licensed-list" style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
+        <div class="empty-state"><div class="empty-icon">🏆</div><p>No placements yet.<br/>Mark pipeline leads as "Licensed" to track them here.</p></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD LEAD MODAL -->
+<div class="modal-overlay" id="add-lead-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Add Sync Opportunity</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-form">
+      <input type="hidden" id="lead-id" />
+      <div class="form-row">
+        <div class="field"><label>Supervisor / Company *</label><input type="text" id="lead-name" placeholder="Alexandra Chen / Netflix" /></div>
+        <div class="field"><label>Project Name</label><input type="text" id="lead-project" placeholder="Untitled Western Drama" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Category</label>
+          <select id="lead-category">
+            <option>Film</option><option>TV Series</option><option>Streaming Show</option>
+            <option>Video Game</option><option>Advertisement</option><option>Brand Campaign</option>
+            <option>Documentary</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Track</label>
+          <select id="lead-track">
+            <option value="Both">Both Tracks</option>
+            <option value="Mr. Iron Man (Live)">Mr. Iron Man (Live)</option>
+            <option value="Peace Pipe">Peace Pipe</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Contact Name</label><input type="text" id="lead-contact" placeholder="Music Supervisor" /></div>
+        <div class="field"><label>Contact Email</label><input type="email" id="lead-email" placeholder="sync@studio.com" /></div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Status</label>
+          <select id="lead-status">
+            <option value="new">New</option>
+            <option value="pitched">Pitched</option>
+            <option value="reviewing">Reviewing</option>
+            <option value="followup">Follow Up</option>
+            <option value="licensed">Licensed ✓</option>
+            <option value="passed">Passed</option>
+          </select>
+        </div>
+        <div class="field"><label>Fee / Deal Value</label><input type="text" id="lead-fee" placeholder="e.g. $2,500 · TBD" /></div>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="lead-notes" rows="3" placeholder="Project details, tone needed, deadline, what was discussed..."></textarea></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-purple" onclick="saveLead()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ---- STATE ----
+let leads = JSON.parse(localStorage.getItem('df_sync_leads') || '[]');
+let currentFilter = 'all';
+let oppResults = [];
+let selectedCat = 'Film & TV';
+let currentPitch = { subject: '', body: '', contact: '', company: '', email: '' };
+let editingId = null;
+
+// ---- NAV ----
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelector(`[data-page="${id}"]`)?.classList.add('active');
+  const titles = { overview:'Sync Overview', finder:'Opportunity Finder', composer:'Pitch Composer', crm:'Sync Pipeline', licensed:'Licensed Placements' };
+  document.getElementById('page-title').textContent = titles[id] || id;
+  if (id === 'crm') renderLeads();
+  if (id === 'licensed') renderLicensed();
+  if (id === 'overview') renderOverview();
+  if (id === 'composer') populateLeadSelect();
+}
+document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => showPage(item.dataset.page)));
+
+function selectCat(el) {
+  document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCat = el.dataset.cat;
+}
+
+// ---- STATS ----
+function updateStats() {
+  document.getElementById('stat-total').textContent = leads.length;
+  document.getElementById('stat-pitched').textContent = leads.filter(l => ['pitched','reviewing','licensed'].includes(l.status)).length;
+  document.getElementById('stat-reviewing').textContent = leads.filter(l => l.status === 'reviewing').length;
+  document.getElementById('stat-licensed').textContent = leads.filter(l => l.status === 'licensed').length;
+  document.getElementById('crm-badge').textContent = leads.length;
+  document.getElementById('licensed-badge').textContent = leads.filter(l => l.status === 'licensed').length;
+}
+
+function renderOverview() {
+  updateStats();
+  const recent = [...leads].reverse().slice(0, 5);
+  const container = document.getElementById('recent-list');
+  if (!recent.length) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎬</div><p>No leads yet. Use Opportunity Finder.</p></div>'; return; }
+  container.innerHTML = recent.map(l => `
+    <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer" onclick="editLead('${l.id}')">
+      <div>
+        <div style="font-size:0.88rem;font-weight:500;color:var(--cream)">${esc(l.name)}</div>
+        <div style="font-size:0.75rem;color:var(--gray)">${esc(l.project || l.category)} · ${esc(l.track)}</div>
+      </div>
+      <span class="status-badge status-${l.status}">${l.status}</span>
+    </div>`).join('');
+}
+
+// ---- OPPORTUNITY FINDER ----
+document.getElementById('find-btn').addEventListener('click', findOpportunities);
+
+async function findOpportunities() {
+  const focus = document.getElementById('sf-focus').value.trim();
+  const track = document.getElementById('sf-track').value;
+  const budget = document.getElementById('sf-budget').value;
+  const count = document.getElementById('sf-count').value;
+
+  const btn = document.getElementById('find-btn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  btn.disabled = true;
+  document.getElementById('opp-results').innerHTML = '<div class="empty-state"><span class="spinner"></span><p style="margin-top:0.75rem">Searching for sync opportunities...</p></div>';
+  document.getElementById('add-all-btn').style.display = 'none';
+
+  const trackInfo = track === 'both'
+    ? '"Mr. Iron Man (Live)" (Country-Reggae) and "Peace Pipe" (Conscious Hip-Hop, cannabis-themed)'
+    : track === 'Mr. Iron Man (Live)' ? '"Mr. Iron Man (Live)" by Timothy Chance and Rasta Country (Country-Reggae fusion)'
+    : '"Peace Pipe" by Poetic Nocturnal Creatures (Conscious Hip-Hop, cannabis culture)';
+
+  const system = `You are a music sync licensing expert for Dragon Farm Records, Nashville, TN.
+Return ONLY a valid JSON array. No other text, no markdown.
+Each object: name (supervisor or studio name), company, category (Film/TV/Game/Ad/Brand), project_type, contact_email, contact_name, submission_notes (how to submit), fit_reason (why Dragon Farm music fits), budget_level, best_track.`;
+
+  const prompt = `Find ${count} real sync licensing opportunities for ${selectedCat === 'All Categories' ? 'all media categories' : selectedCat} targeting ${trackInfo}.
+${focus ? `Focus on: ${focus}` : ''}
+Budget: ${budget}
+Include music supervisors, licensing directors, and decision-makers with realistic contact info and submission guidelines.`;
+
+  const raw = await callAI(system, prompt, 2500);
+  btn.innerHTML = 'Search';
+  btn.disabled = false;
+
+  let opps = [];
+  try { opps = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+  catch { document.getElementById('opp-results').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(raw)}</p></div>`; return; }
+
+  oppResults = opps;
+  document.getElementById('results-count').textContent = `${opps.length} opportunities found`;
+  document.getElementById('add-all-btn').style.display = 'inline-flex';
+  renderOppTable(opps);
+}
+
+function getCatClass(cat) {
+  if (!cat) return 'type-film';
+  const c = cat.toLowerCase();
+  if (c.includes('tv') || c.includes('series') || c.includes('stream')) return 'type-tv';
+  if (c.includes('game')) return 'type-game';
+  if (c.includes('ad') || c.includes('brand')) return 'type-ad';
+  return 'type-film';
+}
+
+function renderOppTable(opps) {
+  if (!opps.length) { document.getElementById('opp-results').innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>No opportunities found. Try different filters.</p></div>'; return; }
+  document.getElementById('opp-results').innerHTML = `
+    <div style="overflow-x:auto">
+      <table class="opp-table">
+        <thead><tr><th>Supervisor / Studio</th><th>Category</th><th>Contact</th><th>Best Track</th><th>Why It Fits</th><th>How to Submit</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${opps.map((o, i) => `
+            <tr>
+              <td><div class="opp-name">${esc(o.name)}</div><div class="opp-company">${esc(o.company)}</div></td>
+              <td><span class="type-badge ${getCatClass(o.category)}">${esc(o.category || o.project_type)}</span></td>
+              <td class="opp-company">
+                ${o.contact_name ? `<div>${esc(o.contact_name)}</div>` : ''}
+                ${o.contact_email ? `<a href="mailto:${esc(o.contact_email)}" style="color:var(--blue);text-decoration:none">${esc(o.contact_email)}</a>` : ''}
+              </td>
+              <td style="font-size:0.8rem;color:var(--gold-light)">${esc(o.best_track || 'Both')}</td>
+              <td class="opp-note">${esc(o.fit_reason || '')}</td>
+              <td class="opp-note">${esc(o.submission_notes || '')}</td>
+              <td><div class="opp-actions">
+                <button class="btn btn-ghost" onclick="addOppToLeads(${i})">+ Add</button>
+                <button class="btn btn-ghost" onclick="pitchOpp(${i})">✉ Pitch</button>
+              </div></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function addOppToLeads(i) {
+  const o = oppResults[i];
+  if (!o) return;
+  addLead({ name: o.name || o.company, project: o.project_type || '', category: o.category || 'Film', track: o.best_track || 'Both', contact: o.contact_name || '', email: o.contact_email || '', notes: (o.fit_reason || '') + ' | Submit: ' + (o.submission_notes || ''), status: 'new' });
+  toast(`${o.name} added to pipeline ✓`, 'success');
+}
+
+function addAllToLeads() {
+  oppResults.forEach((_, i) => addOppToLeads(i));
+  toast(`${oppResults.length} opportunities added to pipeline ✓`, 'success');
+}
+
+function pitchOpp(i) {
+  const o = oppResults[i];
+  if (!o) return;
+  document.getElementById('pm-contact').value = o.contact_name || o.name || '';
+  document.getElementById('pm-company').value = o.company || '';
+  if (o.best_track && o.best_track !== 'Both') document.getElementById('pm-track').value = o.best_track.includes('Iron') ? 'Mr. Iron Man (Live) by Timothy Chance and Rasta Country' : 'Peace Pipe by Poetic Nocturnal Creatures';
+  showPage('composer');
+  toast(`Loaded ${o.name} into Pitch Composer`, 'success');
+}
+
+// ---- PITCH COMPOSER ----
+document.getElementById('compose-btn').addEventListener('click', generatePitch);
+
+async function generatePitch() {
+  const contact = document.getElementById('pm-contact').value.trim();
+  const company = document.getElementById('pm-company').value.trim();
+  const type = document.getElementById('pm-type').value;
+  const project = document.getElementById('pm-project').value.trim();
+  const track = document.getElementById('pm-track').value;
+  const license = document.getElementById('pm-license').value;
+  const tone = document.getElementById('pm-tone').value;
+  const notes = document.getElementById('pm-notes').value.trim();
+
+  if (!contact && !company) { toast('Enter a supervisor or company name', 'error'); return; }
+
+  const btn = document.getElementById('compose-btn');
+  btn.innerHTML = '<span class="spinner"></span> Generating...';
+  btn.disabled = true;
+  document.getElementById('pitch-preview').textContent = 'Writing your pitch...';
+  document.getElementById('pitch-preview').classList.remove('placeholder');
+
+  const system = `You are a professional music sync licensing agent for Dragon Farm Records, Nashville, TN.
+Catalog:
+- "Mr. Iron Man (Live)" by Timothy Chance and Rasta Country (Country-Reggae, ISRC: QM6N22632890, UPC: 820200992949) — energetic, rootsy, authentic
+- "Peace Pipe" by Poetic Nocturnal Creatures (Conscious Hip-Hop, ISRC: QM6N22632979, UPC: 820200962904) — thoughtful, smooth, cannabis-cultural
+Both tracks: master + sync rights available through Dragon Farm Records.
+Return ONLY a JSON object: { "subject": string, "body": string }. No markdown.`;
+
+  const prompt = `Write a ${tone} sync licensing pitch to ${contact || 'Music Supervisor'} at ${company || 'the studio'} for their ${type}${project ? ` "${project}"` : ''}.
+Track: ${track}. License needed: ${license}.
+${notes ? `Context: ${notes}` : ''}
+Reference the specific ISRC/UPC codes. Be professional and concise — music supervisors are busy. Show why the track fits their project.`;
+
+  const raw = await callAI(system, prompt, 1500);
+  btn.innerHTML = '✨ Generate Pitch';
+  btn.disabled = false;
+
+  let parsed;
+  try { parsed = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+  catch { document.getElementById('pitch-preview').textContent = raw; return; }
+
+  currentPitch = { subject: parsed.subject, body: parsed.body, contact, company, email: '' };
+  document.getElementById('pitch-subject').textContent = `Subject: ${parsed.subject}`;
+  document.getElementById('pitch-preview').textContent = parsed.body;
+  ['copy-btn','mail-btn','save-btn'].forEach(id => document.getElementById(id).style.display = 'inline-flex');
+}
+
+function copyPitch() {
+  navigator.clipboard.writeText(`Subject: ${currentPitch.subject}\n\n${currentPitch.body}`)
+    .then(() => toast('Pitch copied ✓', 'success'))
+    .catch(() => toast('Copy failed', 'error'));
+}
+
+function openMailto() {
+  window.location.href = `mailto:?subject=${encodeURIComponent(currentPitch.subject)}&body=${encodeURIComponent(currentPitch.body)}`;
+}
+
+function saveFromPitch() {
+  openAddLeadPrefilled({ name: currentPitch.contact || currentPitch.company, project: document.getElementById('pm-project').value, category: document.getElementById('pm-type').value, track: document.getElementById('pm-track').value, contact: currentPitch.contact, status: 'pitched', notes: `Pitched: ${currentPitch.subject}` });
+}
+
+function populateLeadSelect() {
+  const sel = document.getElementById('load-lead-select');
+  sel.innerHTML = '<option value="">Select a lead...</option>' + leads.map(l => `<option value="${l.id}">${esc(l.name)}${l.project ? ' — ' + esc(l.project) : ''}</option>`).join('');
+}
+
+function loadLeadIntoComposer() {
+  const id = document.getElementById('load-lead-select').value;
+  if (!id) return;
+  const lead = leads.find(l => l.id === id);
+  if (!lead) return;
+  document.getElementById('pm-contact').value = lead.contact || lead.name || '';
+  document.getElementById('pm-company').value = lead.name || '';
+  document.getElementById('pm-project').value = lead.project || '';
+  if (lead.category) document.getElementById('pm-type').value = lead.category;
+  if (lead.track && lead.track !== 'Both') document.getElementById('pm-track').value = lead.track.includes('Iron') ? 'Mr. Iron Man (Live) by Timothy Chance and Rasta Country' : 'Peace Pipe by Poetic Nocturnal Creatures';
+  toast(`Loaded ${lead.name} ✓`, 'success');
+}
+
+// ---- CRM ----
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('active', p.dataset.filter === f));
+  renderLeads();
+}
+
+function renderLeads() {
+  const search = document.getElementById('crm-search').value.toLowerCase();
+  let filtered = leads.filter(l => {
+    const matchFilter = currentFilter === 'all' || l.status === currentFilter;
+    const matchSearch = !search || [l.name, l.project, l.category, l.contact, l.email].join(' ').toLowerCase().includes(search);
+    return matchFilter && matchSearch;
+  });
+
+  const tbody = document.getElementById('leads-tbody');
+  if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🔍</div><p>No opportunities found.</p></div></td></tr>'; return; }
+
+  tbody.innerHTML = filtered.map(l => `
+    <tr onclick="editLead('${l.id}')">
+      <td><div style="font-weight:500;color:var(--cream)">${esc(l.name)}</div>${l.notes?`<div style="font-size:0.72rem;color:var(--gray);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td>
+      <td style="color:var(--gray-light);font-size:0.82rem">${esc(l.project||'—')}</td>
+      <td><span class="type-badge ${getCatClass(l.category)}">${esc(l.category||'—')}</span></td>
+      <td style="font-size:0.8rem;color:var(--gold-light)">${esc(l.track||'Both')}</td>
+      <td class="opp-company">${l.contact?`<div>${esc(l.contact)}</div>`:''} ${l.email?`<a href="mailto:${esc(l.email)}" style="color:var(--blue);text-decoration:none;font-size:0.78rem" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</td>
+      <td><span class="status-badge status-${l.status}">${l.status}</span></td>
+      <td style="font-size:0.78rem;color:var(--gray)">${formatDate(l.dateAdded)}</td>
+      <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
+        <button class="btn btn-ghost" onclick="pitchFromLead('${l.id}')">✉</button>
+        <button class="btn btn-danger" onclick="deleteLead('${l.id}')">✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function renderLicensed() {
+  const licensed = leads.filter(l => l.status === 'licensed');
+  const container = document.getElementById('licensed-list');
+  if (!licensed.length) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><p>No placements yet.</p></div>'; return; }
+  container.innerHTML = licensed.map(l => `
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div style="font-size:2rem">🏆</div>
+        <div>
+          <div style="font-weight:500;color:var(--cream)">${esc(l.name)}${l.project?` — ${esc(l.project)}`:''}</div>
+          <div style="font-size:0.8rem;color:var(--gray)">${esc(l.category)} · Track: ${esc(l.track)}</div>
+          ${l.fee?`<div style="font-family:var(--font-m);font-size:0.7rem;color:var(--green);margin-top:3px">💰 ${esc(l.fee)}</div>`:''}
+        </div>
+      </div>
+      ${l.contact||l.email?`<div style="text-align:right">${l.contact?`<div style="font-size:0.82rem;color:var(--gray-light)">${esc(l.contact)}</div>`:''} ${l.email?`<a href="mailto:${esc(l.email)}" style="font-size:0.78rem;color:var(--blue);text-decoration:none">${esc(l.email)}</a>`:''}</div>`:''}
+    </div>`).join('');
+}
+
+// ---- LEAD CRUD ----
+function openAddLead() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Add Sync Opportunity';
+  ['lead-name','lead-project','lead-contact','lead-email','lead-fee','lead-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('lead-status').value = 'new';
+  document.getElementById('lead-category').value = 'Film';
+  document.getElementById('lead-track').value = 'Both';
+  document.getElementById('add-lead-modal').classList.add('open');
+}
+
+function openAddLeadPrefilled(data) {
+  openAddLead();
+  if (data.name) document.getElementById('lead-name').value = data.name;
+  if (data.project) document.getElementById('lead-project').value = data.project;
+  if (data.category) document.getElementById('lead-category').value = data.category;
+  if (data.track) document.getElementById('lead-track').value = data.track.includes('Iron') ? 'Mr. Iron Man (Live)' : data.track.includes('Peace') ? 'Peace Pipe' : 'Both';
+  if (data.contact) document.getElementById('lead-contact').value = data.contact;
+  if (data.status) document.getElementById('lead-status').value = data.status;
+  if (data.notes) document.getElementById('lead-notes').value = data.notes;
+}
+
+function editLead(id) {
+  const l = leads.find(x => x.id === id);
+  if (!l) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Edit Opportunity';
+  document.getElementById('lead-name').value = l.name || '';
+  document.getElementById('lead-project').value = l.project || '';
+  document.getElementById('lead-category').value = l.category || 'Film';
+  document.getElementById('lead-track').value = l.track || 'Both';
+  document.getElementById('lead-contact').value = l.contact || '';
+  document.getElementById('lead-email').value = l.email || '';
+  document.getElementById('lead-fee').value = l.fee || '';
+  document.getElementById('lead-status').value = l.status || 'new';
+  document.getElementById('lead-notes').value = l.notes || '';
+  document.getElementById('add-lead-modal').classList.add('open');
+}
+
+function saveLead() {
+  const name = document.getElementById('lead-name').value.trim();
+  if (!name) { toast('Name is required', 'error'); return; }
+  const data = {
+    name, project: document.getElementById('lead-project').value.trim(),
+    category: document.getElementById('lead-category').value,
+    track: document.getElementById('lead-track').value,
+    contact: document.getElementById('lead-contact').value.trim(),
+    email: document.getElementById('lead-email').value.trim(),
+    fee: document.getElementById('lead-fee').value.trim(),
+    status: document.getElementById('lead-status').value,
+    notes: document.getElementById('lead-notes').value.trim(),
+  };
+  if (editingId) {
+    const idx = leads.findIndex(l => l.id === editingId);
+    leads[idx] = { ...leads[idx], ...data };
+    toast(`${name} updated ✓`, 'success');
+  } else {
+    leads.push({ id: Date.now().toString() + Math.random(), dateAdded: new Date().toISOString(), ...data });
+    toast(`${name} added ✓`, 'success');
+  }
+  saveLeads(); closeModal(); renderLeads(); updateStats();
+}
+
+function addLead(data) {
+  leads.push({ id: Date.now().toString() + Math.random(), dateAdded: new Date().toISOString(), ...data });
+  saveLeads(); updateStats();
+}
+
+function deleteLead(id) {
+  if (!confirm('Remove this opportunity?')) return;
+  leads = leads.filter(l => l.id !== id);
+  saveLeads(); renderLeads(); updateStats();
+  toast('Removed', 'success');
+}
+
+function pitchFromLead(id) {
+  const l = leads.find(x => x.id === id);
+  if (!l) return;
+  document.getElementById('pm-contact').value = l.contact || l.name || '';
+  document.getElementById('pm-company').value = l.name || '';
+  document.getElementById('pm-project').value = l.project || '';
+  if (l.category) document.getElementById('pm-type').value = l.category;
+  showPage('composer');
+}
+
+function saveLeads() { localStorage.setItem('df_sync_leads', JSON.stringify(leads)); }
+
+function exportLeads() {
+  const headers = ['Name','Project','Category','Track','Contact','Email','Fee','Status','Notes','Date Added'];
+  const rows = leads.map(l => [l.name,l.project,l.category,l.track,l.contact,l.email,l.fee,l.status,l.notes,l.dateAdded].map(v => `"${(v||'').replace(/"/g,'""')}"`));
+  const csv = [headers,...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dragon-farm-sync-pipeline.csv';
+  a.click();
+  toast('Exported as CSV ✓', 'success');
+}
+
+// ---- AI ----
+async function callAI(system, userMessage, maxTokens = 1500) {
+  try {
+    const res = await fetch('/.netlify/functions/ai-proxy', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, system, messages: [{role:'user',content:userMessage}] }) });
+    const data = await res.json();
+    if (!res.ok) return `Error: ${data.error?.message || res.statusText}`;
+    return data.content?.[0]?.text || 'No response.';
+  } catch(err) { return `Connection error: ${err.message}`; }
+}
+
+// ---- MODAL ----
+function closeModal() { document.getElementById('add-lead-modal').classList.remove('open'); }
+document.getElementById('add-lead-modal').addEventListener('click', e => { if (e.target === document.getElementById('add-lead-modal')) closeModal(); });
+
+// ---- TOAST ----
+function toast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = (type==='success'?'✓ ':'⚠ ') + msg;
+  document.getElementById('toast-container').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ---- UTILS ----
+function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function formatDate(iso) { if (!iso) return '—'; return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+
+// ---- INIT ----
+updateStats(); renderOverview();
+</script>
+</body>
+</html>
