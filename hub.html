@@ -229,8 +229,6 @@
 
 <!-- BG -->
 <div class="gate-bg"></div>
-
-<!-- ===== PASSWORD GATE ===== -->
 <div id="gate">
   <div class="gate-inner">
     <div class="gate-dragon"><img src="logo.jpg" alt="Dragon Farm Records" /></div>
@@ -262,7 +260,7 @@
         <div class="dot"></div>
         <div class="live-label">Live · dragonfarmgrowth.net</div>
       </div>
-      <button class="logout-btn" onclick="logout()">Lock 🔒</button>
+      
     </div>
   </div>
 
@@ -542,15 +540,10 @@ document.getElementById('pw-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') checkPassword();
 });
 
-// ---- AUTO-LOGIN if session active ----
-if (sessionStorage.getItem(SESSION_KEY) === 'true') {
-  document.getElementById('gate').style.display = 'none';
-  document.getElementById('hub').classList.add('show');
-  loadStats();
-}
-
-// ---- FOCUS ----
-setTimeout(() => document.getElementById('pw-input').focus(), 100);
+// ---- Auto-show hub (no password) ----
+document.getElementById('gate').style.display = 'none';
+document.getElementById('hub').classList.add('show');
+loadStats();
 </script>
 </body>
 </html>
