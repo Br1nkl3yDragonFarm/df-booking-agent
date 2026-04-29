@@ -884,11 +884,22 @@ document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click
 
 // ---- AI ----
 async function ai(system,userMessage,maxTokens=1500){
+  const key=localStorage.getItem('df_api_key');
+  if(!key){showKeyModal();return''}
   try{
-    const res=await fetch('/.netlify/functions/ai-proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:userMessage}]})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:userMessage}]})
+    });
     const data=await res.json();
-    if(data.error) return `Error: ${data.error}`;
-    return data.text||'';
+    if(data.error) return `Error: ${data.error.message||data.error}`;
+    return data.content?.[0]?.text||'';
   }catch(err){return`Connection error: ${err.message}`}
 }
 
@@ -903,6 +914,45 @@ function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateStrin
 renderOverview();
 renderVenuePipe();
 renderSyncPipe();
+</script>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="modal-apikey">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-hdr"><h3>🔑 Add API Key</h3></div>
+    <div style="display:flex;flex-direction:column;gap:1rem">
+      <p style="font-size:0.85rem;color:var(--gray-light);line-height:1.6">Enter your Anthropic API key to power the AI venue and sync search. It's stored only in your browser — never sent anywhere except directly to Anthropic.</p>
+      <div class="field">
+        <label>Anthropic API Key</label>
+        <input type="password" id="apikey-input" placeholder="sk-ant-api..." style="font-family:var(--font-m);font-size:0.8rem" />
+      </div>
+      <p style="font-size:0.75rem;color:var(--gray)">Get your key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--gold-light)">console.anthropic.com</a> → API Keys</p>
+      <div style="display:flex;gap:0.6rem;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="closeModal('modal-apikey')">Cancel</button>
+        <button class="btn btn-gold" onclick="saveApiKey()">Save Key</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function showKeyModal(){document.getElementById('modal-apikey').classList.add('open')}
+function saveApiKey(){
+  const k=document.getElementById('apikey-input').value.trim();
+  if(!k){toast('Enter your API key','err');return}
+  localStorage.setItem('df_api_key',k);
+  document.getElementById('modal-apikey').classList.remove('open');
+  document.getElementById('apikey-input').value='';
+  toast('API key saved ✓');
+}
+// Show key banner if no key set
+window.addEventListener('DOMContentLoaded',()=>{
+  if(!localStorage.getItem('df_api_key')){
+    const banner=document.createElement('div');
+    banner.style.cssText='background:rgba(200,146,42,0.12);border-bottom:1px solid rgba(200,146,42,0.25);padding:0.6rem 1.75rem;font-size:0.8rem;color:var(--gold-light);display:flex;align-items:center;justify-content:space-between;gap:1rem';
+    banner.innerHTML='⚠️ Add your Anthropic API key to enable AI search. <button onclick="showKeyModal()" style="background:var(--gold);color:var(--black);border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;cursor:pointer;font-weight:500">Add Key</button>';
+    document.querySelector('.main').insertBefore(banner,document.querySelector('.topbar').nextSibling);
+  }
+});
 </script>
 </body>
 </html>
