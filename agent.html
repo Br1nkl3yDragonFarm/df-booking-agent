@@ -702,12 +702,17 @@ async function findVenues(){
   document.getElementById('vf-results').innerHTML='<div class="loading-state"><span class="spinner"></span>Searching for venues with AI...</div>';
   document.getElementById('vf-addall').style.display='none';
   const artistInfo=artist==='both'?'Timothy Chance and Rasta Country (Country-Reggae fusion) AND Poetic Nocturnal Creatures (Conscious Hip-Hop)':artist;
-  const sys=`You are a music booking agent for Dragon Farm Records, Nashville TN. Return ONLY a valid JSON array. No other text, no markdown fences. Each object: name, type, city, state, capacity, contact_name, contact_email, contact_phone, booking_tip, best_for_artist.`;
+  const sys='You are a booking agent for Dragon Farm Records. Respond with ONLY a JSON array starting with [ and ending with ]. No markdown. No text before or after the JSON. Each item must have: name, type, city, state, capacity, contact_name, contact_email, contact_phone, booking_tip, best_for_artist.';
   const prompt=`Find ${count} real ${type} venues in ${loc} good for ${artistInfo}. Include realistic contact details.`;
   const raw=await ai(sys,prompt,2000);
   btn.innerHTML='Search';btn.disabled=false;
   let venues=[];
-  try{const clean=raw.replace(/```json|```/g,'').trim();const start=clean.indexOf('[');const end=clean.lastIndexOf(']');venues=JSON.parse(start>=0&&end>start?clean.slice(start,end+1):clean)}
+  try{
+    let txt=raw.replace(/```json|```/g,'').replace(/^[^\[]*/,'').replace(/[^\]]*$/,'').trim();
+    if(!txt.startsWith('['))txt='['+txt;
+    if(!txt.endsWith(']'))txt=txt+']';
+    venues=JSON.parse(txt);
+  }
   catch{document.getElementById('vf-results').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(raw.substring(0,200))}</p></div>`;return}
   vResults=venues;
   document.getElementById('vf-count-label').textContent=`${venues.length} venues found in ${loc}`;
@@ -737,7 +742,12 @@ async function findSync(){
   const raw=await ai(sys,prompt,2500);
   btn.innerHTML='Search';btn.disabled=false;
   let opps=[];
-  try{const clean=raw.replace(/```json|```/g,'').trim();const start=clean.indexOf('[');const end=clean.lastIndexOf(']');opps=JSON.parse(start>=0&&end>start?clean.slice(start,end+1):clean)}
+  try{
+    let txt=raw.replace(/```json|```/g,'').replace(/^[^\[]*/,'').replace(/[^\]]*$/,'').trim();
+    if(!txt.startsWith('['))txt='['+txt;
+    if(!txt.endsWith(']'))txt=txt+']';
+    opps=JSON.parse(txt);
+  }
   catch{document.getElementById('sf-results').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(raw.substring(0,200))}</p></div>`;return}
   sResults=opps;
   document.getElementById('sf-count-label').textContent=`${opps.length} opportunities found`;
