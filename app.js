@@ -226,7 +226,7 @@ bookingForm.addEventListener('submit', async (e) => {
   );
 
   // Simulate sending (mailto fallback)
-  const mailtoLink = `mailto:booking@dragonfarmrecords.com?subject=${subject}&body=${body}`;
+  const mailtoLink = `mailto:booking@dragonfarm.net?subject=${subject}&body=${body}`;
   window.location.href = mailtoLink;
 
   // Show success after short delay

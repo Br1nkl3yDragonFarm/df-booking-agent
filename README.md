@@ -24,8 +24,10 @@ Get a key at https://console.anthropic.com
 
 > **Security Note:** For production, move the API call to a Netlify Function to keep your key server-side. Never commit a real API key to a public repo.
 
-### 2. Update Booking Email
-In `app.js`, replace `booking@dragonfarmrecords.com` with your real booking email.
+### 2. Booking Email
+Inquiries route to `booking@dragonfarm.net`. This address is referenced in `app.js` (mailto fallback) and `index.html` (contact section + footer) — update all three if it ever changes.
+
+> Requires MX/forwarding to be configured on the `dragonfarm.net` domain, otherwise inquiries bounce.
 
 ### 3. Deploy to Netlify
 Connect this repo to Netlify:
