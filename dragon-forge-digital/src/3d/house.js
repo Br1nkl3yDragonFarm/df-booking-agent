@@ -146,7 +146,7 @@ export function buildHouse({ low = false, emblem = null } = {}) {
     coping: new MeshStandardMaterial({ color: 0xd9d1c4, roughness: 0.7 }),
     poolWall: new MeshStandardMaterial({ color: 0x2c8fa6, roughness: 0.4, emissive: 0x0b4a5c, emissiveIntensity: 0.9 }),
     warm: new MeshBasicMaterial({ color: new Color(4.2, 3.0, 1.6), toneMapped: false }),
-    warmSoft: new MeshBasicMaterial({ color: new Color(2.4, 1.6, 0.8), toneMapped: false }),
+    warmSoft: new MeshBasicMaterial({ color: new Color(1.35, 0.92, 0.5), toneMapped: false }),
     tv: new MeshStandardMaterial({ color: 0x0b0b0c, roughness: 0.2, metalness: 0.5 }),
   };
   if (emblem) M.art = new MeshStandardMaterial({ map: emblem, roughness: 0.5, emissive: 0xffffff, emissiveMap: emblem, emissiveIntensity: 0.35 });
