@@ -1,26 +1,10 @@
+# This Netlify site (dragon-forge-digital) builds from the repository root with no base directory,
+# so this file decides what gets published. It serves the Dragon Forge Digital site in
+# dragon-forge-digital/site/. Nothing is built: the 3D bundle is committed (see dragon-forge-digital/README.md).
+# Response headers live in dragon-forge-digital/site/_headers.
 [build]
-  publish = "."
-  command = ""
+  publish = "dragon-forge-digital/site"
+  command = "echo 'Static site: nothing to build'"
 
 [functions]
   directory = "netlify/functions"
-
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/dashboard.html"
-  to = "/dashboard.html"
-  status = 200
-
-[[redirects]]
-  from = "/sync.html"
-  to = "/sync.html"
-  status = 200
-
-[[redirects]]
-  from = "/hub.html"
-  to = "/hub.html"
-  status = 200

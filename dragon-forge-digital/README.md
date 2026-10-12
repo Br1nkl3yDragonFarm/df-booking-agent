@@ -68,7 +68,7 @@ Pick **one** of these.
 
 **B. Drag and drop.** Open https://app.netlify.com/drop and drag the **`site`** folder (not the whole project) onto the page.
 
-This repository also holds the Dragon Farm Records booking hub at its root. That site's deploy settings are unchanged: it publishes the repository root, so it ignores this folder until you set a base directory.
+This repository also holds the older Dragon Farm Records booking hub at its root. The `dragon-forge-digital` Netlify site builds from the repository root with no base directory, so the root `netlify.toml` is what applies. It publishes `dragon-forge-digital/site`, so the booking hub pages at the root are no longer served.
 
 ## 3. Turn on the inquiry form
 
