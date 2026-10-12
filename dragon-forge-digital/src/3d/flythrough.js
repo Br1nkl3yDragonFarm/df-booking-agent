@@ -236,10 +236,11 @@ export async function createFlythrough(track, { reduce, gl }) {
     camera.fov = clamp(MathUtils.radToDeg(2 * Math.atan(Math.tan(MathUtils.degToRad(78) / 2) / camera.aspect)), 42, 82);
     camera.updateProjectionMatrix();
   };
-  new ResizeObserver(resize).observe(mount);
+  new ResizeObserver(() => { resize(); dirty = true; wake(); }).observe(mount);
   resize();
 
   /* scroll → route position */
+  let dirty = true;      // static mode: something changed and needs one more frame
   let target = 0;        // where the scroll says we should be (route t)
   let current = 0;       // where the camera is (damped)
   let manual = null;     // static mode: chosen stop
@@ -269,7 +270,7 @@ export async function createFlythrough(track, { reduce, gl }) {
   };
   const goStop = (i) => {
     i = clamp(i, 0, route.stops.length - 1);
-    if (isStatic()) { manual = i; target = route.stops[i].t; current = target; wake(); return; }
+    if (isStatic()) { manual = i; target = route.stops[i].t; current = target; dirty = true; wake(); return; }
     const r = track.getBoundingClientRect();
     const span = r.height - stickyEl.offsetHeight;
     const y = scrollY + r.top + route.pAtStop(i) * span - (parseFloat(getComputedStyle(stickyEl).top) || 0);
@@ -283,7 +284,7 @@ export async function createFlythrough(track, { reduce, gl }) {
     frameBtn.setAttribute('aria-pressed', String(on));
     if (vertical) vertical.hidden = !on;
   });
-  reduce.addEventListener?.('change', () => { section.classList.toggle('is-static', isStatic()); readScroll(); wake(); });
+  reduce.addEventListener?.('change', () => { section.classList.toggle('is-static', isStatic()); readScroll(); dirty = true; wake(); });
 
   /* telemetry helpers */
   const clearance = (p) => {
@@ -319,6 +320,7 @@ export async function createFlythrough(track, { reduce, gl }) {
   let roll = 0;
   const step = (dt) => {
     clock += dt;
+    dirty = false;
     readScroll();
     current = isStatic() ? target : damp(current, target, 4.2, dt);
     route.pos.getPoint(current, camPos);
@@ -351,7 +353,7 @@ export async function createFlythrough(track, { reduce, gl }) {
     // caption + HUD (throttled)
     const cap = captionAt(current);
     if (cap !== lastCaption) { setActive(cap); lastCaption = cap; }
-    if (clock - lastHud > 0.08) {
+    if (isStatic() || clock - lastHud > 0.08) {
       lastHud = clock;
       const sec = route.sample(route.time, current);
       if (hud.tc) hud.tc.textContent = tc(sec);
@@ -371,7 +373,7 @@ export async function createFlythrough(track, { reduce, gl }) {
   };
 
   let moving = true;
-  const ticker = loop((dt) => { moving = step(dt); }, () => visible && (!isStatic() || moving));
+  const ticker = loop((dt) => { moving = step(dt); }, () => visible && (!isStatic() || moving || dirty));
   function wake() { ticker.wake(); }
   addEventListener('scroll', () => { if (visible) wake(); }, { passive: true });
   visibility(track, (v) => { visible = v; if (v) wake(); });

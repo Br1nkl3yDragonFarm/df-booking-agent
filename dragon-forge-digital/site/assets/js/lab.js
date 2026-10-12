@@ -81,7 +81,7 @@ export function init(stage, { reduceMotion }) {
     const li = el('li');
     li.append(el('time', null, esc(when)), el('span', null, esc(text)));
     log.append(li);
-    log.scrollTop = log.scrollHeight;
+    log.parentElement.scrollTop = log.parentElement.scrollHeight;
   };
   const show = (node) => { screen.querySelector('.phone__idle')?.remove(); screen.append(node); while (screen.children.length > 4) screen.firstElementChild.remove(); };
 

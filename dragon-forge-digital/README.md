@@ -28,7 +28,7 @@ dragon-forge-digital/
 │   └── assets/
 │       ├── css/forge.css  all styling; colors and type sizes are tokens at the top
 │       ├── js/            hand-written scripts (menu, form, the card/website/booking/vault samples)
-│       ├── js/3d/scenes.js  BUILT FILE — the 3D hero and fly-through (don't edit by hand)
+│       ├── js/3d/         BUILT FILES — scenes.js plus the chunks it loads (don't edit by hand)
 │       ├── js/vendor/qrcode.js  BUILT FILE — QR code library
 │       ├── img/           emblem textures, icons, social cards
 │       └── fonts/         self-hosted Cinzel, Instrument Sans, IBM Plex Mono
@@ -112,18 +112,35 @@ After editing:
 ```bash
 cd dragon-forge-digital
 npm install        # first time only
-npm run build      # writes site/assets/js/3d/scenes.js and site/assets/js/vendor/qrcode.js
+npm run build      # rewrites site/assets/js/3d/ (scenes.js + chunks) and site/assets/js/vendor/qrcode.js
 ```
 
 Commit the built files too. Netlify publishes them as they are and doesn't build anything.
+
+The page loads only a small `scenes.js` at first. The medallion's code and three.js arrive after the page has loaded; the static emblem image shows until the 3D is ready, then cross-fades. The fly-through's code loads when a visitor scrolls near it.
 
 How the 3D behaves on different devices:
 - **Phones and lower-power machines** get fewer particles, fewer lights and no glow effect.
 - **Slow devices:** if frames get slow, the hero turns its glow off by itself.
 - **Reduce motion turned on:** the scenes hold still. The medallion moves only when someone drags it, and the fly-through becomes a step-through you control with Prev and Next.
 - **No WebGL:** visitors see the static emblem and a drawn route plan.
+- **Demoing on a good laptop?** Add `?quality=max` to the address (for example `yoursite.com/?quality=max`). This forces full quality and stops the automatic downgrade.
 
 ---
+
+## What was tested
+
+These checks ran in Chromium on October 12, 2026, against the files in `site/` served with the headers in `_headers`:
+
+- **Lighthouse:** 100 Accessibility, 100 Best Practices and 100 SEO on the homepage and the Forge Flight page.
+- **Layout shift:** zero.
+- **Accessibility:** axe-core WCAG 2.2 AA found 0 violations on every page. The color tokens were measured by hand: all body text is at least 5.9 : 1.
+- **Security policy:** 0 violations, with every sample, both 3D scenes and the fonts working.
+- **HTML:** `html-validate` reports no errors on any page.
+- **Layouts:** desktop (1440 and 1280 wide) and iPhone 13, including the mobile menu.
+- **Other conditions:** reduced motion, WebGL turned off, and JavaScript turned off.
+
+Performance numbers from the test machine aren't meaningful because it draws 3D without a graphics card. Check the live site on your own phone and laptop after deploying.
 
 ## Before you promote the site
 

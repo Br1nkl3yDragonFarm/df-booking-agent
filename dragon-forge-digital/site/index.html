@@ -85,9 +85,9 @@
   <header class="site-head" id="top">
     <div class="heat" aria-hidden="true"><span></span></div>
     <div class="wrap site-head__bar">
-      <a class="brand" href="./" aria-label="Dragon Forge Digital, home">
+      <a class="brand" href="./">
         <img src="assets/img/mark-96.webp" alt="" width="40" height="40">
-        <span class="brand__word"><span class="brand__name">Dragon Forge</span><span class="brand__sub">Digital</span></span>
+        <span class="brand__word"><span class="brand__name">Dragon Forge</span> <span class="brand__sub">Digital</span></span>
       </a>
       <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><svg aria-hidden="true"><use href="#i-menu"/></svg><span>Menu</span></button>
       <nav class="nav" id="site-nav" aria-label="Main">
@@ -123,8 +123,8 @@
             <p class="hero__hint">Live 3D &middot; drag to turn &middot; tap to strike</p>
             <button class="chip-btn" type="button" data-hero-strike><svg aria-hidden="true"><use href="#i-spark"/></svg>Strike</button>
             <button class="chip-btn" type="button" data-hero-flip><svg aria-hidden="true"><use href="#i-flip"/></svg>Turn over</button>
+            <p class="hero__note">This medallion is drawn live in your browser. We make interactive pieces like it for brands &mdash; <a href="#rates">see the rate card</a>.</p>
           </div>
-          <p class="hero__note">This medallion is drawn live in your browser. We make interactive pieces like it for brands &mdash; <a href="#rates">see the rate card</a>.</p>
         </div>
       </div>
       <nav class="wrap hero__index" aria-label="Working samples on this page">
@@ -176,7 +176,7 @@
             </div>
           </div>
 
-          <form class="card-editor" data-card-editor aria-label="Put your details on the sample card">
+          <div class="card-editor" data-card-editor role="group" aria-label="Put your details on the sample card">
             <div class="field-row">
               <label>Your name <input type="text" data-in="name" autocomplete="off" maxlength="40" placeholder="e.g. Jordan Reyes"></label>
               <label>Business <input type="text" data-in="business" autocomplete="off" maxlength="40" placeholder="e.g. Reyes Roofing"></label>
@@ -201,7 +201,7 @@
               <button class="btn btn--line" type="button" data-card-vcf><svg aria-hidden="true"><use href="#i-download"/></svg>Download the contact file</button>
             </div>
             <p class="fine">Nothing you type here leaves your browser. The QR code and the contact file are made on your device.</p>
-          </form>
+          </div>
         </div>
 
         <aside class="plate" aria-label="Digital Spark package">
@@ -352,7 +352,7 @@
               </div>
             </div>
           </div>
-          <ol class="lab__log" data-lab-log aria-live="polite" aria-label="What the system did"></ol>
+          <div class="lab__log" role="log" aria-label="What the system did"><ol data-lab-log></ol></div>
         </div>
 
         <aside class="plate" aria-label="Revenue Engine package">
@@ -368,7 +368,7 @@
           <a class="btn btn--hot plate__cta" href="#contact" data-package="Revenue Engine — $1,299">Build my booking system <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
         </aside>
 
-        <form class="calc" data-calc aria-labelledby="calc-title">
+        <div class="calc" data-calc role="group" aria-labelledby="calc-title">
           <h3 id="calc-title">What does follow-up cost you now?</h3>
           <p class="calc__sum">
             <label><input type="number" inputmode="numeric" min="0" max="500" value="10" data-calc-n> <span>inquiries a week</span></label>
@@ -378,7 +378,7 @@
             <output data-calc-out aria-live="polite">about 11 hours a month</output>
           </p>
           <p class="fine">That&rsquo;s your own arithmetic, not a promise. What a system saves depends on your business &mdash; we&rsquo;ll look at it together.</p>
-        </form>
+        </div>
       </div>
     </section>
 
@@ -417,8 +417,8 @@
           </ol>
           <div class="minimap" data-minimap aria-hidden="true"></div>
           <div class="flight__controls" data-flight-controls hidden>
-            <button class="chip-btn" type="button" data-wp-prev aria-label="Previous waypoint">&larr; Prev</button>
-            <button class="chip-btn" type="button" data-wp-next aria-label="Next waypoint">Next &rarr;</button>
+            <button class="chip-btn" type="button" data-wp-prev><span aria-hidden="true">&larr;</span> Prev</button>
+            <button class="chip-btn" type="button" data-wp-next>Next <span aria-hidden="true">&rarr;</span></button>
             <button class="chip-btn" type="button" data-frame-toggle aria-pressed="false">9:16 frame</button>
           </div>
         </div>
@@ -496,7 +496,7 @@
     <!-- OWN IT -->
     <section class="own" id="own-it" aria-labelledby="own-title">
       <div class="wrap own__inner">
-        <p class="own__motto" aria-label="Build it. Brand it. Automate it. Own it.">
+        <p class="own__motto">
           <span>Build it.</span> <span>Brand it.</span> <span>Automate it.</span> <strong>Own it.</strong>
         </p>
         <h2 id="own-title">If I stop paying you, do I lose my website?</h2>
@@ -612,7 +612,7 @@
         <div class="form-panel">
           <form name="dragon-forge-inquiry" method="POST" action="/thanks.html" data-netlify="true" netlify-honeypot="bot-field" id="inquiry-form">
             <input type="hidden" name="form-name" value="dragon-forge-inquiry">
-            <p class="visually-hidden"><label>Leave this field blank <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+            <p class="visually-hidden"><label>Leave this field blank <input type="text" name="bot-field" tabindex="-1" autocomplete="off"></label></p>
             <div class="field-row">
               <label><span>Full name <span class="req" aria-hidden="true">*</span></span><input type="text" name="name" autocomplete="name" maxlength="100" required></label>
               <label><span>Email address <span class="req" aria-hidden="true">*</span></span><input type="email" name="email" autocomplete="email" maxlength="150" required></label>
@@ -670,9 +670,9 @@
   <footer class="site-foot">
     <div class="wrap site-foot__grid">
       <div class="site-foot__brand">
-        <a class="brand" href="#top" aria-label="Dragon Forge Digital, back to top">
+        <a class="brand" href="#top">
           <img src="assets/img/mark-96.webp" alt="" width="40" height="40" loading="lazy">
-          <span class="brand__word"><span class="brand__name">Dragon Forge</span><span class="brand__sub">Digital</span></span>
+          <span class="brand__word"><span class="brand__name">Dragon Forge</span> <span class="brand__sub">Digital</span></span>
         </a>
         <p>Build it. Brand it. Automate it. Own it.</p>
       </div>

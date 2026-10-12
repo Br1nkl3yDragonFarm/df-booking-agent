@@ -26,7 +26,15 @@ if (menuBtn && nav) {
   menuBtn.addEventListener('click', () => setOpen(menuBtn.getAttribute('aria-expanded') !== 'true'));
   nav.addEventListener('click', (e) => { if (e.target.closest('a')) setOpen(false, { restoreFocus: false }); });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && menuBtn.getAttribute('aria-expanded') === 'true') setOpen(false);
+    if (menuBtn.getAttribute('aria-expanded') !== 'true') return;
+    if (e.key === 'Escape') { setOpen(false); return; }
+    if (e.key !== 'Tab') return;
+    // keep focus inside the open menu: the Close button plus the menu's links
+    const stops = [menuBtn, ...nav.querySelectorAll('a')];
+    const i = stops.indexOf(document.activeElement);
+    const next = e.shiftKey ? (i <= 0 ? stops.length - 1 : i - 1) : (i === stops.length - 1 ? 0 : i + 1);
+    e.preventDefault();
+    stops[next].focus();
   });
   matchMedia('(min-width: 901px)').addEventListener('change', (e) => { if (e.matches) setOpen(false, { restoreFocus: false }); });
 }
