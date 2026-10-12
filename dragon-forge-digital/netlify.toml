@@ -1,0 +1,6 @@
+# For a Netlify site connected to this repository with Base directory = dragon-forge-digital.
+# Nothing is built on Netlify: the 3D bundle in site/assets/js/3d/ is committed (see README.md).
+# Response headers live in site/_headers so they also apply to drag-and-drop deploys.
+[build]
+  publish = "site"
+  command = "echo 'Static site: nothing to build'"
