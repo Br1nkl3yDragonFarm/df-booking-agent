@@ -57,7 +57,7 @@ if (heat) {
 const navLinks = [...document.querySelectorAll('.nav__list a[href^="#"]')];
 if (navLinks.length && 'IntersectionObserver' in window) {
   // Each nav item covers a run of sections.
-  const groups = { card: '#card', website: '#card', booking: '#card', vault: '#card', flight: '#flight', 'own-it': '#own-it', rates: '#rates', answers: '#answers' };
+  const groups = { services: '#services', card: '#card', website: '#card', booking: '#card', vault: '#card', flight: '#flight', 'own-it': '#own-it', rates: '#rates', answers: '#answers' };
   const io = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
@@ -108,6 +108,7 @@ if (form && status && location.protocol === 'file:') {
 
 /* ---------- Load each live sample when it comes near the screen ---------- */
 const demos = {
+  services: () => import('./services.js'),
   card: () => import('./card.js'),
   layers: () => import('./layers.js'),
   booking: () => import('./lab.js'),

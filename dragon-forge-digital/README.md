@@ -5,6 +5,7 @@ The site is built around one idea: **try the work before you hire us.** Every ma
 | Section | What visitors do | What it sells |
 |---|---|---|
 | Hero | Drag, strike and turn over a real-time 3D medallion of the emblem | Interactive 3D & brand pieces (custom quote) |
+| What we build | Browse all nine services from the first site, with what's included and the starting price; each card links to its working sample and preselects the form | The full line-up, including customer communication, artist & creator kits and care plans |
 | Exhibit 01 | Type their details onto a 3D business card, scan its real QR code, download the contact file | Digital Spark, $249 |
 | Exhibit 02 | Turn an exploded 3D view of this website, switch phone/tablet/desktop, read live speed and contrast figures | Digital Foundation, $699 |
 | Exhibit 03 | Send a test inquiry and watch it get answered, booked, reminded and followed up; work out their own follow-up hours | Revenue Engine, $1,299 |
@@ -27,7 +28,7 @@ dragon-forge-digital/
 │   ├── robots.txt, sitemap.xml, site.webmanifest, favicon.ico
 │   └── assets/
 │       ├── css/forge.css  all styling; colors and type sizes are tokens at the top
-│       ├── js/            hand-written scripts (menu, form, the card/website/booking/vault samples)
+│       ├── js/            hand-written scripts (menu, form, the services cards and the card/website/booking/vault samples)
 │       ├── js/3d/         BUILT FILES — scenes.js plus the chunks it loads (don't edit by hand)
 │       ├── js/vendor/qrcode.js  BUILT FILE — QR code library
 │       ├── img/           emblem textures, icons, social cards
@@ -82,11 +83,12 @@ The form keeps the old form name `dragon-forge-inquiry` and the same field names
 
 **Words.** All homepage copy lives in `site/index.html`, in the order it appears on the page. Each exhibit has a question (the `<h2>`), a plain answer, the sample, and a "maker's plate" with the package.
 
-**Prices.** Each price appears in up to four places. Change all of them together:
-1. The exhibit's plate (`plate__price`)
-2. The rate card table (`#rates`)
-3. The form's `<option value="…">`
-4. Every `data-package="…"` that points at it. This value must match the option value exactly; it's how the buttons preselect the form.
+**Prices.** Each price appears in up to five places. Change all of them together:
+1. The service card in "What we build" (`svc__price`; the care plans use `svc__tier-price`)
+2. The exhibit's plate (`plate__price`)
+3. The rate card table (`#rates`)
+4. The form's `<option value="…">`
+5. Every `data-package="…"` that points at it. This value must match the option value exactly; it's how the buttons preselect the form.
 
 The structured data near the top of `index.html` (`"minPrice"`) and `drone-video.html` also lists prices.
 

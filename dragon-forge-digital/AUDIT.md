@@ -43,7 +43,7 @@ Each item below is a pattern visitors have seen on hundreds of generated sites. 
 | 4 | Decorative fake dashboard | `yourbusiness.com / dashboard`, "Organized", "ACTIVE" pill, floating chips. Still in the HTML, now hidden | A real-time 3D medallion of the actual emblem |
 | 5 | Audience names set like a client-logo strip | "BUILT FOR THE PEOPLE BUILDING SOMETHING: LOCAL BUSINESSES · CONTRACTORS · …" | Cut. Each exhibit names who it's for in a "Best for" line |
 | 6 | Icon-tile principle cards that repeat the services | Create / Connect / Protect / Grow | Cut. The exhibits show this instead of saying it |
-| 7 | Six equal service cards (icon tile, bullets, arrow link) | `#services` | Five live exhibits, each ending in its package |
+| 7 | Six equal service cards (icon tile, bullets, arrow link) | `#services` | Five live exhibits, each ending in its package. The full line-up is listed above them, and every card links into a working sample (see the revision note below) |
 | 8 | Pricing cards with a "recommended" ribbon and glyph icons | "BUILT TO CONVERT", ✦ ◈ ↗ ▣; prices in the order $249, $699, $1,299, $899 | A "maker's plate" under each exhibit, and one rate card table in price order |
 | 9 | One headline formula, ten times | "Statement. *Colored twist.*": "Not just another website. *A better way to do business.*", "Clear packages. *Real deliverables.*", "Technology is powerful. *People come first.*", "Ready to build *what's next?*" … | Headlines are questions customers actually ask, e.g. "Can people save my number without typing it in?" |
 | 10 | Generic four-step process | Tell us → Get a plan → Watch it take shape → Launch | Three concrete lines beside the form: what happens after you hit send |
@@ -106,7 +106,7 @@ Each item below is a pattern visitors have seen on hundreds of generated sites. 
 
 ### Organizing idea
 
-**"Try the work before you hire us."** The homepage is a sequence of five working exhibits. Each is a live sample of a service, followed by that service's package and price. Sections that only *describe* services (card grids, principle cards, a generic process, pricing cards) can't exist, because the exhibit itself is the description.
+**"Try the work before you hire us."** The homepage is a sequence of five working exhibits. Each is a live sample of a service, followed by that service's package and price. Sections that only *describe* services (principle cards, a generic process, pricing cards) can't exist, because the exhibit itself is the description. The one list of services sends visitors into the samples instead of standing in for them.
 
 ### Three binding decisions
 
@@ -139,8 +139,17 @@ Each item below is a pattern visitors have seen on hundreds of generated sites. 
 | 03 | "Can my website book appointments while I'm on a job?" | Booking lab: inquiry → CRM → instant reply → booking → reminder → review request, plus a follow-up time calculator | Revenue Engine, $1,299; Customer communication |
 | 04 | "Wait — you can fly a drone *through* the house?" | Scroll-driven 3D fly-through of a modeled home with drone HUD and route minimap, labeled as a route plan, not footage | Flight Reel $349, Signature Flythrough $699, Business Spotlight $1,199 |
 | 05 | "Where's the latest version of our logo?" | Scattered files and logins sorted into a labeled vault, in 3D | Asset Vault, $899 |
+| — | "What can you build for my business?" | Nine service cards, each linked to its working sample and its form option; the cards catch a forge light that follows the mouse | Every service from the first site |
 | — | "If I stop paying you, do I lose my website?" | Typographic statement | All services |
 | — | "What does it cost?" | One rate card | Every package and care plan |
+
+**Revision, October 12, 2026.** At the owner's request, the site keeps offering every product and service from the first deploy. A "What we build" section after the hero lists all nine services:
+- the six service lines with their original inclusions: branding, websites, booking systems, asset management, customer communication, and artist & creator kits;
+- Forge Flight;
+- the three care plans;
+- interactive 3D pieces.
+
+Each card shows its starting price, links to the exhibit that demonstrates it, and preselects the matching form option. The heading follows the site's rule that headlines are customer questions. The audience list is in the answer text, not a logo-style strip.
 
 **Fallbacks.**
 - **No WebGL:** the hero shows the static emblem and the fly-through becomes a step-through route plan.

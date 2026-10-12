@@ -39,7 +39,7 @@
     "url": "https://dragon-forge-digital.netlify.app/",
     "logo": "https://dragon-forge-digital.netlify.app/assets/img/icon-512.png",
     "image": "https://dragon-forge-digital.netlify.app/assets/img/og-card.jpg",
-    "description": "Websites, digital business cards, booking and follow-up systems, digital asset organization and AI-assisted indoor drone fly-through video for small businesses and creators.",
+    "description": "Branding and digital business cards, websites, booking and follow-up systems, customer communication, digital asset organization, artist and creator kits, monthly care plans, interactive 3D and AI-assisted indoor drone fly-through video for small businesses and creators.",
     "slogan": "Build it. Brand it. Automate it. Own it.",
     "areaServed": [{ "@type": "AdministrativeArea", "name": "Western Kentucky" }],
     "hasOfferCatalog": {
@@ -52,7 +52,13 @@
         { "@type": "Offer", "name": "Revenue Engine — booking and follow-up system", "priceSpecification": { "@type": "PriceSpecification", "minPrice": 1299, "priceCurrency": "USD" } },
         { "@type": "Offer", "name": "Forge Flight Reel — drone video", "priceSpecification": { "@type": "PriceSpecification", "minPrice": 349, "priceCurrency": "USD" } },
         { "@type": "Offer", "name": "Signature Flythrough — indoor drone fly-through film", "priceSpecification": { "@type": "PriceSpecification", "minPrice": 699, "priceCurrency": "USD" } },
-        { "@type": "Offer", "name": "Business Spotlight — drone marketing film", "priceSpecification": { "@type": "PriceSpecification", "minPrice": 1199, "priceCurrency": "USD" } }
+        { "@type": "Offer", "name": "Business Spotlight — drone marketing film", "priceSpecification": { "@type": "PriceSpecification", "minPrice": 1199, "priceCurrency": "USD" } },
+        { "@type": "Offer", "name": "Care plan — website upkeep and link checks", "priceSpecification": { "@type": "UnitPriceSpecification", "minPrice": 99, "priceCurrency": "USD", "unitCode": "MON" } },
+        { "@type": "Offer", "name": "Growth plan — updates, pipeline review and reports", "priceSpecification": { "@type": "UnitPriceSpecification", "minPrice": 299, "priceCurrency": "USD", "unitCode": "MON" } },
+        { "@type": "Offer", "name": "Operations plan — automation monitoring and priority support", "priceSpecification": { "@type": "UnitPriceSpecification", "minPrice": 499, "priceCurrency": "USD", "unitCode": "MON" } },
+        { "@type": "Offer", "name": "Customer communication — email setup, lead forms and welcome sequences" },
+        { "@type": "Offer", "name": "Artist and creator digital kits — press kits, booking pages and release assets" },
+        { "@type": "Offer", "name": "Interactive 3D and brand pieces — 3D logos, product viewers and interactive showcases" }
       ]
     }
   }
@@ -92,6 +98,7 @@
       <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav"><svg aria-hidden="true"><use href="#i-menu"/></svg><span>Menu</span></button>
       <nav class="nav" id="site-nav" aria-label="Main">
         <ul class="nav__list">
+          <li><a href="#services">Services</a></li>
           <li><a href="#card">Samples</a></li>
           <li><a href="#flight">Forge Flight</a></li>
           <li><a href="#own-it">Own it</a></li>
@@ -105,7 +112,7 @@
 
   <main id="main">
     <!-- HERO — the medallion is drawn live in WebGL; the image is the fallback and first paint -->
-    <section class="hero" aria-labelledby="hero-title">
+    <section class="hero" id="hero" aria-labelledby="hero-title">
       <div class="hero__scene" data-scene="hero">
         <img class="hero__fallback" src="assets/img/emblem-1024.webp" srcset="assets/img/emblem-640.webp 640w, assets/img/emblem-1024.webp 1024w" sizes="(max-width: 760px) 78vw, 44vw" width="1024" height="1024" fetchpriority="high" alt="The Dragon Forge Digital medallion: a green dragon holding a flame made of binary code, inside a molten gold ring.">
       </div>
@@ -136,6 +143,171 @@
           <li><a href="#vault"><span class="n">05</span><span class="t">A vault for your files and logins</span></a></li>
         </ol>
       </nav>
+    </section>
+
+    <!-- SERVICES — the full line-up from the first site; each one points at its working sample and its form option -->
+    <section class="services" id="services" aria-labelledby="services-title">
+      <div class="wrap">
+        <header class="services__head">
+          <p class="tag">What we build</p>
+          <h2 id="services-title">What can you build for my business?</h2>
+          <p>Nine services, from a business card to monthly care after launch, for local businesses, contractors, studios and salons, real estate and venues, artists and creators. Start with one or bring the whole picture together. Seven of them are running on this page, so you can try them before you ask.</p>
+        </header>
+        <ul class="svc-grid" data-demo="services">
+          <li class="svc">
+            <p class="svc__n"><span>01</span> Brand</p>
+            <h3>Digital identity &amp; branding</h3>
+            <p class="svc__lead">Be remembered and easy to reach with a polished, consistent identity.</p>
+            <ul class="svc__list">
+              <li>Clickable digital business cards</li>
+              <li>Brand identity kits &amp; social graphics</li>
+              <li>QR codes &amp; contact-saving tools</li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__price"><span>Digital Spark</span> from $249</p>
+              <p class="svc__links">
+                <a class="svc__try" href="#card">Try the card &middot; Exhibit 01</a>
+                <a class="svc__go" href="#contact" data-package="Digital Spark — $249">Talk about branding <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+          <li class="svc">
+            <p class="svc__n"><span>02</span> Build</p>
+            <h3>Websites &amp; online presence</h3>
+            <p class="svc__lead">Modern, mobile-friendly pages that explain what you do and make it easy to reach you.</p>
+            <ul class="svc__list">
+              <li>Small-business websites &amp; landing pages</li>
+              <li>Contact forms &amp; clear calls to action</li>
+              <li>Local profile and search-readiness review</li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__price"><span>Digital Foundation</span> from $699</p>
+              <p class="svc__links">
+                <a class="svc__try" href="#website">Take this site apart &middot; Exhibit 02</a>
+                <a class="svc__go" href="#contact" data-package="Digital Foundation — $699">Build my website <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+          <li class="svc">
+            <p class="svc__n"><span>03</span> Automate</p>
+            <h3>Booking &amp; business systems</h3>
+            <p class="svc__lead">Give inquiries a clearer path to appointments and make routine admin easier.</p>
+            <ul class="svc__list">
+              <li>Booking and inquiry workflows</li>
+              <li>CRM and follow-up setup</li>
+              <li>Practical AI-assisted tools, when appropriate</li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__price"><span>Revenue Engine</span> from $1,299</p>
+              <p class="svc__links">
+                <a class="svc__try" href="#booking">Run a test booking &middot; Exhibit 03</a>
+                <a class="svc__go" href="#contact" data-package="Revenue Engine — $1,299">Streamline my business <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+          <li class="svc">
+            <p class="svc__n"><span>04</span> Organize</p>
+            <h3>Digital asset management</h3>
+            <p class="svc__lead">Stop hunting for files, logins, and the right version of your logo.</p>
+            <ul class="svc__list">
+              <li>Asset inventories and cloud organization</li>
+              <li>Account access and ownership review</li>
+              <li>Backup planning and handover guides</li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__price"><span>Asset Vault</span> from $899</p>
+              <p class="svc__links">
+                <a class="svc__try" href="#vault">Sort the vault &middot; Exhibit 05</a>
+                <a class="svc__go" href="#contact" data-package="Asset Vault — $899">Organize my assets <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+          <li class="svc">
+            <p class="svc__n"><span>05</span> Engage</p>
+            <h3>Customer communication</h3>
+            <p class="svc__lead">Create thoughtful customer journeys without manually repeating every step.</p>
+            <ul class="svc__list">
+              <li>Email setup and campaign design</li>
+              <li>Lead forms and welcome sequences</li>
+              <li>Customer communication templates</li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__price"><span>Quoted to fit</span> custom</p>
+              <p class="svc__links">
+                <a class="svc__try" href="#booking">Watch replies go out &middot; Exhibit 03</a>
+                <a class="svc__go" href="#contact" data-package="Customer communication — custom quote">Improve follow-up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+          <li class="svc">
+            <p class="svc__n"><span>06</span> Create</p>
+            <h3>Artist &amp; creator digital kits</h3>
+            <p class="svc__lead">Professional assets for the people making the music, moments, and content.</p>
+            <ul class="svc__list">
+              <li>Electronic press kits and booking pages</li>
+              <li>Campaign visuals and promotional links</li>
+              <li>Organized media and release assets</li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__price"><span>Quoted to fit</span> custom</p>
+              <p class="svc__links">
+                <a class="svc__go" href="#contact" data-package="Artist / creator services — custom quote">Build my artist kit <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+          <li class="svc">
+            <p class="svc__n"><span>07</span> Film</p>
+            <h3>Forge Flight drone &amp; fly-through video</h3>
+            <p class="svc__lead">Indoor fly-throughs, exterior reveals, property tours and social-ready films from a compact HOVERAir flying camera.</p>
+            <ul class="svc__list">
+              <li>Indoor fly-throughs</li>
+              <li>Exterior aerial perspectives, where authorized</li>
+              <li>AI-assisted tracking &amp; motion</li>
+              <li>Edited for web &amp; social</li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__price"><span>Three packages</span> from $349</p>
+              <p class="svc__links">
+                <a class="svc__try" href="#flight">Fly the route &middot; Exhibit 04</a>
+                <a class="svc__go" href="#contact" data-package="Forge Flight — custom video quote">Plan my drone video <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+          <li class="svc">
+            <p class="svc__n"><span>08</span> Grow</p>
+            <h3>Care plans after launch</h3>
+            <p class="svc__lead">Optional monthly support to update, maintain, and improve your digital operations.</p>
+            <ul class="svc__tiers">
+              <li><span class="svc__tier">Care</span> <span class="svc__tier-price">from $99/mo</span> <span class="svc__tier-what">Limited upkeep &amp; link checks</span></li>
+              <li><span class="svc__tier">Growth</span> <span class="svc__tier-price">from $299/mo</span> <span class="svc__tier-what">Defined updates, pipeline review &amp; reports</span></li>
+              <li><span class="svc__tier">Operations</span> <span class="svc__tier-price">from $499/mo</span> <span class="svc__tier-what">Automation monitoring &amp; priority support</span></li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__links">
+                <a class="svc__go" href="#contact" data-package="Monthly care plan — custom quote">Ask about care plans <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+          <li class="svc">
+            <p class="svc__n"><span>09</span> Interact</p>
+            <h3>Interactive 3D &amp; brand pieces</h3>
+            <p class="svc__lead">Pieces like the medallion at the top of this page: drawn live in the browser and made to be played with.</p>
+            <ul class="svc__list">
+              <li>3D logos and medallions</li>
+              <li>Product viewers</li>
+              <li>Interactive showcases and scroll stories</li>
+            </ul>
+            <div class="svc__foot">
+              <p class="svc__price"><span>Quoted to fit</span> custom</p>
+              <p class="svc__links">
+                <a class="svc__try" href="#hero">Strike the medallion &middot; top of page</a>
+                <a class="svc__go" href="#contact" data-package="Interactive 3D / brand piece — custom quote">Ask about a 3D piece <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+              </p>
+            </div>
+          </li>
+        </ul>
+        <p class="fine services__fine">Prices are introductory starting prices in US dollars for a defined scope; the <a href="#rates">rate card</a> has them all in one place. Outdoor aerial filming happens only with FAA-qualified pilot coverage, registration and any needed airspace authorization.</p>
+      </div>
     </section>
 
     <!-- EXHIBIT 01 — DIGITAL SPARK -->
@@ -690,6 +862,7 @@
         <div>
           <p class="site-foot__label">Studio</p>
           <ul>
+            <li><a href="#services">All services</a></li>
             <li><a href="drone-video.html">Forge Flight drone video</a></li>
             <li><a href="#rates">Rate card</a></li>
             <li><a href="#own-it">Who owns what</a></li>
