@@ -186,10 +186,6 @@ def main():
     f_scan = ImageFont.truetype(FONT, 38)
     spaced(d, (cx, box[3] + 30), "SCAN  ME", f_scan, (228, 230, 236), 13)
 
-    # web address, bottom-left, sharing the SCAN ME baseline
-    f_url = ImageFont.truetype(FONT, 34)
-    url_y = box[3] + 32
-    spaced(d, (MARGIN + 6, url_y), "TERISAGRIFFIN.COM", f_url, (200, 203, 210), 12, align="left")
 
     os.makedirs(outdir, exist_ok=True)
     hi = os.path.join(outdir, "social-square-2160.png")

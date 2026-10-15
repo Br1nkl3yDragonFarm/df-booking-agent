@@ -1,4 +1,4 @@
-"""Vertical roll-up banner (33 x 80 in) for Terisa Griffin - "I Just Want To Know".
+"""Vertical roll-up banner (33 x 80 in) with a scannable QR (no name/title lettering).
 
 Usage: python3 make_rollup.py <cropped-artwork.png> <output.png>
 
@@ -216,34 +216,17 @@ def main():
     ss = glyph_box(f_scan, scan, sp_s)
     uu = glyph_box(f_url, url, sp_u)
 
-    # vertical rhythm
-    y_kick = art_top + ah - 100              # just past the art's faded tail
-    y_title = y_kick + kk[1] + 48
-    title_end = y_title + tt[1]
-    # footer signature sits well above the hidden base zone
-    f_foot = ImageFont.truetype(FONT, 50)
-    foot, sp_f = "TERISA  GRIFFIN", 30
-    ff = glyph_box(f_foot, foot, sp_f)
-    y_foot = SAFE_BOTTOM - 260
-    # QR group (SCAN ME / plaque / URL / ornament) centred between title and footer,
-    # biased slightly upward toward eye level
-    g_scan, g_plq, g_url = 96, 100, 70
-    group_h = ss[1] + g_scan + plaque + g_url + uu[1]
-    free = y_foot - title_end - group_h
-    y_scan = int(title_end + free * 0.47)
+    # vertical rhythm: no name/title lettering, just SCAN ME + plaque + ornament
+    art_end = art_top + ah - 140             # just past the art's faded tail
+    y_floor = SAFE_BOTTOM - 200
+    # QR group centred between the art and the hidden base, biased toward eye level
+    g_scan, g_plq = 96, 90
+    group_h = ss[1] + g_scan + plaque + g_plq + 20
+    free = y_floor - art_end - group_h
+    y_scan = int(art_end + free * 0.45)
     y_plaque = y_scan + ss[1] + g_scan
-    y_url = y_plaque + plaque + g_plq
-    y_orn = y_url + uu[1] + g_url
+    y_orn = y_plaque + plaque + g_plq
     cx = W / 2
-
-    metallic_text(canvas, cx, y_kick - kk[0], kick, f_kicker, sp_k, top=(200, 203, 210), bottom=(140, 144, 152))
-    tw_k = text_width(f_kicker, kick, sp_k)
-    ym = y_kick + kk[1] / 2
-    hairline(canvas, cx - tw_k / 2 - 90, cx - tw_k / 2 - 600, ym, fade_to_left=True)
-    hairline(canvas, cx + tw_k / 2 + 90, cx + tw_k / 2 + 600, ym, fade_to_left=False)
-    diamond(canvas, cx - tw_k / 2 - 56, ym, 9)
-    diamond(canvas, cx + tw_k / 2 + 56, ym, 9)
-    metallic_text(canvas, cx, y_title - tt[0], title, f_title, sp_t, glow=0.18)
 
     metallic_text(canvas, cx, y_scan - ss[0], scan, f_scan, sp_s, glow=0.22)
 
@@ -261,7 +244,6 @@ def main():
     o = frame_gap + frame_w
     silver_frame(canvas, [px - o, py - o, px + ps + o - 1, py + ps + o - 1], radius=44, width=frame_w)
 
-    metallic_text(canvas, cx, y_url - uu[0], url, f_url, sp_u, top=(236, 238, 242), bottom=(170, 174, 182))
     # closing ornament: diamond with fading hairlines
     tw_u = text_width(f_url, url, sp_u)
     yo = y_orn + 10
@@ -269,18 +251,11 @@ def main():
     hairline(canvas, cx + 40, cx + 40 + tw_u * 0.32, yo, fade_to_left=False, width=2)
     diamond(canvas, cx, yo, 10)
 
-    # footer signature
-    metallic_text(canvas, cx, y_foot - ff[0], foot, f_foot, sp_f, top=(190, 193, 200), bottom=(128, 132, 140))
-    tw_f = text_width(f_foot, foot, sp_f)
-    yf = y_foot + ff[1] / 2
-    hairline(canvas, cx - tw_f / 2 - 50, cx - tw_f / 2 - 420, yf, fade_to_left=True, width=2)
-    hairline(canvas, cx + tw_f / 2 + 50, cx + tw_f / 2 + 420, yf, fade_to_left=False, width=2)
-
     canvas.save(OUT, dpi=(75, 75))
     qr_px = n * MOD
     print(f"QR v{version} {n}x{n} EC=Q, module {MOD}px, code {qr_px}px ({qr_px / W:.1%} of width), "
-          f"panel {ps}px; plaque y={y_plaque}..{y_plaque + plaque}; url y={y_url}; ornament y={yo}; "
-          f"footer y={y_foot}..{y_foot + ff[1]}; safe line y={SAFE_BOTTOM}; saved {OUT} {canvas.size}")
+          f"panel {ps}px; plaque y={y_plaque}..{y_plaque + plaque}; ornament y={yo}; "
+          f"safe line y={SAFE_BOTTOM}; saved {OUT} {canvas.size}")
 
 
 if __name__ == "__main__":

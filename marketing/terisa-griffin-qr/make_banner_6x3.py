@@ -1,4 +1,4 @@
-"""6 ft x 3 ft horizontal banner (5400x2700 px, 75 dpi) for "I Just Want To Know".
+"""6 ft x 3 ft horizontal banner (5400x2700 px, 75 dpi) with a scannable QR (no name/title lettering).
 
 Usage: python3 make_banner_6x3.py <cropped-artwork.png> <output.png>
 
@@ -56,12 +56,7 @@ def prepare_art(path):
     """Drop the 7px remnant strip above the title bar and pad the bar evenly
     above/below the title so the lettering sits inside the safe margin."""
     a = np.asarray(Image.open(path).convert("RGB"))
-    a = a[7:]                       # remnant of an image above the bar
-    bar_top = a[9:10]               # flat dark-bar row above the title text (orig row 16)
-    bar_bot = a[90:91]              # flat dark-bar row below the title text (orig row 97)
-    extra = 30
-    a = np.concatenate([a[:9], np.repeat(bar_top, extra, 0), a[9:90],
-                        np.repeat(bar_bot, extra, 0), a[90:]], 0)
+    a = a[7:]                       # artwork is lettering-free (clean_artwork.py)
     img = Image.fromarray(a)
     s = H / img.height
     return img.resize((round(img.width * s), H), Image.LANCZOS), s
@@ -221,7 +216,7 @@ def rule(pil, cx, y, half, gap=0, alpha=170):
 
 def main():
     art, s = prepare_art(SRC)
-    bar_end = int(round((131 - 7 + 60) * s))   # bottom of the silver rule under the title bar
+    bar_end = 0                                 # no title bar in the clean artwork
     canvas = compose_background(art, bar_end)
     aw = art.width
 
@@ -235,8 +230,8 @@ def main():
     # right column centre: midway between the art edge and the right banner edge
     cx = int(round((aw + W) / 2))
     # vertical stack (header / plaque / SCAN ME / rule / URL), centred on the banner
-    head_top = 318
-    py0 = head_top + 222   # plaque top, ~85px below the header
+    # no header text: centre the plaque + SCAN ME group vertically
+    py0 = (H - (plaque + 58 + 150)) // 2
     x0 = cx - qr_px // 2
     y0 = py0 + QUIET * MOD + PLAQUE_PAD
 
@@ -253,20 +248,12 @@ def main():
     fb = [box[0] - 4, box[1] - 4, box[2] + 4, box[3] + 4]
     silver_frame(pil, fb, radius=int(MOD * 0.9) + 4, width=7)
 
-    # header: NEW SINGLE flanked by hairlines, then the title
-    hb = silver_text(pil, cx, head_top, "NEW SINGLE", 66, 38, glow=0.2)
-    hw = 230
-    rule(pil, hb[0] - 60 - hw / 2, (hb[1] + hb[3]) / 2, hw // 2, alpha=150)
-    rule(pil, hb[2] + 60 + hw / 2, (hb[1] + hb[3]) / 2, hw // 2, alpha=150)
-    tb = silver_text(pil, cx, hb[3] + 22, "I  JUST  WANT  TO  KNOW", 60, 19, glow=0.18,
-                     hi=(214, 217, 223), lo=(150, 153, 160))
-    # SCAN ME + URL under the plaque
+    # SCAN ME under the plaque (no name/title lettering)
     sb = silver_text(pil, cx, fb[3] + 58, "SCAN  ME", 124, 46, glow=0.3)
     rule(pil, cx, sb[3] + 52, 520)
-    ub = silver_text(pil, cx, sb[3] + 86, "TERISAGRIFFIN.COM", 76, 30, glow=0.2)
-    print("header", hb, tb, "plaque", fb, "scan", sb, "url", ub)
+    print("plaque", fb, "scan", sb)
 
-    for name, b in [("header", hb), ("plaque", fb), ("url", ub)]:
+    for name, b in [("plaque", fb), ("scan", sb)]:
         assert b[0] >= SAFE_X and b[2] <= W - SAFE_X and b[1] >= SAFE_Y and b[3] <= H - SAFE_Y, name
 
     pil.save(OUT, dpi=(75, 75), optimize=True)
