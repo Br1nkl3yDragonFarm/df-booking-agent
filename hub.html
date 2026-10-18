@@ -432,6 +432,7 @@
   </div>
 </div>
 
+<script src="crm-store.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM COMMAND CENTER
@@ -498,16 +499,16 @@ function saveEmail() {
 
 function clearAllData() {
   if (!confirm('This will delete ALL leads in both booking and sync pipelines. Are you sure?')) return;
-  localStorage.removeItem('df_leads');
-  localStorage.removeItem('df_sync_leads');
+  DFStore.save('df_leads', []);
+  DFStore.save('df_sync_leads', []);
   loadStats();
   showToast('All pipeline data cleared');
 }
 
 // ---- STATS ----
 function loadStats() {
-  const venueLeads = JSON.parse(localStorage.getItem('df_leads') || '[]');
-  const syncLeads = JSON.parse(localStorage.getItem('df_sync_leads') || '[]');
+  const venueLeads = DFStore.load('df_leads');
+  const syncLeads = DFStore.load('df_sync_leads');
   const booked = venueLeads.filter(l => l.status === 'booked').length;
   const licensed = syncLeads.filter(l => l.status === 'licensed').length;
   const contacted = venueLeads.filter(l => ['contacted','interested','booked','followup'].includes(l.status)).length;
@@ -544,6 +545,8 @@ document.getElementById('pw-input').addEventListener('keydown', e => {
 document.getElementById('gate').style.display = 'none';
 document.getElementById('hub').classList.add('show');
 loadStats();
+DFStore.connect('df_leads', loadStats);
+DFStore.connect('df_sync_leads', loadStats);
 </script>
 </body>
 </html>

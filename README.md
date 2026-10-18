@@ -27,7 +27,15 @@ Get a key at https://console.anthropic.com
 ### 2. Update Booking Email
 In `app.js`, replace `booking@dragonfarmrecords.com` with your real booking email.
 
-### 3. Deploy to Netlify
+### 3. Turn On Shared Leads (CRM sync)
+Leads in the booking and sync pipelines are saved online (Netlify Blobs) so your phone and computer see the same list.
+In Netlify → **dragonfarmbookingagent** → Project configuration → Environment variables, add:
+- `DF_CRM_PASSCODE` = a passcode only your team knows
+
+Redeploy, then open any page. Enter the passcode when asked; the badge in the bottom-left corner shows **☁️ Synced across devices**.
+Until the passcode is set, leads stay in each browser only (badge: **💾 This device only**) and upload automatically once it is.
+
+### 4. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -41,6 +49,8 @@ Connect this repo to Netlify:
 ├── styles.css       # All styles
 ├── app.js           # AI + form logic
 ├── config.js        # API key config (don't commit real keys)
+├── crm-store.js     # Syncs pipeline leads with the crm function
+├── netlify/functions/crm.mjs  # Shared lead storage (Netlify Blobs)
 ├── netlify.toml     # Netlify deploy config
 └── README.md
 ```

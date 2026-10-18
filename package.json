@@ -1,0 +1,8 @@
+{
+  "name": "df-booking-agent",
+  "private": true,
+  "description": "Dragon Farm booking hub. Static pages plus Netlify Functions; no build step.",
+  "dependencies": {
+    "@netlify/blobs": "11.1.4"
+  }
+}
