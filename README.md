@@ -19,6 +19,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Invoices (print, PDF or email) with optional Stripe card payment links; deposits paid online are marked received, and overdue deposits get a one-tap reminder
   - What's working (`report.html`): which kinds of leads, towns and lead sources turn into shows or placements, what they pay on average, and which emails get answered
   - Sync kit: a fee quote for each kind of placement (from the label's sync playbook, adjusted for use, term, territory and exclusivity), a printable one-stop sync + master license, links to the full mix, clean, instrumental and edits ready to tick into a pitch, and a pitch log of which song and versions went to which supervisor
+  - Brand deals (`brands.html`): find sponsors and lifestyle brands that fit the band (drinks, outdoor, Western lifestyle, trucks, food, gear, events, cannabis where legal), an AI-drafted pitch that leads with fit and a content idea, and a deal check that flags exposure-only pay, rights grabs and forever exclusivity
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
 ---
@@ -101,10 +102,11 @@ Connect this repo to Netlify:
 ├── epk-data.js      # Press kit starting text, shared by the two pages above
 ├── report.html      # What's working report (private)
 ├── sync-kit.js      # Sync quotes, one-stop license, versions on file, pitch log
+├── brands.html      # Brand deals: pipeline, brand finder, pitches, deal check (private)
 ├── report.js        # Report numbers: conversion and pay by kind, town and source; which pitches get replies
 ├── netlify/functions/finder-background.mjs  # Runs a search (Claude + web search) in the background, booking or sync mode
 ├── netlify/functions/finder-status.mjs      # Returns a finished search
-├── netlify/functions/crm.mjs                # Shared lead storage (Netlify Blobs)
+├── netlify/functions/crm.mjs                # Shared lead storage (Netlify Blobs): booking, sync and brand pipelines
 ├── netlify/functions/submission-created.mjs # Turns each booking-inquiry form submission into a lead (runs on the form event)
 ├── netlify/functions/email.mjs              # Sends email through Resend
 ├── netlify/functions/email-inbound.mjs      # Resend webhook: matches replies to leads

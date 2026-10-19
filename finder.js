@@ -1,8 +1,8 @@
 // ============================================================
 //  DRAGON FARM CRM — FIND BOOKERS / FIND SYNC CONTACTS
 //
-//  Searches the live web for people who book bands (mode "booking") or
-//  license music (mode "sync"). The search runs on the server
+//  Searches the live web for people who book bands (mode "booking"),
+//  license music (mode "sync") or partner with artists (mode "brand"). The search runs on the server
 //  (netlify/functions/finder-background.mjs) and usually takes a minute
 //  or more, so the page starts the job and checks back until it's done.
 //  Each finder remembers its last search, so you can leave the page and
@@ -10,7 +10,7 @@
 //  every Monday (netlify/functions/weekly*.mjs); new places it finds land
 //  in the pipeline and a digest goes out by email or Discord.
 //
-//  Usage: const finder = DFFinder.mount(element, { mode: 'booking' | 'sync', onAdd(lead) -> true if added })
+//  Usage: const finder = DFFinder.mount(element, { mode: 'booking' | 'sync' | 'brand', onAdd(lead) -> true if added })
 //         finder.run({ location, artist, dates, categories })  // fill the form and search
 // ============================================================
 
@@ -40,6 +40,45 @@
 
   // Per-mode wording, categories (key, chip label, lead type/category) and lead shape.
   const MODES = {
+    brand: {
+      storageKey: 'df_finder_brand_last',
+      title: 'Find Brands',
+      intro: 'Searches the web live for brands that sponsor or partner with musicians and fit a country-reggae act: drinks, outdoor, Western lifestyle, trucks, food, gear, events. Start local and regional. Every result links to the page it was found on.',
+      ask: 'What kind of brands?',
+      noun: 'brand',
+      categories: [
+        ['beverage', 'Beer, spirits & drinks', 'Beverage'],
+        ['outdoor', 'Outdoor & adventure', 'Outdoor & Adventure'],
+        ['western', 'Western & country lifestyle', 'Western Lifestyle'],
+        ['auto', 'Trucks & powersports', 'Auto & Powersports'],
+        ['food', 'BBQ & food', 'Food'],
+        ['cannabis', 'Cannabis & hemp (where legal)', 'Cannabis / Hemp'],
+        ['audio', 'Audio & music gear', 'Audio & Gear'],
+        ['apparel', 'Streetwear & surf apparel', 'Apparel'],
+        ['events', 'Festivals & event sponsors', 'Events & Festivals'],
+        ['local', 'Local businesses', 'Local Business']
+      ],
+      defaults: ['beverage', 'outdoor', 'local'],
+      where: { label: 'Focus (optional)', placeholder: 'e.g. Tennessee, the Southeast, craft breweries, summer festivals', required: false },
+      forLabel: 'For',
+      forOptions: [['Timothy Chance and Rasta Country', 'Timothy Chance & Rasta Country']],
+      similar: { label: 'Similar artists (optional)', placeholder: 'e.g. Zac Brown Band, Slightly Stoopid' },
+      linkLabel: 'Sponsorship page',
+      toLead(r, q, category) {
+        return {
+          name: r.name,
+          category,
+          city: [r.city, r.state].filter(Boolean).join(', '),
+          contact: contactOf(r),
+          email: r.email,
+          phone: r.phone,
+          website: r.website,
+          source: r.source_url,
+          status: 'new',
+          notes: notesFor(r, 'Sponsorship page', r.company && r.company !== r.name && `Company: ${r.company}`)
+        };
+      }
+    },
     booking: {
       storageKey: 'df_finder_last',
       title: 'Find Bookers',

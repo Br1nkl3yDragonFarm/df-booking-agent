@@ -57,8 +57,8 @@ export default async (req) => {
   if (body.action === 'digest') {
     const s = setup();
     if (!s.email && !s.discord) return json(503, { error: 'Set up Resend (RESEND_API_KEY) or a Discord webhook (DISCORD_WEBHOOK_URL) in Netlify first.' });
-    const [venue, sync, activity] = await Promise.all([readList('venue'), readList('sync'), activityStore().get('leads', { type: 'json' })]);
-    const digest = buildDigest({ venue, sync, activity: activity || {}, today: labelToday(), siteUrl: process.env.URL || new URL(req.url).origin });
+    const [venue, sync, brand, activity] = await Promise.all([readList('venue'), readList('sync'), readList('brand'), activityStore().get('leads', { type: 'json' })]);
+    const digest = buildDigest({ venue, sync, brand, activity: activity || {}, today: labelToday(), siteUrl: process.env.URL || new URL(req.url).origin });
     return json(200, { sent: await sendDigest(digest), digest });
   }
   return json(400, { error: 'Unknown action' });

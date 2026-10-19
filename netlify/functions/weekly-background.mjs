@@ -57,7 +57,7 @@ export default async (req) => {
     if (problem) return { id: s.id, label: s.label, mode: q.mode, found: 0, added: 0, error: problem };
     try {
       const { results } = await runSearch(q, MODES[q.mode]);
-      const added = await addLeads(q.mode === 'sync' ? 'sync' : 'venue', results, q, today, s.label);
+      const added = await addLeads({ booking: 'venue', sync: 'sync', brand: 'brand' }[q.mode], results, q, today, s.label);
       return { id: s.id, label: s.label, mode: q.mode, found: results.length, added };
     } catch (err) {
       return { id: s.id, label: s.label, mode: q.mode, found: 0, added: 0, error: String(err.message || 'The search failed').slice(0, 200) };
@@ -66,8 +66,8 @@ export default async (req) => {
 
   let sent = { email: 'off', discord: 'off' };
   try {
-    const [venue, sync, activity] = await Promise.all([readList('venue'), readList('sync'), activityStore().get('leads', { type: 'json' })]);
-    const digest = buildDigest({ venue, sync, activity: activity || {}, today, added: outcomes, siteUrl: process.env.URL || new URL(req.url).origin });
+    const [venue, sync, brand, activity] = await Promise.all([readList('venue'), readList('sync'), readList('brand'), activityStore().get('leads', { type: 'json' })]);
+    const digest = buildDigest({ venue, sync, brand, activity: activity || {}, today, added: outcomes, siteUrl: process.env.URL || new URL(req.url).origin });
     sent = await sendDigest(digest);
   } catch (err) {
     sent = { email: String(err.message || 'failed'), discord: 'off' };

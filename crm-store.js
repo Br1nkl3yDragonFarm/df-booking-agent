@@ -12,7 +12,7 @@
 
 (function () {
   const ENDPOINT = '/.netlify/functions/crm';
-  const LISTS = { df_leads: 'venue', df_sync_leads: 'sync' };
+  const LISTS = { df_leads: 'venue', df_sync_leads: 'sync', df_brand_leads: 'brand' };
   const PASS_KEY = 'df_crm_passcode';
   const ASKED_KEY = 'df_crm_passcode_asked';
   const MERGED_PREFIX = 'df_crm_merged_';
@@ -29,7 +29,8 @@
   // cemail...). Rename them to the names every page now uses.
   const RENAMES = {
     df_leads: { cname: 'contactName', cemail: 'contactEmail', cphone: 'contactPhone', added: 'dateAdded' },
-    df_sync_leads: { cname: 'contact', cemail: 'email', cat: 'category', added: 'dateAdded' }
+    df_sync_leads: { cname: 'contact', cemail: 'email', cat: 'category', added: 'dateAdded' },
+    df_brand_leads: {}
   };
   function normalize(key, items) {
     return items.map(item => {

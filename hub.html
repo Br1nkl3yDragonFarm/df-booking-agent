@@ -210,6 +210,7 @@
         <a href="dashboard.html">Booking</a>
         <a href="sync.html">Sync</a>
         <a href="epk-edit.html">Press kits</a>
+        <a href="brands.html">Brands</a>
         <a href="report.html">What's working</a>
         <a href="index.html" target="_blank" rel="noopener">Public page ↗</a>
       </nav>
@@ -269,6 +270,11 @@
           <span class="tool-name">Press kits</span>
           <p class="tool-desc">A public page with the band's bio, music, live video, past shows and draw. Pitches link to it, and you see when a buyer opens it.</p>
           <span class="tool-open">Edit press kits</span>
+        </a>
+        <a href="brands.html" class="tool">
+          <span class="tool-name">Brand deals</span>
+          <p class="tool-desc">Find sponsors and lifestyle brands that fit the band, pitch the fit and the audience, and check every offer against the red flags.</p>
+          <span class="tool-open">Open brand deals</span>
         </a>
         <a href="report.html" class="tool">
           <span class="tool-name">What's working</span>
@@ -387,10 +393,12 @@ function longDate(date) {
 function renderToday() {
   const venue = DFStore.load('df_leads');
   const sync = DFStore.load('df_sync_leads');
+  const brand = DFStore.load('df_brand_leads');
 
-  // Follow-ups due across both pipelines
+  // Follow-ups due across the pipelines
   const due = [...DFFollow.due(venue).map(l => ({ l, page: 'dashboard.html', kind: 'Booking' })),
-               ...DFFollow.due(sync).map(l => ({ l, page: 'sync.html', kind: 'Sync' }))]
+               ...DFFollow.due(sync).map(l => ({ l, page: 'sync.html', kind: 'Sync' })),
+               ...DFFollow.due(brand).map(l => ({ l, page: 'brands.html', kind: 'Brand' }))]
     .sort((a, b) => (DFOut.needsReply(b.l) - DFOut.needsReply(a.l)) || (a.l.followUp || '').localeCompare(b.l.followUp || ''));
   document.getElementById('today-followups').innerHTML = due.length
     ? `<div class="today-big">${due.length}</div>` + due.slice(0, 4).map(({ l, page, kind }) =>
@@ -432,6 +440,7 @@ loadStats();
 DFOut.init(renderToday);
 DFStore.connect('df_leads', loadStats);
 DFStore.connect('df_sync_leads', loadStats);
+DFStore.connect('df_brand_leads', renderToday);
 </script>
 </body>
 </html>

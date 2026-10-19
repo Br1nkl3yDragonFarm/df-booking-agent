@@ -2,7 +2,7 @@
 //  DRAGON FARM — MONDAY DIGEST
 //
 //  A short plain-text rundown of what needs doing, built from the
-//  pipelines and their activity: new leads from the weekly searches,
+//  pipelines (booking, sync, brand) and their activity: new leads from the weekly searches,
 //  follow-ups due (unanswered replies first), overdue deposits and this
 //  week's shows. Sent by email (Resend) and/or to a Discord channel.
 //
@@ -13,7 +13,7 @@
 
 import { replyTo, sendMail } from './mail.mjs';
 
-const CLOSED = ['booked', 'licensed', 'passed'];
+const CLOSED = ['booked', 'licensed', 'signed', 'passed'];
 const MAX_LINES = 12;
 const DISCORD_LIMIT = 1900;
 
@@ -41,8 +41,8 @@ function unanswered(lead, act) {
 
 export const digestTo = () => process.env.DF_DIGEST_TO || replyTo();
 
-export function buildDigest({ venue = [], sync = [], activity = {}, today, added = [], siteUrl = '' }) {
-  const all = [...venue.map(l => ({ l, list: 'booking' })), ...sync.map(l => ({ l, list: 'sync' }))];
+export function buildDigest({ venue = [], sync = [], brand = [], activity = {}, today, added = [], siteUrl = '' }) {
+  const all = [...venue.map(l => ({ l, list: 'booking' })), ...sync.map(l => ({ l, list: 'sync' })), ...brand.map(l => ({ l, list: 'brand' }))];
   const due = all
     .filter(({ l }) => !CLOSED.includes(l.status))
     .map(x => ({ ...x, reply: unanswered(x.l, activity[x.l.id] || {}) }))

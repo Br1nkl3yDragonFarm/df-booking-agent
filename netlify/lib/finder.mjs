@@ -39,6 +39,20 @@ const SYNC_CATEGORIES = {
   lifestyle: 'lifestyle, outdoor and cannabis-friendly brands that use independent music in campaigns'
 };
 
+// Brands that fit a country-reggae act, from the label's brand-partnerships playbook.
+const BRAND_CATEGORIES = {
+  beverage: 'beverage brands: craft beer, breweries, spirits, hard seltzer, coffee and drinks with a good-times or outdoor image',
+  outdoor: 'outdoor and adventure brands: gear, coolers, fishing, camping, boats, beach and summer products',
+  western: 'Western and country lifestyle brands: boots, hats, denim, saddlery, ranch and rodeo',
+  auto: 'trucks, off-road and powersports brands and dealers',
+  food: 'BBQ, hot sauce, food trucks and food brands with a Southern or island flavor',
+  cannabis: 'cannabis, hemp and CBD brands, only where legal, that sponsor music',
+  audio: 'headphones, speakers, instruments and music gear brands that sponsor independent artists',
+  apparel: 'streetwear, surf and skate apparel brands that work with musicians',
+  events: 'festivals, events and venues that sell sponsorships or partner with artists on branded shows',
+  local: 'regional and Nashville-area businesses that sponsor local music'
+};
+
 const BOOKING_ARTISTS = {
   'Timothy Chance and Rasta Country': 'Timothy Chance and Rasta Country (country-reggae fusion)'
 };
@@ -54,6 +68,28 @@ const RULES = `Rules:
 - Prefer the specific person who decides and their role when a page names them.`;
 
 export const MODES = {
+  brand: {
+    categories: BRAND_CATEGORIES,
+    system: `You research brand partnerships (sponsorships, endorsements, product partnerships, branded content and events) for Dragon Farm Records, an independent label in Nashville, TN. The artist is Timothy Chance and Rasta Country: country soul over reggae roots, fiddles and riddims, a feel-good live show for festivals, clubs and outdoor events.
+Use web search to find real brands that already partner with musicians, sponsor music or events, or speak to a good-times, outdoor, country-lifestyle audience.
+${RULES}
+- Favor regional and growing brands that could realistically say yes to an independent act; national giants only if they run an open artist or sponsorship program.
+- The contact should be the marketing, brand, partnerships or sponsorship person or form, not a general customer-service inbox.
+- In "fit", say why the brand fits the act and what they have done with music before (a sponsored tour, an artist program, an event), from the page.
+- In how_to_approach, give the sponsorship or partnership form or program if the page shows one.
+When you are done, reply with only a JSON array, no other text. Each item:
+{"name","category","company","city","state","contact_name","contact_role","email","phone","website","booking_url","source_url","fit","how_to_approach"}
+"booking_url" is their sponsorship, partnership or marketing contact page. Use "" for anything you did not find. "category" is one of: ${Object.keys(BRAND_CATEGORIES).join(', ')}.`,
+    prompt(q) {
+      return [
+        `Find up to ${q.count} brands that could partner with Timothy Chance and Rasta Country.`,
+        q.location && `Focus: ${q.location}.`,
+        'Look for:',
+        ...q.categories.map(c => `- ${BRAND_CATEGORIES[c]}`),
+        q.similar && `Artists similar to ours, to find brands that already back this kind of act: ${q.similar}.`
+      ].filter(Boolean).join('\n');
+    }
+  },
   booking: {
     categories: BOOKING_CATEGORIES,
     system: `You research booking opportunities for Dragon Farm Records, an independent label in Nashville, TN.
@@ -148,7 +184,7 @@ function parseResults(text, urls, categories) {
 // A search request from a page (or a saved weekly search), checked and trimmed.
 // problem is set when it can't run.
 export function readQuery(body) {
-  const modeName = body.mode === 'sync' ? 'sync' : 'booking';
+  const modeName = MODES[body.mode] ? body.mode : 'booking';
   const mode = MODES[modeName];
   const q = {
     mode: modeName,
@@ -161,7 +197,7 @@ export function readQuery(body) {
   };
   let problem = '';
   if (!q.categories.length || (modeName === 'booking' && !q.location)) {
-    problem = modeName === 'booking' ? 'Pick at least one kind of booker and a location.' : 'Pick at least one kind of contact.';
+    problem = modeName === 'booking' ? 'Pick at least one kind of booker and a location.' : `Pick at least one kind of ${modeName === 'brand' ? 'brand' : 'contact'}.`;
   }
   return { q, problem };
 }
@@ -203,6 +239,10 @@ export const LEAD_TYPES = {
     venues: 'Bar / Club', buyers: 'Promoter / Talent Buyer', agencies: 'Booking Agency', festivals: 'Festival', colleges: 'College',
     breweries: 'Brewery / Winery', private: 'Private Event', community: 'Fair / City Event', similar: 'Other'
   },
+  brand: {
+    beverage: 'Beverage', outdoor: 'Outdoor & Adventure', western: 'Western Lifestyle', auto: 'Auto & Powersports', food: 'Food',
+    cannabis: 'Cannabis / Hemp', audio: 'Audio & Gear', apparel: 'Apparel', events: 'Events & Festivals', local: 'Local Business'
+  },
   sync: {
     supervisors: 'Film', trailers: 'Trailer', ads: 'Advertisement', games: 'Video Game', libraries: 'Sync Agency / Library',
     briefs: 'Other', creators: 'Creator / Podcast', lifestyle: 'Brand Campaign'
@@ -219,9 +259,16 @@ const notesFor = (r, linkLabel, extra) => [
   r.source_url && `Found on: ${r.source_url}`
 ].filter(Boolean).join('\n');
 
-// A lead for the 'venue' or 'sync' list, due for a first pitch on `today`.
+// A lead for the 'venue', 'sync' or 'brand' list, due for a first pitch on `today`.
 export function toLead(r, q, today, extraNote = '') {
   const base = { status: 'new', followUp: today, dateAdded: new Date().toISOString(), source: r.source_url, website: r.website };
+  if (q.mode === 'brand') {
+    return {
+      ...base, name: r.name, category: LEAD_TYPES.brand[r.category] || 'Other', city: [r.city, r.state].filter(Boolean).join(', '),
+      contact: contactOf(r), email: r.email, phone: r.phone,
+      notes: notesFor(r, 'Sponsorship page', [extraNote, r.company && r.company !== r.name && `Company: ${r.company}`].filter(Boolean).join('\n'))
+    };
+  }
   if (q.mode === 'sync') {
     return {
       ...base, name: r.name, project: r.project, category: LEAD_TYPES.sync[r.category] || 'Other',

@@ -1,24 +1,25 @@
 // ============================================================
 //  DRAGON FARM CRM — WHAT'S WORKING
 //
-//  Turns the two pipelines and their activity (emails sent, replies, press
+//  Turns the pipelines (booking, sync, brand deals) and their activity (emails sent, replies, press
 //  kit opens) into answers: which kinds of leads and which towns turn into
 //  shows or placements, what they pay on average, and which pitches get
 //  replies. Uses only what's recorded; nothing is estimated.
 //
 //    pitched  status past "new", a logged touch, or an email sent
 //    replied  a reply caught, or a status that means they answered
-//    won      booked (venue) or licensed (sync)
+//    won      booked (venue), licensed (sync) or signed (brand)
 //    pay      venue: what we were paid once settled, else what the deal
-//             says; sync: the fee when it's a dollar amount
+//             says; sync: the fee when it's a dollar amount; brand: the
+//             first dollar amount in the offer
 //
-//  Usage: DFReport.build(venueLeads, syncLeads, DFOut.activity) -> report
+//  Usage: DFReport.build(venueLeads, syncLeads, DFOut.activity, brandLeads) -> report
 //         DFReport.html(report) -> markup
 // ============================================================
 
 (function () {
-  const ANSWERED = { venue: ['interested', 'booked'], sync: ['reviewing', 'licensed'] };
-  const WON = { venue: 'booked', sync: 'licensed' };
+  const ANSWERED = { venue: ['interested', 'booked'], sync: ['reviewing', 'licensed'], brand: ['talking', 'signed'] };
+  const WON = { venue: 'booked', sync: 'licensed', brand: 'signed' };
   const MIN_FOR_ADVICE = 3; // pitched leads a group needs before we call it a pattern
 
   function esc(s) {
@@ -45,6 +46,7 @@
 
   function pay(l, list) {
     if (list === 'sync') return num(l.fee) || null;
+    if (list === 'brand') { const m = String(l.offer || '').match(/\$\s?([\d,]+(?:\.\d+)?)/); return m ? num(m[1]) : null; }
     if (l.settled && num(l.paid)) return num(l.paid);
     return window.DFShow ? DFShow.expected(l) : (num(l.guarantee) || null);
   }
@@ -125,9 +127,10 @@
     return tips;
   }
 
-  function build(venueLeads, syncLeads, activityOf) {
+  function build(venueLeads, syncLeads, activityOf, brandLeads) {
     const v = (venueLeads || []).map(l => facts(l, 'venue', activityOf));
     const s = (syncLeads || []).map(l => facts(l, 'sync', activityOf));
+    const b = (brandLeads || []).map(l => facts(l, 'brand', activityOf));
     const report = {
       venue: {
         rows: v,
@@ -140,7 +143,8 @@
         byCategory: group(s, l => l.category || 'Other'),
         byOrigin: group(s, origin)
       },
-      pitches: pitches([...v, ...s])
+      brand: { rows: b, byCategory: group(b, l => l.category || 'Other') },
+      pitches: pitches([...v, ...s, ...b])
     };
     report.advice = advice(report);
     return report;
@@ -168,15 +172,14 @@
       </div>
       ${p.kit.opened ? `<p class="rp-note">Leads who opened the press kit replied ${pct(p.kit.openedReplied, p.kit.opened)} of the time (${p.kit.openedReplied} of ${p.kit.opened}); the rest ${pct(p.kit.notOpenedReplied, p.kit.notOpened)}.</p>` : ''}
       ${p.winners.length ? `<h3>Emails that got an answer</h3><ul class="rp-list">${p.winners.slice(0, 12).map(w =>
-        `<li><span>“${esc(w.subject || '(no subject)')}”</span><small>${esc(w.name)} · ${w.list === 'sync' ? 'sync' : 'booking'} · email #${w.number}</small></li>`).join('')}</ul>` : ''}
+        `<li><span>“${esc(w.subject || '(no subject)')}”</span><small>${esc(w.name)} · ${{ venue: 'booking', sync: 'sync', brand: 'brand' }[w.list]} · email #${w.number}</small></li>`).join('')}</ul>` : ''}
     </section>`;
   }
 
   function html(r) {
-    const vPitched = r.venue.rows.filter(x => x.pitched).length;
-    const sPitched = r.sync.rows.filter(x => x.pitched).length;
-    const early = vPitched + sPitched < 10
-      ? `<p class="rp-note">Early days: ${vPitched + sPitched} lead${vPitched + sPitched === 1 ? '' : 's'} pitched so far. The patterns get more reliable with every pitch you log.</p>` : '';
+    const pitched = [...r.venue.rows, ...r.sync.rows, ...r.brand.rows].filter(x => x.pitched).length;
+    const early = pitched < 10
+      ? `<p class="rp-note">Early days: ${pitched} lead${pitched === 1 ? '' : 's'} pitched so far. The patterns get more reliable with every pitch you log.</p>` : '';
     return `${early}
       <section class="rp-block rp-advice"><h2>Where the money is</h2>${r.advice.length
         ? `<ul>${r.advice.map(t => `<li>${t}</li>`).join('')}</ul>`
@@ -186,7 +189,8 @@
       ${table('Booking: where the lead came from', 'Source', r.venue.byOrigin, 'Booked', 'Avg pay')}
       ${pitchHtml(r.pitches)}
       ${table('Sync: by kind of placement', 'Kind', r.sync.byCategory, 'Licensed', 'Avg fee')}
-      ${table('Sync: where the lead came from', 'Source', r.sync.byOrigin, 'Licensed', 'Avg fee')}`;
+      ${table('Sync: where the lead came from', 'Source', r.sync.byOrigin, 'Licensed', 'Avg fee')}
+      ${table('Brand deals: by kind of brand', 'Kind', r.brand.byCategory, 'Signed', 'Avg fee')}`;
   }
 
   window.DFReport = { build, html, town };

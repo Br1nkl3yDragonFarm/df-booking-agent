@@ -1,6 +1,6 @@
 // ============================================================
 //  DRAGON FARM CRM — SHARED LEAD STORAGE
-//  Keeps the booking and sync pipelines in Netlify Blobs so
+//  Keeps the booking, sync and brand pipelines in Netlify Blobs so
 //  every phone and computer sees the same leads.
 //
 //  Requires the DF_CRM_PASSCODE environment variable in Netlify.
@@ -10,7 +10,7 @@
 import { getStore } from '@netlify/blobs';
 import { timingSafeEqual } from 'node:crypto';
 
-const LISTS = ['venue', 'sync'];
+const LISTS = ['venue', 'sync', 'brand'];
 const MAX_ITEMS = 5000;
 const MAX_ITEM_BYTES = 20000;
 const MAX_WRITE_ATTEMPTS = 8;

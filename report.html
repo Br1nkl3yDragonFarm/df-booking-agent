@@ -49,7 +49,7 @@
 <div class="wrap">
   <div class="top">
     <h1>📈 What's Working</h1>
-    <div><a href="dashboard.html">← Booking Agent</a><a href="sync.html">Sync</a><a href="hub.html">Hub</a></div>
+    <div><a href="dashboard.html">← Booking Agent</a><a href="sync.html">Sync</a><a href="brands.html">Brands</a><a href="hub.html">Hub</a></div>
   </div>
   <p class="intro">Which kinds of leads and which towns turn into shows, what they pay, and which pitches get answered, from what's in your pipelines. Pay is what you were paid once a show is settled, otherwise what the deal says.</p>
   <div id="report"><p class="rp-note">Loading…</p></div>
@@ -64,12 +64,13 @@
 <script src="report.js"></script>
 <script>
 function renderReport() {
-  const report = DFReport.build(DFStore.load('df_leads'), DFStore.load('df_sync_leads'), DFOut.activity);
+  const report = DFReport.build(DFStore.load('df_leads'), DFStore.load('df_sync_leads'), DFOut.activity, DFStore.load('df_brand_leads'));
   document.getElementById('report').innerHTML = DFReport.html(report);
 }
 DFOut.init(renderReport);
 DFStore.connect('df_leads', renderReport);
 DFStore.connect('df_sync_leads', renderReport);
+DFStore.connect('df_brand_leads', renderReport);
 renderReport();
 </script>
 </body>
