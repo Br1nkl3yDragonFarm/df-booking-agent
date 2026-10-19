@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>What's Working — Dragon Farm Records</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c09; --surface: #0e1517; --card: #131c1e; --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --cream: #e8dfc8; --gray: #9aa39c; --gray-light: #c9c2ae; --gold: #c8922a; --gold-light: #f0c060; --green: #2ab464; --blue: #4a9eff;
+      --r: 8px; --r2: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--cream); font: 15px/1.55 'DM Sans', system-ui, sans-serif; overflow-x: hidden; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 96px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .top a { color: var(--gray); font-size: 0.85rem; text-decoration: none; margin-right: 12px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 2.2rem; margin: 0; }
+    .intro { color: var(--gray); font-size: 0.9rem; margin: 0 0 1.25rem; max-width: 680px; }
+    .rp-block { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.1rem; margin-bottom: 1rem; }
+    .rp-block h2 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 1.35rem; margin: 0 0 0.6rem; }
+    .rp-block h3 { font-size: 0.9rem; font-weight: 500; margin: 1rem 0 0.4rem; color: var(--gray-light); }
+    .rp-advice { border-color: rgba(200,146,42,0.45); }
+    .rp-advice ul { margin: 0; padding-left: 1.1rem; }
+    .rp-advice li { margin: 0.3rem 0; }
+    .rp-advice b { color: var(--gold-light); font-weight: 500; }
+    .rp-scroll { overflow-x: auto; }
+    .rp-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 560px; }
+    .rp-table th { font-family: 'DM Mono', monospace; font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); font-weight: 400; text-align: right; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border2); }
+    .rp-table td { text-align: right; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+    .rp-table th:first-child, .rp-table td:first-child { text-align: left; }
+    .rp-table small { color: var(--gray); }
+    .rp-table b { color: var(--gold-light); font-weight: 500; }
+    .rp-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; }
+    .rp-stats div { background: var(--surface); border-radius: var(--r); padding: 0.6rem 0.75rem; }
+    .rp-stats b { display: block; font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 1.6rem; color: var(--gold-light); line-height: 1.1; }
+    .rp-stats span { font-size: 0.78rem; color: var(--gray); }
+    .rp-list { list-style: none; margin: 0; padding: 0; }
+    .rp-list li { padding: 0.45rem 0; border-top: 1px solid var(--border); display: flex; flex-direction: column; }
+    .rp-list small { color: var(--gray); font-size: 0.76rem; }
+    .rp-note, .rp-empty { color: var(--gray); font-size: 0.86rem; margin: 0.6rem 0 0; }
+    .wrap > .rp-note { margin: 0 0 1rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>📈 What's Working</h1>
+    <div><a href="dashboard.html">← Booking Agent</a><a href="sync.html">Sync</a><a href="hub.html">Hub</a></div>
+  </div>
+  <p class="intro">Which kinds of leads and which towns turn into shows, what they pay, and which pitches get answered, from what's in your pipelines. Pay is what you were paid once a show is settled, otherwise what the deal says.</p>
+  <div id="report"><p class="rp-note">Loading…</p></div>
+</div>
+
+<script src="crm-store.js"></script>
+<script src="followups.js"></script>
+<script src="deals.js"></script>
+<script src="showday.js"></script>
+<script src="calendar.js"></script>
+<script src="outreach.js"></script>
+<script src="report.js"></script>
+<script>
+function renderReport() {
+  const report = DFReport.build(DFStore.load('df_leads'), DFStore.load('df_sync_leads'), DFOut.activity);
+  document.getElementById('report').innerHTML = DFReport.html(report);
+}
+DFOut.init(renderReport);
+DFStore.connect('df_leads', renderReport);
+DFStore.connect('df_sync_leads', renderReport);
+renderReport();
+</script>
+</body>
+</html>
