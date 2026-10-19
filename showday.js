@@ -126,7 +126,88 @@
       <tbody>${rows.map(r => row(r.artist, r)).join('')}${rows.length > 1 ? row('Total', total, 'sd-total') : ''}</tbody></table></div>`;
   }
 
+  // Booked Shows: totals, then Upcoming and Played lists. `open` is the
+  // page's global function name that opens a lead for editing.
+  function renderShows(els, leads, open) {
+    const booked = leads.filter(l => l.status === 'booked')
+      .sort((a, b) => (a.eventDate || '9999').localeCompare(b.eventDate || '9999'));
+    const upcoming = booked.filter(l => !isPlayed(l));
+    const played = booked.filter(isPlayed).reverse();
+    const t = DFDeals.totals(leads);
+    const settled = played.filter(l => l.settled);
+    els.totals.innerHTML = booked.length ? `
+      <div class="deal-total"><b>${t.shows}</b><span>upcoming booked shows</span></div>
+      <div class="deal-total"><b>${money(t.guaranteed)}</b><span>guaranteed</span></div>
+      <div class="deal-total"><b>${money(t.depositsOwed)}</b><span>deposits still owed to us</span></div>
+      <div class="deal-total"><b style="color:${t.unsigned ? '#ff8a80' : 'var(--cream)'}">${t.unsigned}</b><span>without a signed contract</span></div>
+      <div class="deal-total"><b>${money(settled.reduce((s, l) => s + net(l), 0))}</b><span>net from ${settled.length} settled show${settled.length === 1 ? '' : 's'}</span></div>
+      <div class="deal-total"><b style="color:${played.length - settled.length ? '#ff8a80' : 'var(--cream)'}">${played.length - settled.length}</b><span>played, not settled</span></div>` : '';
+    if (!booked.length) {
+      els.list.innerHTML = '<div class="sd-empty">🎤 No confirmed shows yet. Mark a lead "Booked" to see it here.</div>';
+      return;
+    }
+    const box = list => `<div class="sd-box">${list.map(l => showCard(l, open)).join('')}</div>`;
+    els.list.innerHTML =
+      '<div class="sd-section-title">Upcoming</div>' +
+      (upcoming.length ? box(upcoming) : '<div class="sd-empty">No upcoming shows.</div>') +
+      (played.length ? `<div class="sd-section-title">Played</div>${artistTable(leads)}${box(played)}` : '');
+  }
+
+  function showCard(l, open) {
+    return `
+      <div class="sd-card" onclick="${open}('${l.id}')">
+        <div class="sd-card-main">
+          <div class="sd-card-icon">🎤</div>
+          <div style="min-width:0">
+            <div class="sd-card-name">${esc(l.name)}</div>
+            <div class="sd-card-sub">${esc([l.city, l.type, l.artist].filter(Boolean).join(' · '))}</div>
+            ${l.eventDate ? `<div class="sd-card-date">📅 ${l.eventDate}</div>` : '<div class="sd-card-nodate">📅 No show date yet</div>'}
+            ${DFDeals.card(l)}
+            ${card(l)}
+          </div>
+        </div>
+        <div class="sd-card-contact">
+          ${l.contactName ? `<div>${esc(l.contactName)}</div>` : ''}
+          ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>` : ''}
+        </div>
+      </div>`;
+  }
+
   // ---- form helpers: ids are prefix + '-sd-…' ----
+
+  // The "Show day" and "Settlement" sections of a lead form, for the page to insert.
+  function formHtml(p) {
+    return `
+    <details class="deal-box" id="${p}-showday">
+      <summary>Show day</summary>
+      <div class="deal-grid">
+        <div class="field"><label>Load-in</label><input type="time" id="${p}-sd-loadin" /></div>
+        <div class="field"><label>Set Time</label><input type="time" id="${p}-sd-settime" /></div>
+        <div class="field"><label>Set Length (minutes)</label><input type="number" min="0" step="5" inputmode="numeric" id="${p}-sd-setlength" placeholder="45" /></div>
+        <div class="field"><label>Day-of Contact</label><input type="text" id="${p}-sd-contact" placeholder="Production manager" /></div>
+        <div class="field"><label>Their Phone</label><input type="tel" id="${p}-sd-phone" placeholder="(615) 555-0100" /></div>
+        <div class="field"><label>Venue Address</label><input type="text" id="${p}-sd-address" placeholder="1234 Main St, Nashville, TN" /></div>
+        <div class="field"><label>Sound &amp; Backline</label><input type="text" id="${p}-sd-sound" placeholder="House PA and engineer; we bring amps" /></div>
+        <div class="field"><label>Hospitality</label><input type="text" id="${p}-sd-hospitality" placeholder="Green room, 4 drink tickets, meal buyout" /></div>
+      </div>
+    </details>
+    <details class="deal-box" id="${p}-settle">
+      <summary>Settlement (after the show)</summary>
+      <div class="deal-grid">
+        <div class="field"><label>What We Were Paid ($)</label><input type="number" min="0" step="any" inputmode="decimal" id="${p}-st-paid" placeholder="500" /></div>
+        <div class="field"><label>Door After Venue Expenses ($)</label><input type="number" min="0" step="any" inputmode="decimal" id="${p}-st-door" placeholder="900" /></div>
+        <div class="field"><label>Attendance</label><input type="number" min="0" step="1" inputmode="numeric" id="${p}-st-attendance" placeholder="120" /></div>
+        <div class="field"><label>Merch Sales ($)</label><input type="number" min="0" step="any" inputmode="decimal" id="${p}-st-merch" placeholder="300" /></div>
+        <div class="field"><label>Our Costs ($)</label><input type="number" min="0" step="any" inputmode="decimal" id="${p}-st-costs" placeholder="Gas, hotel, crew" /></div>
+        <div class="field"><label>Settlement Notes</label><input type="text" id="${p}-st-notes" placeholder="Paid cash night of" /></div>
+      </div>
+      <label class="deal-check" style="margin-top:0.75rem"><input type="checkbox" id="${p}-st-settled" /> Settled: the payout for this show is recorded</label>
+      <div class="sd-hint" id="${p}-st-expected"></div>
+      <div class="sd-hint" id="${p}-st-net"></div>
+    </details>
+    <div id="${p}-sd-flags"></div>`;
+  }
+
   const FIELDS = {
     loadIn: 'sd-loadin', setTime: 'sd-settime', setLength: 'sd-setlength', dayContact: 'sd-contact', dayPhone: 'sd-phone',
     address: 'sd-address', sound: 'sd-sound', hospitality: 'sd-hospitality',
@@ -191,9 +272,21 @@
     .sd-table tr:last-child td{border-bottom:none}
     .sd-table b{color:var(--cream,#e8dfc8);font-weight:500}
     .sd-total td{color:var(--cream,#e8dfc8)}
+    .sd-box{background:var(--card,#131c1e);border:1px solid var(--border,rgba(255,255,255,0.08));border-radius:var(--r2,10px);overflow:hidden}
+    .sd-empty{padding:0.9rem 1rem;font-size:0.85rem;color:var(--gray,#9aa39c)}
+    .sd-card{padding:1rem 1.25rem;border-bottom:1px solid var(--border,rgba(255,255,255,0.08));display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;cursor:pointer}
+    .sd-card:last-child{border-bottom:none}
+    .sd-card-main{display:flex;align-items:flex-start;gap:1rem;min-width:0;flex:1 1 260px}
+    .sd-card-icon{font-size:2rem}
+    .sd-card-name{font-weight:500;color:var(--cream,#e8dfc8);font-size:0.95rem}
+    .sd-card-sub{font-size:0.8rem;color:var(--gray,#9aa39c)}
+    .sd-card-date{font-family:var(--font-m,monospace);font-size:0.7rem;color:var(--green,#2ab464);margin-top:3px}
+    .sd-card-nodate{font-size:0.74rem;color:#f0c060;margin-top:3px}
+    .sd-card-contact{text-align:right;font-size:0.82rem;color:var(--gray-light,#c9c2ae)}
+    .sd-card-contact a{font-size:0.78rem;color:var(--blue,#4a9eff);text-decoration:none}
     .sd-short{display:none}
     @media (max-width:768px){.sd-long{display:none}.sd-short{display:inline}.sd-table td,.sd-table th{padding:0.5rem}}`;
   document.head.appendChild(style);
 
-  window.DFShow = { isPlayed, expected, net, card, issues, artistTable, fill, read, sync, wire };
+  window.DFShow = { isPlayed, expected, net, card, issues, artistTable, renderShows, formHtml, fill, read, sync, wire };
 })();

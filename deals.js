@@ -96,6 +96,42 @@
   }
 
   // ---- form helpers: ids are prefix + '-deal-type' etc. ----
+
+  // The "Deal & contract" section of a lead form, for the page to insert.
+  function formHtml(p) {
+    return `
+    <details class="deal-box" id="${p}-deal">
+      <summary>Deal &amp; contract</summary>
+      <div class="deal-grid">
+        <div class="field"><label>Deal Type</label>
+          <select id="${p}-deal-type">
+            <option value="">Not set</option>
+            <option value="guarantee">Flat guarantee</option>
+            <option value="door">Door deal (% of tickets)</option>
+            <option value="vs">Guarantee vs. % (whichever is more)</option>
+            <option value="ticketbuy">Ticket buy / pay-to-play 🚩</option>
+          </select>
+        </div>
+        <div class="field"><label>Contract</label>
+          <select id="${p}-deal-contract">
+            <option value="">No contract yet</option>
+            <option value="reviewing">Received, reviewing</option>
+            <option value="signed">Signed</option>
+          </select>
+        </div>
+        <div class="field"><label>Guarantee ($)</label><input type="number" min="0" step="any" inputmode="decimal" id="${p}-deal-guarantee" placeholder="500" /></div>
+        <div class="field"><label>Our Share of the Door (%)</label><input type="number" min="0" max="100" step="any" inputmode="decimal" id="${p}-deal-door" placeholder="70" /></div>
+        <div class="field"><label>Deposit ($)</label><input type="number" min="0" step="any" inputmode="decimal" id="${p}-deal-deposit" placeholder="250" /></div>
+        <div class="field"><label>Deposit Due</label><input type="date" id="${p}-deal-deposit-due" /></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:0.75rem">
+        <label class="deal-check"><input type="checkbox" id="${p}-deal-expenses" /> The venue's expenses are listed in writing</label>
+        <label class="deal-check"><input type="checkbox" id="${p}-deal-deposit-paid" /> Deposit received</label>
+      </div>
+      <div id="${p}-deal-flags"></div>
+    </details>`;
+  }
+
   const FIELDS = { dealType: 'deal-type', guarantee: 'deal-guarantee', doorPct: 'deal-door', deposit: 'deal-deposit', depositDue: 'deal-deposit-due', contract: 'deal-contract' };
   const CHECKS = { expensesListed: 'deal-expenses', depositPaid: 'deal-deposit-paid' };
 
@@ -154,7 +190,7 @@
     .deal-flag{font-size:0.74rem;margin-top:3px}
     .deal-flag-red{color:#ff8a80}
     .deal-flag-amber{color:#f0c060}
-    #lead-deal-flags:not(:empty){margin-top:0.75rem}
+    [id$="-deal-flags"]:not(:empty){margin-top:0.75rem}
     .deal-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0.75rem;margin-bottom:1rem}
     .deal-total{background:var(--card,#131c1e);border:1px solid var(--border,rgba(255,255,255,0.08));border-radius:var(--r2,10px);padding:0.75rem 1rem}
     .deal-total b{display:block;font-size:1.3rem;color:var(--cream,#e8dfc8);font-weight:500}
@@ -162,5 +198,5 @@
     @media (max-width:768px){.deal-box .deal-grid{grid-template-columns:1fr}}`;
   document.head.appendChild(style);
 
-  window.DFDeals = { TYPES, CONTRACTS, money, terms, issues, card, totals, fill, read, sync, wire };
+  window.DFDeals = { TYPES, CONTRACTS, money, terms, issues, card, totals, formHtml, fill, read, sync, wire };
 })();
