@@ -6,7 +6,9 @@
 //  (netlify/functions/finder-background.mjs) and usually takes a minute
 //  or more, so the page starts the job and checks back until it's done.
 //  Each finder remembers its last search, so you can leave the page and
-//  come back to the results.
+//  come back to the results. A search can also be saved to run by itself
+//  every Monday (netlify/functions/weekly*.mjs); new places it finds land
+//  in the pipeline and a digest goes out by email or Discord.
 //
 //  Usage: const finder = DFFinder.mount(element, { mode: 'booking' | 'sync', onAdd(lead) -> true if added })
 //         finder.run({ location, artist, dates, categories })  // fill the form and search
@@ -15,6 +17,7 @@
 (function () {
   const START = '/.netlify/functions/finder-background';
   const STATUS = '/.netlify/functions/finder-status';
+  const WEEKLY = '/.netlify/functions/weekly';
   const POLL_MS = 5000;
   const GIVE_UP_MS = 12 * 60 * 1000;
 
@@ -161,11 +164,85 @@
             <span class="fb-hint">Takes 1 to 3 minutes. You can leave this page; results will be here when you come back.</span>
           </div>
         </div>
+        <div class="fb-box fb-weekly" data-f="weekly"></div>
         <div data-f="status"></div>
         <div data-f="results"></div>`;
       root.querySelectorAll('.fb-chip').forEach(b => b.addEventListener('click', () => b.classList.toggle('on')));
       $('go').addEventListener('click', start);
       $('location').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
+      loadWeekly();
+    }
+
+    // ---- every Monday ----
+    let weekly = { searches: [], lastRun: null, setup: {} };
+    let weeklyNote = '';
+
+    function formQuery() {
+      return { mode: opts.mode || 'booking', categories: [...root.querySelectorAll('.fb-chip.on')].map(b => b.dataset.cat), location: $('location').value.trim(), artist: $('artist').value, similar: $('similar').value.trim(), count: $('count').value };
+    }
+    const labelFor = q => [q.categories.map(c => LABEL[c] || c).join(', '), q.location].filter(Boolean).join(' · ');
+
+    async function loadWeekly() {
+      try {
+        const res = await call(WEEKLY);
+        if (res.ok) weekly = await res.json();
+      } catch {}
+      renderWeekly();
+    }
+
+    async function weeklyAction(body, done) {
+      let res, data = {};
+      try { res = await call(WEEKLY, { method: 'POST', body: JSON.stringify(body) }); data = await res.json().catch(() => ({})); }
+      catch { weeklyNote = 'Couldn’t reach the server. Try again.'; return renderWeekly(); }
+      weeklyNote = res.ok || res.status === 202 ? done(data) : (data.error || `Something went wrong (error ${res.status}).`);
+      if (data.searches) weekly.searches = data.searches;
+      renderWeekly();
+    }
+
+    function saveWeekly() {
+      const q = formQuery();
+      if (!q.categories.length) { weeklyNote = `Pick at least one kind of ${M.noun} first.`; return renderWeekly(); }
+      if (M.where.required && !q.location) { weeklyNote = 'Enter where to look first.'; return renderWeekly(); }
+      weeklyAction({ action: 'add', query: q, label: labelFor(q) }, () => 'Saved. It runs every Monday morning.');
+    }
+
+    function lastRunLine(run) {
+      if (!run) return '';
+      if (run.status === 'running') return 'Running now… new leads show up in the pipeline when it finishes.';
+      const when = new Date(run.finishedAt || run.startedAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      const mine = (run.searches || []).filter(s => s.mode === (opts.mode || 'booking'));
+      const added = mine.reduce((n, s) => n + (s.added || 0), 0);
+      const errors = mine.filter(s => s.error).map(s => `${s.label}: ${s.error}`);
+      const where = [run.digest?.email === 'sent' && 'emailed', run.digest?.discord === 'sent' && 'posted to Discord'].filter(Boolean).join(' and ');
+      return `Last run ${when}: ${added} new lead${added === 1 ? '' : 's'} here.${where ? ` Digest ${where}.` : ''}${errors.length ? ` Problems: ${errors.join('; ')}` : ''}`;
+    }
+
+    function renderWeekly() {
+      const el = $('weekly');
+      if (!el) return;
+      const mine = weekly.searches.filter(s => s.mode === (opts.mode || 'booking'));
+      const s = weekly.setup || {};
+      const digest = s.email || s.discord
+        ? `The Monday digest goes to ${[s.email && esc(s.to), s.discord && 'Discord'].filter(Boolean).join(' and ')}.`
+        : 'To get the Monday digest, set up Resend (email) or a Discord webhook. See the README.';
+      el.innerHTML = `
+        <div class="fb-label">Every Monday</div>
+        <p class="fb-hint fb-weekly-intro">Save a search and it runs by itself each Monday morning. Places that aren’t in your pipeline yet are added as new leads due that day. ${digest}</p>
+        ${mine.length ? `<ul class="fb-weekly-list">${mine.map(w => `<li><span>${esc(w.label)}</span><button class="fb-x" data-id="${esc(w.id)}" title="Stop running this search" aria-label="Remove ${esc(w.label)}">×</button></li>`).join('')}</ul>` : ''}
+        <div class="fb-actions">
+          <button class="btn btn-ghost" data-f="weekly-save">⟳ Run this search every Monday</button>
+          ${weekly.searches.length ? '<button class="btn btn-ghost" data-f="weekly-run">Run all now</button>' : ''}
+          ${s.email || s.discord ? '<button class="btn btn-ghost" data-f="weekly-digest">Send a digest now</button>' : ''}
+        </div>
+        ${weeklyNote || weekly.lastRun ? `<div class="fb-hint fb-weekly-note">${esc(weeklyNote || lastRunLine(weekly.lastRun))}</div>` : ''}`;
+      $('weekly-save').addEventListener('click', saveWeekly);
+      el.querySelectorAll('.fb-x').forEach(b => b.addEventListener('click', () => weeklyAction({ action: 'remove', id: b.dataset.id }, () => 'Removed.')));
+      if ($('weekly-run')) $('weekly-run').addEventListener('click', () => weeklyAction({ action: 'run' }, () => { setTimeout(loadWeekly, 60000); return 'Started. The searches take a few minutes; new leads appear in the pipeline when they finish.'; }));
+      if ($('weekly-digest')) $('weekly-digest').addEventListener('click', () => weeklyAction({ action: 'digest' }, d => {
+        const ok = [d.sent?.email === 'sent' && 'emailed', d.sent?.discord === 'sent' && 'posted to Discord'].filter(Boolean);
+        const bad = [d.sent?.email, d.sent?.discord].filter(x => x && x !== 'sent' && x !== 'off');
+        return ok.length ? `Digest ${ok.join(' and ')}.` + (bad.length ? ` Problem: ${bad.join('; ')}` : '') : `The digest didn’t go out: ${bad.join('; ') || 'nothing is set up'}.`;
+      }));
     }
 
     async function start() {
@@ -320,6 +397,12 @@
     .fb-grid{display:grid;grid-template-columns:2fr 1fr 2fr 1fr;gap:0.75rem 1rem}
     .fb-actions{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1rem}
     .fb-hint{font-size:0.76rem;color:var(--gray,#9aa39c)}
+    .fb-weekly-intro{margin:0 0 0.5rem;max-width:720px}
+    .fb-weekly-list{list-style:none;margin:0;padding:0}
+    .fb-weekly-list li{display:flex;justify-content:space-between;align-items:center;gap:0.75rem;padding:0.4rem 0;border-top:1px solid var(--border,rgba(255,255,255,0.08));font-size:0.85rem;color:var(--cream,#e8dfc8)}
+    .fb-x{background:none;border:1px solid var(--border2,rgba(255,255,255,0.14));color:var(--gray,#9aa39c);border-radius:999px;width:26px;height:26px;cursor:pointer;flex-shrink:0;font-size:1rem;line-height:1}
+    .fb-weekly .fb-actions{margin-top:0.6rem}
+    .fb-weekly-note{margin-top:0.6rem}
     .fb-status{padding:0.75rem 1rem;border-radius:var(--r,8px);font-size:0.85rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.6rem}
     .fb-status-info{background:rgba(74,158,255,0.08);color:var(--gray-light,#c9c2ae);border:1px solid rgba(74,158,255,0.2)}
     .fb-status-warn{background:rgba(200,146,42,0.1);color:#f0c060;border:1px solid rgba(200,146,42,0.3)}

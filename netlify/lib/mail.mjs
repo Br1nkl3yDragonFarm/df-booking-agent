@@ -4,6 +4,28 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 export const fromAddress = () => process.env.DF_FROM_EMAIL || 'Dragon Farm Booking <booking@dragonfarm.net>';
 export const replyTo = () => process.env.DF_REPLY_TO || 'booking@dragonfarm.net';
 
+// Send one plain-text email through Resend from the label's address.
+// Returns { ok: true, id } or { ok: false, error } with a message for people.
+export async function sendMail({ to, subject, text, bcc, idempotencyKey }) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { ok: false, error: 'Sending is not set up yet (RESEND_API_KEY is missing in Netlify).' };
+  const headers = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
+  let res, data;
+  try {
+    res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ from: fromAddress(), to: [to], ...(bcc ? { bcc: [bcc] } : {}), reply_to: replyTo(), subject, text })
+    });
+    data = await res.json().catch(() => ({}));
+  } catch {
+    return { ok: false, error: 'Couldn’t reach the email service. Try again in a minute.' };
+  }
+  if (!res.ok) return { ok: false, error: `The email service said: ${data.message || res.status}` };
+  return { ok: true, id: String(data.id || '') };
+}
+
 // "Jane Doe <Jane@Venue.com>" -> "jane@venue.com"
 export function bareAddress(s) {
   const m = String(s || '').match(/<([^>]+)>/);

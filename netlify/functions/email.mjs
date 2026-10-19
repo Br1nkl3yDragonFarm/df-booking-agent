@@ -11,7 +11,7 @@
 //                     copy of every email sent is BCC'd here too
 // ============================================================
 
-import { fromAddress, replyTo } from '../lib/mail.mjs';
+import { replyTo, sendMail } from '../lib/mail.mjs';
 import { passcodeMatches } from '../lib/passcode.mjs';
 import { clean, json, pushCapped, recordActivity } from '../lib/store.mjs';
 
@@ -34,23 +34,12 @@ export default async (req) => {
   if (!EMAIL.test(to)) return json(400, { error: 'That email address doesn’t look right.' });
   if (!subject || !text.trim()) return json(400, { error: 'Add a subject and a message.' });
 
-  const headers = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
   // The page sends a fresh id per message, so a retried request isn't sent twice.
-  if (/^[\w-]{8,64}$/.test(body.sendId || '')) headers['Idempotency-Key'] = body.sendId;
-  let res, data;
-  try {
-    res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ from: fromAddress(), to: [to], bcc: [replyTo()], reply_to: replyTo(), subject, text })
-    });
-    data = await res.json().catch(() => ({}));
-  } catch {
-    return json(502, { error: 'Couldn’t reach the email service. Try again in a minute.' });
-  }
-  if (!res.ok) return json(502, { error: `The email service said: ${data.message || res.status}` });
+  const idempotencyKey = /^[\w-]{8,64}$/.test(body.sendId || '') ? body.sendId : '';
+  const result = await sendMail({ to, subject, text, bcc: replyTo(), idempotencyKey });
+  if (!result.ok) return json(502, { error: result.error });
 
-  const sent = { at: new Date().toISOString(), to, subject, kind, id: clean(data.id, 100) };
+  const sent = { at: new Date().toISOString(), to, subject, kind, id: clean(result.id, 100) };
   if (leadId) await recordActivity(leadId, a => ({ ...a, sent: pushCapped(a.sent, sent) }));
   return json(200, { sent });
 };

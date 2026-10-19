@@ -9,14 +9,16 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
 - **Artist Roster** — Timothy Chance and Rasta Country (Poetic Nocturnal Creatures is off the roster for now)
 - **Sync & Licensing** — Film, TV, ads, games licensing info
 - **Booking Inquiry Form** — Direct booking requests with mailto fallback; each one lands in the booking (or sync) pipeline as a lead due today
-- **Press kits** (`epk.html`) — A public page per artist: bio, music, live video, past shows, draw, stage info
-- **Private tools** (`hub.html`, `dashboard.html`, `sync.html`, `agent.html`, `epk-edit.html`), all behind the team passcode:
+- **Press kit** (`epk.html`) — A public page for the band: bio, music, live video, past shows, draw, stage info
+- **Private tools** (`hub.html`, `dashboard.html`, `sync.html`, `agent.html`, `epk-edit.html`, `report.html`), all behind the team passcode:
   - Find Bookers (live web search for venues, talent buyers, booking agencies, festivals, colleges, breweries, private events and fairs, each result linked to its source) and Find Sync Contacts (the same live search for music supervisors, trailer houses, ad agencies, game studios, sync libraries and open briefs)
   - Email composer, and sending from `booking@dragonfarm.net` right from the tool. Replies are caught and flag the lead; one tap drafts the next follow-up or an answer
   - Tracked press kit links in pitches: see when a buyer opened the kit
   - Shared lead pipelines with follow-ups, calendar, deals and show-day settlement
   - "Fill nearby dates": from a booked show, search for gigs within a 3-hour drive on the open days around it
   - Invoices (print, PDF or email) with optional Stripe card payment links; deposits paid online are marked received, and overdue deposits get a one-tap reminder
+  - What's working (`report.html`): which kinds of leads, towns and lead sources turn into shows or placements, what they pay on average, and which emails get answered
+  - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
 ---
 
@@ -58,11 +60,17 @@ A reply is matched to its lead by the sender's address, or by the lead's website
 
 Each payment link takes one payment. When a deposit is paid, the lead's deposit is marked received the next time a page opens.
 
-### 6. Press Kits
+### 6. Weekly Searches and the Monday Digest (optional)
+In **Find bookers** or **Find sync contacts**, set up a search and tap **⟳ Run this search every Monday**. Every Monday at about 8 am Nashville time (7 am in winter), the saved searches run, places not already in a pipeline are added as new leads due that day, and a digest goes out listing new leads, follow-ups due (unanswered replies first), overdue deposits and this week's shows.
+- **Email:** goes out through Resend (step 4) to the booking inbox. To send it somewhere else, add `DF_DIGEST_TO` in Netlify.
+- **Discord (optional):** in your Discord server, open the channel's **Edit Channel → Integrations → Webhooks → New Webhook**, copy its URL and add it in Netlify as `DISCORD_WEBHOOK_URL` (mark it secret).
+- **Run all now** and **Send a digest now** on the finder let you try it without waiting for Monday. Each search costs about the same as running it by hand.
+
+### 7. Press Kits
 Open **Press Kits** (`epk-edit.html`) and fill in the artist's photo link, music and video links, past shows, draw and stage info.
 It starts from the bio on the public site. Add only facts you can stand behind: buyers check.
 
-### 7. Deploy to Netlify
+### 8. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -87,6 +95,8 @@ Connect this repo to Netlify:
 ├── epk.html         # Public press kit page (epk.html?a=tcrc)
 ├── epk-edit.html    # Press kit editor (private)
 ├── epk-data.js      # Press kit starting text, shared by the two pages above
+├── report.html      # What's working report (private)
+├── report.js        # Report numbers: conversion and pay by kind, town and source; which pitches get replies
 ├── netlify/functions/finder-background.mjs  # Runs a search (Claude + web search) in the background, booking or sync mode
 ├── netlify/functions/finder-status.mjs      # Returns a finished search
 ├── netlify/functions/crm.mjs                # Shared lead storage (Netlify Blobs)
@@ -97,9 +107,15 @@ Connect this repo to Netlify:
 ├── netlify/functions/payment-link.mjs       # Stripe payment link for an invoice
 ├── netlify/functions/stripe-webhook.mjs     # Stripe webhook: records payments
 ├── netlify/functions/epk.mjs                # Press kits: public read (counts tracked views), passcode save
+├── netlify/functions/weekly.mjs             # Weekly searches: save, remove, run now, send the digest now
+├── netlify/functions/weekly-run.mjs         # Scheduled every Monday: starts the weekly run
+├── netlify/functions/weekly-background.mjs  # Runs the saved searches, adds new leads, sends the digest
+├── netlify/lib/finder.mjs                   # The finder search itself, shared by the page searches and the weekly run
+├── netlify/lib/digest.mjs                   # Builds and sends the Monday digest (email and/or Discord)
+├── netlify/lib/weekly.mjs                   # Where weekly searches and the last run are kept
 ├── netlify/lib/passcode.mjs                 # Shared passcode check
 ├── netlify/lib/store.mjs                    # Shared Blobs helpers (pipelines, activity)
-├── netlify/lib/mail.mjs                     # Addresses and webhook signature checks
+├── netlify/lib/mail.mjs                     # Sending through Resend, addresses and webhook signature checks
 ├── netlify.toml     # Netlify deploy config
 └── README.md
 ```
