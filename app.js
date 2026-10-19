@@ -37,7 +37,7 @@ bookingForm.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Sending...';
   submitBtn.disabled = true;
 
-  // Build mailto as fallback (for sites without a form backend)
+  // Email version of the inquiry, used if the form service can't be reached
   const subject = encodeURIComponent(`Booking Inquiry — ${artist} · ${org}`);
   const body = encodeURIComponent(
     `BOOKING INQUIRY — Dragon Farm Records\n\n` +
@@ -49,16 +49,31 @@ bookingForm.addEventListener('submit', async (e) => {
     `Details:\n${details}`
   );
 
-  // Simulate sending (mailto fallback)
   const mailtoLink = `mailto:booking@dragonfarm.net?subject=${subject}&body=${body}`;
-  window.location.href = mailtoLink;
+  const successText = document.getElementById('form-success-text');
 
-  // Show success after short delay
-  setTimeout(() => {
-    submitBtn.textContent = 'Send Booking Inquiry →';
-    submitBtn.disabled = false;
-    formSuccess.classList.add('show');
+  // Send through Netlify Forms; if that fails, open the visitor's email app instead.
+  let sent = false;
+  try {
+    const res = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(new FormData(bookingForm)).toString()
+    });
+    sent = res.ok;
+  } catch (err) {
+    sent = false;
+  }
+  if (sent) {
+    successText.textContent = "✅ Your inquiry has been sent! We'll be in touch within 48 hours.";
     bookingForm.reset();
-    setTimeout(() => formSuccess.classList.remove('show'), 6000);
-  }, 800);
+  } else {
+    successText.textContent = '✉️ Your email app should open with the inquiry filled in. Just press send. If it doesn’t, email booking@dragonfarm.net.';
+    window.location.href = mailtoLink;
+  }
+
+  submitBtn.textContent = 'Send Booking Inquiry →';
+  submitBtn.disabled = false;
+  formSuccess.classList.add('show');
+  setTimeout(() => formSuccess.classList.remove('show'), 8000);
 });

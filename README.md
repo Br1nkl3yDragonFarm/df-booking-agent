@@ -22,6 +22,9 @@ Never put a real API key in the code.
 
 ### 2. Booking Email
 The public booking form and contact links send to `booking@dragonfarm.net` (set in `app.js` and `index.html`).
+The booking form submits through Netlify Forms (form name `booking-inquiry`); submissions appear under Netlify → **dragonfarmbookingagent** → Forms.
+To get each one by email: Project configuration → Notifications → Emails and webhooks → Form submission notifications → Add notification → Email, sent to `booking@dragonfarm.net`.
+If the form service can't be reached, the form falls back to opening the visitor's email app.
 
 ### 3. Turn On Shared Leads (CRM sync)
 Leads in the booking and sync pipelines are saved online (Netlify Blobs) so your phone and computer see the same list.
