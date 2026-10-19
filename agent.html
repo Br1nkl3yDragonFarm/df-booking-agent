@@ -307,6 +307,9 @@
       🎟️<span class="nav-tooltip">Booked Shows</span>
     </div>
     <div class="sidebar-spacer"></div>
+    <a href="epk-edit.html" style="text-decoration:none">
+      <div class="nav-icon-btn" style="font-size:1rem">📰<span class="nav-tooltip">Press Kits</span></div>
+    </a>
     <a href="index.html" style="text-decoration:none">
       <div class="nav-icon-btn" style="font-size:1rem">🌐<span class="nav-tooltip">Public Site</span></div>
     </a>
@@ -449,6 +452,7 @@
             <div id="bv-preview" class="email-preview ph">Fill in the details and tap Generate to create your booking pitch.</div>
             <div class="email-actions">
               <button class="btn btn-green" id="bv-copy" style="display:none" onclick="copyEmail('bv')">📋 Copy</button>
+              <button class="btn btn-gold" id="bv-send" style="display:none" onclick="sendBV()">📤 Review &amp; Send</button>
               <button class="btn btn-outline" id="bv-mail" style="display:none" onclick="openMail('bv')">📧 Open in Mail</button>
               <button class="btn btn-ghost" id="bv-save" style="display:none" onclick="saveFromEmail('booking')">+ Save Lead</button>
             </div>
@@ -489,6 +493,7 @@
             <div id="sv-preview" class="email-preview ph">Fill in the supervisor details and tap Generate.</div>
             <div class="email-actions">
               <button class="btn btn-green" id="sv-copy" style="display:none" onclick="copyEmail('sv')">📋 Copy</button>
+              <button class="btn btn-gold" id="sv-send" style="display:none" onclick="sendSV()">📤 Review &amp; Send</button>
               <button class="btn btn-outline" id="sv-mail" style="display:none" onclick="openMail('sv')">📧 Open in Mail</button>
               <button class="btn btn-ghost" id="sv-save" style="display:none" onclick="saveFromEmail('sync')">+ Save Lead</button>
             </div>
@@ -669,6 +674,7 @@
 <script src="deals.js"></script>
 <script src="showday.js"></script>
 <script src="finder.js"></script>
+<script src="outreach.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — UNIFIED APP
@@ -683,6 +689,7 @@ let sLeads = DFStore.load('df_sync_leads');
 let vFilter='all', sFilter='all';
 let curEmail={bv:{subject:'',body:''},sv:{subject:'',body:''}};
 let editingVId=null, editingSId=null;
+let bvLeadId=null, svLeadId=null;
 
 // ---- NAVIGATION ----
 const pageMap={overview:'Overview',venues:'Find Bookers',sync:'Find Sync Contacts',compose:'Email Composer',pipeline:'Booking Pipeline',syncpipe:'Sync Pipeline',calendar:'Calendar',shows:'Booked Shows'};
@@ -715,8 +722,8 @@ function renderOverview(){
   document.getElementById('os-sync').textContent=sLeads.length;
   document.getElementById('os-booked').textContent=booked;
   document.getElementById('os-licensed').textContent=licensed;
-  DFFollow.renderDue(document.getElementById('due-venue'),vLeads,{title:'Booking follow-ups',describe:l=>[l.city,l.contactName].filter(Boolean).join(' · '),handlers:{open:'editVLead',pitch:'pitchFromVLead',done:'followDoneV',snooze:'followSnoozeV'}});
-  DFFollow.renderDue(document.getElementById('due-sync'),sLeads,{title:'Sync follow-ups',describe:l=>[l.project||l.category,l.contact].filter(Boolean).join(' · '),handlers:{open:'editSLead',pitch:'pitchFromSLead',done:'followDoneS',snooze:'followSnoozeS'}});
+  DFFollow.renderDue(document.getElementById('due-venue'),vLeads,{title:'Booking follow-ups',describe:l=>[l.city,l.contactName].filter(Boolean).join(' · '),handlers:{open:'editVLead',pitch:'draftV',done:'followDoneV',snooze:'followSnoozeV'}});
+  DFFollow.renderDue(document.getElementById('due-sync'),sLeads,{title:'Sync follow-ups',describe:l=>[l.project||l.category,l.contact].filter(Boolean).join(' · '),handlers:{open:'editSLead',pitch:'draftS',done:'followDoneS',snooze:'followSnoozeS'}});
   // Recent venue leads
   const vr=document.getElementById('ov-venue-leads');
   const rv=[...vLeads].reverse().slice(0,4);
@@ -728,7 +735,7 @@ function renderOverview(){
 }
 
 // ---- FIND BOOKERS ----
-DFFinder.mount(document.getElementById('finder-root'),{onAdd(lead){
+const bookers=DFFinder.mount(document.getElementById('finder-root'),{onAdd(lead){
   const before=vLeads.length;addVLead(lead);
   if(vLeads.length===before){toast(`${lead.name} is already in your pipeline`,'err');return false}
   renderVenuePipe();toast(`${lead.name} added to pipeline ✓`,'ok');return true;
@@ -756,13 +763,13 @@ async function genBookingEmail(){
   document.getElementById('bv-preview').textContent='Writing your pitch...';document.getElementById('bv-preview').classList.remove('ph');
   const sys=`You are a booking agent for Dragon Farm Records, Nashville TN. Artists: Timothy Chance and Rasta Country (Country-Reggae, "Mr. Iron Man (Live)") and Poetic Nocturnal Creatures (Conscious Hip-Hop, "Peace Pipe"). Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.`;
   const prompt=`Write a ${document.getElementById('bv-tone').value} booking pitch to ${document.getElementById('bv-contact').value||'Booking Manager'} at ${venue}, a ${document.getElementById('bv-vtype').value} in ${document.getElementById('bv-city').value||'their city'}. Artist: ${document.getElementById('bv-artist').value}. ${document.getElementById('bv-notes').value?`Context: ${document.getElementById('bv-notes').value}`:''}`;
-  const raw=await ai(sys,prompt);
+  const raw=await ai(sys,prompt,1500);
   btn.innerHTML='✨ Generate Email';btn.disabled=false;
   let p;try{const m=raw.match(/\{[\s\S]*\}/);p=JSON.parse(m?m[0]:raw)}catch{document.getElementById('bv-preview').textContent=raw;return}
   curEmail.bv={subject:p.subject,body:p.body,venue,contact:document.getElementById('bv-contact').value};
   document.getElementById('bv-subject').textContent=`Subject: ${p.subject}`;
   document.getElementById('bv-preview').textContent=p.body;
-  ['bv-copy','bv-mail','bv-save'].forEach(id=>document.getElementById(id).style.display='inline-flex');
+  ['bv-send','bv-copy','bv-mail','bv-save'].forEach(id=>document.getElementById(id).style.display='inline-flex');
 }
 
 async function genSyncEmail(){
@@ -773,13 +780,13 @@ async function genSyncEmail(){
   document.getElementById('sv-preview').textContent='Writing your pitch...';document.getElementById('sv-preview').classList.remove('ph');
   const sys=`You are a sync licensing agent for Dragon Farm Records. Tracks: "Mr. Iron Man (Live)" (Country-Reggae, ISRC:QM6N22632890, UPC:820200992949) and "Peace Pipe" (Conscious Hip-Hop, ISRC:QM6N22632979, UPC:820200962904). Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.`;
   const prompt=`Write a ${document.getElementById('sv-tone').value} sync pitch to ${contact} at ${company} for their ${document.getElementById('sv-ptype').value}${document.getElementById('sv-project').value?` "${document.getElementById('sv-project').value}"`:''}.Track: ${document.getElementById('sv-track').value}. ${document.getElementById('sv-notes').value?`Context: ${document.getElementById('sv-notes').value}`:''}`;
-  const raw=await ai(sys,prompt);
+  const raw=await ai(sys,prompt,1500);
   btn.innerHTML='✨ Generate Pitch';btn.disabled=false;
   let p;try{const m=raw.match(/\{[\s\S]*\}/);p=JSON.parse(m?m[0]:raw)}catch{document.getElementById('sv-preview').textContent=raw;return}
   curEmail.sv={subject:p.subject,body:p.body,contact,company};
   document.getElementById('sv-subject').textContent=`Subject: ${p.subject}`;
   document.getElementById('sv-preview').textContent=p.body;
-  ['sv-copy','sv-mail','sv-save'].forEach(id=>document.getElementById(id).style.display='inline-flex');
+  ['sv-send','sv-copy','sv-mail','sv-save'].forEach(id=>document.getElementById(id).style.display='inline-flex');
 }
 
 function copyEmail(k){navigator.clipboard.writeText(`Subject: ${curEmail[k].subject}\n\n${curEmail[k].body}`).then(()=>toast('Copied to clipboard ✓','ok')).catch(()=>toast('Copy failed','err'))}
@@ -793,8 +800,8 @@ function populateLeadSelect(id,leads,type){
   const sel=document.getElementById(id);if(!sel)return;
   sel.innerHTML='<option value="">Select a lead...</option>'+leads.map(l=>`<option value="${l.id}">${esc(l.name)}${l.city?' — '+esc(l.city):''}</option>`).join('');
 }
-function loadVenueLead(){const id=document.getElementById('bv-load').value;if(!id)return;const l=vLeads.find(x=>x.id===id);if(!l)return;document.getElementById('bv-venue').value=l.name||'';document.getElementById('bv-contact').value=l.contactName||'';document.getElementById('bv-city').value=l.city||'';document.getElementById('bv-artist').value=l.artist==='Both'?'both':l.artist||'both';toast(`Loaded ${l.name} ✓`,'ok')}
-function loadSyncLead(){const id=document.getElementById('sv-load').value;if(!id)return;const l=sLeads.find(x=>x.id===id);if(!l)return;document.getElementById('sv-contact').value=l.contact||'';document.getElementById('sv-company').value=l.name||'';document.getElementById('sv-project').value=l.project||'';if(l.category)document.getElementById('sv-ptype').value=l.category;toast(`Loaded ${l.name} ✓`,'ok')}
+function loadVenueLead(){const id=document.getElementById('bv-load').value;if(!id)return;const l=vLeads.find(x=>x.id===id);if(!l)return;bvLeadId=id;document.getElementById('bv-venue').value=l.name||'';document.getElementById('bv-contact').value=l.contactName||'';document.getElementById('bv-city').value=l.city||'';document.getElementById('bv-artist').value=l.artist==='Both'?'both':l.artist||'both';toast(`Loaded ${l.name} ✓`,'ok')}
+function loadSyncLead(){const id=document.getElementById('sv-load').value;if(!id)return;const l=sLeads.find(x=>x.id===id);if(!l)return;svLeadId=id;document.getElementById('sv-contact').value=l.contact||'';document.getElementById('sv-company').value=l.name||'';document.getElementById('sv-project').value=l.project||'';if(l.category)document.getElementById('sv-ptype').value=l.category;toast(`Loaded ${l.name} ✓`,'ok')}
 
 // ---- VENUE PIPELINE ----
 function setVF(f,el){vFilter=f;document.querySelectorAll('#page-pipeline .pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderVenuePipe()}
@@ -802,7 +809,7 @@ function renderVenuePipe(){
   const q=document.getElementById('vp-search').value.toLowerCase();
   const filtered=vLeads.filter(l=>(vFilter==='all'||l.status===vFilter)&&(!q||[l.name,l.city,l.type,l.contactName,l.contactEmail].join(' ').toLowerCase().includes(q)));
   const tb=document.getElementById('vp-tbody');
-  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editVLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.city)}</td><td><span class="type-badge tb-green">${esc(l.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(l.artist)}</td><td class="cell-contact">${l.contactName?`<div>${esc(l.contactName)}</div>`:''} ${l.contactEmail?`<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${[...DFDeals.issues(l),...DFShow.issues(l)].some(i=>i.level==='red')?'<div class="deal-flag deal-flag-red">🚩 Needs attention</div>':''}</td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromVLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delVLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div>No leads found.</div></td></tr>`;
+  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editVLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.city)}</td><td><span class="type-badge tb-green">${esc(l.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(l.artist)}</td><td class="cell-contact">${l.contactName?`<div>${esc(l.contactName)}</div>`:''} ${l.contactEmail?`<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}${[...DFDeals.issues(l),...DFShow.issues(l)].some(i=>i.level==='red')?'<div class="deal-flag deal-flag-red">🚩 Needs attention</div>':''}</td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromVLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delVLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div>No leads found.</div></td></tr>`;
 }
 
 // ---- SYNC PIPELINE ----
@@ -812,7 +819,7 @@ function renderSyncPipe(){
   const catCls=c=>{if(!c)return'tb-purple';const l=c.toLowerCase();if(l.includes('tv')||l.includes('stream'))return'tb-blue';if(l.includes('game'))return'tb-green';if(l.includes('ad')||l.includes('brand'))return'tb-gold';return'tb-purple'};
   const filtered=sLeads.filter(l=>(sFilter==='all'||l.status===sFilter)&&(!q||[l.name,l.project,l.category,l.contact,l.email].join(' ').toLowerCase().includes(q)));
   const tb=document.getElementById('sp-tbody');
-  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editSLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.project||'—')}</td><td><span class="type-badge ${catCls(l.category)}">${esc(l.category||'—')}</span></td><td style="font-size:0.8rem;color:var(--gold-light)">${esc(l.track||'Both')}</td><td class="cell-contact">${l.contact?`<div>${esc(l.contact)}</div>`:''} ${l.email?`<a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div></td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromSLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delSLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🎬</div>No opportunities found.</div></td></tr>`;
+  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editSLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.project||'—')}</td><td><span class="type-badge ${catCls(l.category)}">${esc(l.category||'—')}</span></td><td style="font-size:0.8rem;color:var(--gold-light)">${esc(l.track||'Both')}</td><td class="cell-contact">${l.contact?`<div>${esc(l.contact)}</div>`:''} ${l.email?`<a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}</td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromSLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delSLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🎬</div>No opportunities found.</div></td></tr>`;
 }
 
 // ---- CRUD VENUE ----
@@ -837,7 +844,7 @@ function saveVenueLead(){
 }
 function addVLead(d){if(vLeads.some(l=>l.name===d.name))return;vLeads.push({id:Date.now().toString()+Math.random(),dateAdded:new Date().toISOString(),...d});saveVLeads();renderOverview()}
 function delVLead(id){if(!confirm('Remove this lead?'))return;vLeads=vLeads.filter(l=>l.id!==id);saveVLeads();renderVenuePipe();renderOverview();toast('Removed','ok')}
-function pitchFromVLead(id){const l=vLeads.find(x=>x.id===id);if(!l)return;document.getElementById('bv-venue').value=l.name;document.getElementById('bv-contact').value=l.contactName||'';document.getElementById('bv-city').value=l.city;go('compose',document.querySelector('[data-page=compose]'),'gold');switchTab('booking')}
+function pitchFromVLead(id){const l=vLeads.find(x=>x.id===id);if(!l)return;bvLeadId=id;document.getElementById('bv-venue').value=l.name;document.getElementById('bv-contact').value=l.contactName||'';document.getElementById('bv-city').value=l.city;go('compose',document.querySelector('[data-page=compose]'),'gold');switchTab('booking')}
 function saveVLeads(){DFStore.save('df_leads',vLeads)}
 
 // ---- CRUD SYNC ----
@@ -858,7 +865,7 @@ function saveSyncLead(){
 }
 function addSLead(d){sLeads.push({id:Date.now().toString()+Math.random(),dateAdded:new Date().toISOString(),...d});saveSLeads();renderOverview()}
 function delSLead(id){if(!confirm('Remove this opportunity?'))return;sLeads=sLeads.filter(l=>l.id!==id);saveSLeads();renderSyncPipe();renderOverview();toast('Removed','ok')}
-function pitchFromSLead(id){const l=sLeads.find(x=>x.id===id);if(!l)return;document.getElementById('sv-contact').value=l.contact||l.name||'';document.getElementById('sv-company').value=l.name||'';document.getElementById('sv-project').value=l.project||'';if(l.category)document.getElementById('sv-ptype').value=l.category;go('compose',document.querySelector('[data-page=compose]'),'gold');switchTab('sync-pitch')}
+function pitchFromSLead(id){const l=sLeads.find(x=>x.id===id);if(!l)return;svLeadId=id;document.getElementById('sv-contact').value=l.contact||l.name||'';document.getElementById('sv-company').value=l.name||'';document.getElementById('sv-project').value=l.project||'';if(l.category)document.getElementById('sv-ptype').value=l.category;go('compose',document.querySelector('[data-page=compose]'),'gold');switchTab('sync-pitch')}
 function saveSLeads(){DFStore.save('df_sync_leads',sLeads)}
 
 // ---- DEALS, SHOW DAY, CALENDAR ----
@@ -873,14 +880,34 @@ function calMove(step){calState.month=step?new Date(calState.month.getFullYear()
 function calFilter(a){calState.artist=a;renderCalendar()}
 function calSelect(date){calState.selected=calState.selected===date?'':date;renderCalendar()}
 function calAdd(date){openVModal();document.getElementById('vm-date').value=date}
-function renderShows(){DFShow.renderShows({totals:document.getElementById('shows-totals'),list:document.getElementById('shows-list')},vLeads,'editVLead')}
+function renderShows(){DFShow.renderShows({totals:document.getElementById('shows-totals'),list:document.getElementById('shows-list')},vLeads,'editVLead',{gaps:'fillGaps',invoice:'openInvoice',remind:'remindDeposit'})}
 
 // ---- FOLLOW-UPS ----
 ['vm','sm'].forEach(p=>document.getElementById(p+'-status').addEventListener('change',()=>DFFollow.suggest(document.getElementById(p+'-status'),document.getElementById(p+'-followup'))));
 function updateFollow(list,id,change,save){const i=list.findIndex(l=>l.id===id);if(i===-1)return;list[i]=change(list[i]);save();renderOverview();renderVenuePipe();renderSyncPipe();toast(DFFollow.touchMessage(list[i]),'ok')}
-function followDoneV(id){updateFollow(vLeads,id,l=>DFFollow.logTouch(l,'contacted'),saveVLeads)}
+function followDoneV(id){updateFollow(vLeads,id,l=>DFOut.markSent(l,'contacted'),saveVLeads)}
 function followSnoozeV(id){updateFollow(vLeads,id,DFFollow.snooze,saveVLeads)}
-function followDoneS(id){updateFollow(sLeads,id,l=>DFFollow.logTouch(l,'pitched'),saveSLeads)}
+function followDoneS(id){updateFollow(sLeads,id,l=>DFOut.markSent(l,'pitched'),saveSLeads)}
+
+// ---- OUTREACH & GETTING PAID ----
+// The lead a composer is writing to: the one loaded, or one with the same name.
+const bvLead=()=>vLeads.find(l=>l.id===bvLeadId)||vLeads.find(l=>l.name===document.getElementById('bv-venue').value.trim())||null;
+const svLead=()=>sLeads.find(l=>l.id===svLeadId)||sLeads.find(l=>l.name===document.getElementById('sv-company').value.trim())||null;
+function sendBV(){const l=bvLead();DFOut.send({subject:curEmail.bv.subject,body:curEmail.bv.body,kind:'pitch',lead:l,kit:!!l,onSent:()=>l&&followDoneV(l.id)})}
+function sendSV(){const l=svLead();DFOut.send({subject:curEmail.sv.subject,body:curEmail.sv.body,kind:'pitch',lead:l,kit:!!l,onSent:()=>l&&followDoneS(l.id)})}
+function draftV(id){const l=vLeads.find(x=>x.id===id);if(l)DFOut.followUp(l,'venue',()=>followDoneV(id),m=>m&&toast(m,'ok'))}
+function draftS(id){const l=sLeads.find(x=>x.id===id);if(l)DFOut.followUp(l,'sync',()=>followDoneS(id),m=>m&&toast(m,'ok'))}
+// Search for shows within a few hours' drive on the open days around a booked show.
+function fillGaps(id){
+  const l=vLeads.find(x=>x.id===id);if(!l)return;
+  const gap=DFOut.gaps(vLeads,l);
+  if(!gap.dates.length){toast('No open dates within 3 days of this show','err');return}
+  goTab('venues','green');
+  bookers.run({location:`Within about a 3-hour drive of ${l.city||l.name}`,artist:l.artist||'Both',dates:gap.text,categories:['venues','buyers','breweries','community']});
+}
+function setVLead(id,lead){const i=vLeads.findIndex(x=>x.id===id);if(i===-1)return;vLeads[i]=lead;saveVLeads();renderShows();renderVenuePipe()}
+function openInvoice(id){const l=vLeads.find(x=>x.id===id);if(l)DFOut.invoice(l,saved=>setVLead(id,saved))}
+function remindDeposit(id){const l=vLeads.find(x=>x.id===id);if(l)DFOut.reminder(l,()=>{setVLead(id,DFOut.handled(vLeads.find(x=>x.id===id)));toast('Reminder sent ✓','ok')})}
 function followSnoozeS(id){updateFollow(sLeads,id,DFFollow.snooze,saveSLeads)}
 
 // ---- EXPORT ----
@@ -898,28 +925,21 @@ function closeModal(t){document.getElementById('modal-'+t).classList.remove('ope
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
 
 // ---- AI ----
-async function ai(system,userMessage,retried=false){
+async function ai(system,userMessage,maxTokens=1500,retried=false){
   // Try Netlify function first, fall back to direct if key stored locally
   const localKey=localStorage.getItem('df_api_key');
   const endpoint=localKey?'https://api.anthropic.com/v1/messages':'/.netlify/functions/ai-proxy';
   const hdrs={'Content-Type':'application/json'};
-  let body={system,messages:[{role:'user',content:userMessage}]};
   if(!localKey)hdrs['x-df-passcode']=DFStore.passcode();
-  if(localKey){
-    hdrs['x-api-key']=localKey;hdrs['anthropic-version']='2023-06-01';hdrs['anthropic-dangerous-direct-browser-access']='true';
-    // Same request the proxy sends (netlify/functions/ai-proxy.js)
-    hdrs['anthropic-beta']='server-side-fallback-2026-07-01';
-    body={model:'claude-opus-5-5',max_tokens:16000,fallbacks:'default',output_config:{effort:'low'},...body};
-  }
+  if(localKey){hdrs['x-api-key']=localKey;hdrs['anthropic-version']='2023-06-01';hdrs['anthropic-dangerous-direct-browser-access']='true';}
   try{
-    const res=await fetch(endpoint,{method:'POST',headers:hdrs,body:JSON.stringify(body)});
-    if(res.status===401&&!localKey&&!retried&&DFStore.askPasscode())return ai(system,userMessage,true);
+    const res=await fetch(endpoint,{method:'POST',headers:hdrs,body:JSON.stringify({...(localKey?{model:'claude-opus-5-5'}:{}),max_tokens:localKey?16000:maxTokens,system,messages:[{role:'user',content:userMessage}]})});
+    if(res.status===401&&!localKey&&!retried&&DFStore.askPasscode())return ai(system,userMessage,maxTokens,true);
     const data=await res.json();
     if(data.error) return `Error: ${data.error.message||JSON.stringify(data.error)}`;
-    if(data.stop_reason==='refusal') return 'Error: The AI declined this request. Try rewording it.';
-    // The reply can open with a thinking block, so find the text
-    const text=data.content?.find(b=>b.type==='text')?.text;
-    if(text) return text;
+    // The answer is the text block; a direct call also returns a thinking block before it.
+    const textBlock=(data.content||[]).find(b=>b.type==='text');
+    if(textBlock) return textBlock.text;
     return JSON.stringify(data);
   }catch(err){return`Connection error: ${err.message}`}
 }
@@ -932,10 +952,13 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
 
 // ---- INIT ----
+// Mark deposits paid online as received, then redraw with the latest activity.
+function onActivity(){if(DFOut.reconcile(vLeads).length)saveVLeads();renderOverview();renderVenuePipe();renderSyncPipe();renderCalendar();renderShows()}
 renderOverview();
 renderVenuePipe();
 renderSyncPipe();
-DFStore.connect('df_leads',items=>{vLeads=items;renderOverview();renderVenuePipe();renderCalendar();renderShows()});
+DFOut.init(onActivity);
+DFStore.connect('df_leads',items=>{vLeads=items;onActivity()});
 DFStore.connect('df_sync_leads',items=>{sLeads=items;renderOverview();renderSyncPipe()});
 </script>
 
