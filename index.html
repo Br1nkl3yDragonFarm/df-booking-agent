@@ -172,31 +172,33 @@
 
       <div class="book-layout">
         <div class="book-form-wrap">
-          <form id="booking-form" class="booking-form">
+          <form id="booking-form" class="booking-form" name="booking-inquiry" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+            <input type="hidden" name="form-name" value="booking-inquiry" />
+            <p hidden><label>Leave this empty: <input name="bot-field" /></label></p>
             <div class="form-row">
               <div class="field-group">
                 <label for="bf-name">Your Name *</label>
-                <input type="text" id="bf-name" required placeholder="Jane Smith" />
+                <input type="text" id="bf-name" name="name" required placeholder="Jane Smith" />
               </div>
               <div class="field-group">
                 <label for="bf-org">Organization / Venue *</label>
-                <input type="text" id="bf-org" required placeholder="The Bluebird Cafe" />
+                <input type="text" id="bf-org" name="organization" required placeholder="The Bluebird Cafe" />
               </div>
             </div>
             <div class="form-row">
               <div class="field-group">
                 <label for="bf-email">Email *</label>
-                <input type="email" id="bf-email" required placeholder="booking@venue.com" />
+                <input type="email" id="bf-email" name="email" required placeholder="booking@venue.com" />
               </div>
               <div class="field-group">
                 <label for="bf-phone">Phone</label>
-                <input type="tel" id="bf-phone" placeholder="(615) 555-0100" />
+                <input type="tel" id="bf-phone" name="phone" placeholder="(615) 555-0100" />
               </div>
             </div>
             <div class="form-row">
               <div class="field-group">
                 <label for="bf-artist">Artist *</label>
-                <select id="bf-artist" required>
+                <select id="bf-artist" name="artist" required>
                   <option value="">Select an artist</option>
                   <option value="Timothy Chance and Rasta Country">Timothy Chance and Rasta Country</option>
                   <option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option>
@@ -206,7 +208,7 @@
               </div>
               <div class="field-group">
                 <label for="bf-type">Event Type *</label>
-                <select id="bf-type" required>
+                <select id="bf-type" name="event_type" required>
                   <option value="">Select type</option>
                   <option>Bar / Club Night</option>
                   <option>Festival</option>
@@ -222,11 +224,11 @@
             <div class="form-row">
               <div class="field-group">
                 <label for="bf-date">Event Date</label>
-                <input type="date" id="bf-date" />
+                <input type="date" id="bf-date" name="event_date" />
               </div>
               <div class="field-group">
                 <label for="bf-budget">Estimated Budget</label>
-                <select id="bf-budget">
+                <select id="bf-budget" name="budget">
                   <option value="">Prefer not to say</option>
                   <option>Under $500</option>
                   <option>$500 – $1,500</option>
@@ -238,15 +240,15 @@
             </div>
             <div class="field-group full">
               <label for="bf-location">Event Location / City</label>
-              <input type="text" id="bf-location" placeholder="Nashville, TN" />
+              <input type="text" id="bf-location" name="location" placeholder="Nashville, TN" />
             </div>
             <div class="field-group full">
               <label for="bf-details">Tell Us About Your Event</label>
-              <textarea id="bf-details" rows="5" placeholder="Describe your event, audience size, vibe, any special requirements..."></textarea>
+              <textarea id="bf-details" name="details" rows="5" placeholder="Describe your event, audience size, vibe, any special requirements..."></textarea>
             </div>
             <button type="submit" class="btn btn-gold submit-btn" id="submit-btn">Send Booking Inquiry →</button>
             <div class="form-success" id="form-success">
-              ✅ Your inquiry has been sent! We'll be in touch within 48 hours.
+              <span id="form-success-text">✅ Your inquiry has been sent! We'll be in touch within 48 hours.</span>
             </div>
           </form>
         </div>

@@ -139,6 +139,15 @@
     .hstat-div { width: 1px; background: var(--border-gold); align-self: stretch; }
 
     /* TOOL CARDS */
+    .today-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+    .today-card { background: var(--card); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 1.1rem 1.25rem; min-width: 0; }
+    .today-title { font-size: 0.85rem; color: var(--gray-light); margin-bottom: 0.6rem; }
+    .today-big { font-family: var(--font-d); font-size: 2rem; line-height: 1; color: var(--cream); margin-bottom: 0.5rem; }
+    .today-item { display: block; padding: 0.45rem 0; border-top: 1px solid rgba(255,255,255,0.06); color: var(--cream); text-decoration: none; font-size: 0.85rem; }
+    .today-item small { display: block; color: var(--gray); font-size: 0.74rem; }
+    .today-item a { color: #4a9eff; text-decoration: none; }
+    .today-empty { font-size: 0.85rem; color: var(--gray); }
+    .today-link { display: inline-block; margin-top: 0.6rem; font-size: 0.78rem; color: var(--gold-light); text-decoration: none; }
     .tools-label { font-family: var(--font-m); font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray); margin-bottom: 1rem; }
     .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2.5rem; }
 
@@ -315,6 +324,14 @@
       </div>
     </div>
 
+    <!-- TODAY -->
+    <div class="tools-label">Today</div>
+    <div class="today-grid">
+      <div class="today-card"><div class="today-title">⏰ Follow-ups due</div><div id="today-followups"></div></div>
+      <div class="today-card"><div class="today-title">🎤 Next show</div><div id="today-show"></div></div>
+      <div class="today-card"><div class="today-title">🚩 Needs attention</div><div id="today-flags"></div></div>
+    </div>
+
     <!-- TOOLS -->
     <div class="tools-label">Your Tools</div>
     <div class="tools-grid">
@@ -433,6 +450,9 @@
 </div>
 
 <script src="crm-store.js"></script>
+<script src="followups.js"></script>
+<script src="deals.js"></script>
+<script src="showday.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM COMMAND CENTER
@@ -523,8 +543,53 @@ function loadStats() {
   document.getElementById('st-sync').textContent = syncLeads.length;
   document.getElementById('st-pitched').textContent = pitched;
 
+  renderToday();
+
   const savedEmail = localStorage.getItem('df_booking_email');
   if (savedEmail) document.getElementById('booking-email').placeholder = savedEmail;
+}
+
+// ---- TODAY ----
+function hubEsc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function longDate(date) {
+  const [y, m, d] = date.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+}
+
+function renderToday() {
+  const venue = DFStore.load('df_leads');
+  const sync = DFStore.load('df_sync_leads');
+
+  // Follow-ups due across both pipelines
+  const due = [...DFFollow.due(venue).map(l => ({ l, page: 'dashboard.html', kind: 'Booking' })),
+               ...DFFollow.due(sync).map(l => ({ l, page: 'sync.html', kind: 'Sync' }))]
+    .sort((a, b) => a.l.followUp.localeCompare(b.l.followUp));
+  document.getElementById('today-followups').innerHTML = due.length
+    ? `<div class="today-big">${due.length}</div>` + due.slice(0, 4).map(({ l, page, kind }) =>
+        `<a class="today-item" href="${page}">${hubEsc(l.name)} ${DFFollow.badge(l)}<small>${kind}${l.city ? ' · ' + hubEsc(l.city) : ''}${l.project ? ' · ' + hubEsc(l.project) : ''}</small></a>`).join('') +
+      (due.length > 4 ? `<a class="today-link" href="dashboard.html">+${due.length - 4} more →</a>` : '')
+    : '<div class="today-empty">✅ You’re caught up.</div>';
+
+  // Next booked show
+  const today = DFFollow.today();
+  const shows = venue.filter(l => l.status === 'booked' && l.eventDate && l.eventDate >= today).sort((a, b) => a.eventDate.localeCompare(b.eventDate));
+  const next = shows[0];
+  document.getElementById('today-show').innerHTML = next
+    ? `<div class="today-item" style="border-top:none;padding-top:0">
+         <div style="font-size:1rem">${hubEsc(next.name)}</div>
+         <small>${longDate(next.eventDate)} · ${hubEsc(next.artist === 'Both' ? 'Both artists' : next.artist)}</small>
+         ${DFShow.card(next)}
+       </div>${shows.length > 1 ? `<div class="today-empty">Then ${shows.length - 1} more booked show${shows.length > 2 ? 's' : ''}.</div>` : ''}
+       <a class="today-link" href="dashboard.html">Open Booked Shows →</a>`
+    : '<div class="today-empty">No upcoming shows booked.</div>';
+
+  // Red flags from deals and shows
+  const flagged = venue.map(l => ({ l, issue: [...DFDeals.issues(l), ...DFShow.issues(l)].find(i => i.level === 'red') })).filter(x => x.issue);
+  document.getElementById('today-flags').innerHTML = flagged.length
+    ? `<div class="today-big" style="color:#ff8a80">${flagged.length}</div>` + flagged.slice(0, 4).map(({ l, issue }) =>
+        `<a class="today-item" href="dashboard.html">${hubEsc(l.name)}<small>${hubEsc(issue.text)}</small></a>`).join('') +
+      (flagged.length > 4 ? `<a class="today-link" href="dashboard.html">+${flagged.length - 4} more →</a>` : '')
+    : '<div class="today-empty">✅ Nothing flagged.</div>';
 }
 
 // ---- TOAST ----
