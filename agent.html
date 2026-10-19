@@ -933,13 +933,13 @@ async function ai(system,userMessage,maxTokens=1500,retried=false){
   if(!localKey)hdrs['x-df-passcode']=DFStore.passcode();
   if(localKey){hdrs['x-api-key']=localKey;hdrs['anthropic-version']='2023-06-01';hdrs['anthropic-dangerous-direct-browser-access']='true';}
   try{
-    const res=await fetch(endpoint,{method:'POST',headers:hdrs,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:userMessage}]})});
+    const res=await fetch(endpoint,{method:'POST',headers:hdrs,body:JSON.stringify({...(localKey?{model:'claude-opus-5-5'}:{}),max_tokens:localKey?16000:maxTokens,system,messages:[{role:'user',content:userMessage}]})});
     if(res.status===401&&!localKey&&!retried&&DFStore.askPasscode())return ai(system,userMessage,maxTokens,true);
     const data=await res.json();
     if(data.error) return `Error: ${data.error.message||JSON.stringify(data.error)}`;
-    // Netlify function returns {text:'...'}, Anthropic direct returns {content:[{text:'...'}]}
-    if(data.text) return data.text;
-    if(data.content?.[0]?.text) return data.content[0].text;
+    // The answer is the text block; a direct call also returns a thinking block before it.
+    const textBlock=(data.content||[]).find(b=>b.type==='text');
+    if(textBlock) return textBlock.text;
     return JSON.stringify(data);
   }catch(err){return`Connection error: ${err.message}`}
 }

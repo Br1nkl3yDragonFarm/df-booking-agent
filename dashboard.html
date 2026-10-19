@@ -1103,7 +1103,7 @@ async function callAI(system, userMessage, maxTokens = 1500, retried = false) {
     const res = await fetch('/.netlify/functions/ai-proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-df-passcode': DFStore.passcode() },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, system, messages: [{ role: 'user', content: userMessage }] })
+      body: JSON.stringify({ max_tokens: maxTokens, system, messages: [{ role: 'user', content: userMessage }] })
     });
     if (res.status === 401 && !retried && DFStore.askPasscode()) return callAI(system, userMessage, maxTokens, true);
     const text = await res.text();
