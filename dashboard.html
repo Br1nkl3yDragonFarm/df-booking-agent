@@ -735,7 +735,7 @@ ${dates ? `Proposed dates: ${dates}` : ''}
 ${notes ? `Additional context: ${notes}` : ''}
 Make it personal, professional, and compelling. Include the artist's unique selling points. End with a clear call to action.`;
 
-  const raw = await callAI(system, prompt, 1500);
+  const raw = await callAI(system, prompt);
   btn.textContent = 'Write the email';
   btn.disabled = false;
 
@@ -1049,14 +1049,14 @@ function exportLeads() {
 }
 
 // ---- AI HELPER ----
-async function callAI(system, userMessage, maxTokens = 1500, retried = false) {
+async function callAI(system, userMessage, retried = false) {
   try {
     const res = await fetch('/.netlify/functions/ai-proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-df-passcode': DFStore.passcode() },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, system, messages: [{ role: 'user', content: userMessage }] })
+      body: JSON.stringify({ system, messages: [{ role: 'user', content: userMessage }] })
     });
-    if (res.status === 401 && !retried && DFStore.askPasscode()) return callAI(system, userMessage, maxTokens, true);
+    if (res.status === 401 && !retried && DFStore.askPasscode()) return callAI(system, userMessage, true);
     const text = await res.text();
     let data;
     try { data = JSON.parse(text); } catch(e) { return 'AI service error. Please try again.'; }

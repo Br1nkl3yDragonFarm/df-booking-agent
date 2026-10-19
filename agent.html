@@ -756,7 +756,7 @@ async function genBookingEmail(){
   document.getElementById('bv-preview').textContent='Writing your pitch...';document.getElementById('bv-preview').classList.remove('ph');
   const sys=`You are a booking agent for Dragon Farm Records, Nashville TN. Artists: Timothy Chance and Rasta Country (Country-Reggae, "Mr. Iron Man (Live)") and Poetic Nocturnal Creatures (Conscious Hip-Hop, "Peace Pipe"). Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.`;
   const prompt=`Write a ${document.getElementById('bv-tone').value} booking pitch to ${document.getElementById('bv-contact').value||'Booking Manager'} at ${venue}, a ${document.getElementById('bv-vtype').value} in ${document.getElementById('bv-city').value||'their city'}. Artist: ${document.getElementById('bv-artist').value}. ${document.getElementById('bv-notes').value?`Context: ${document.getElementById('bv-notes').value}`:''}`;
-  const raw=await ai(sys,prompt,1500);
+  const raw=await ai(sys,prompt);
   btn.innerHTML='✨ Generate Email';btn.disabled=false;
   let p;try{const m=raw.match(/\{[\s\S]*\}/);p=JSON.parse(m?m[0]:raw)}catch{document.getElementById('bv-preview').textContent=raw;return}
   curEmail.bv={subject:p.subject,body:p.body,venue,contact:document.getElementById('bv-contact').value};
@@ -773,7 +773,7 @@ async function genSyncEmail(){
   document.getElementById('sv-preview').textContent='Writing your pitch...';document.getElementById('sv-preview').classList.remove('ph');
   const sys=`You are a sync licensing agent for Dragon Farm Records. Tracks: "Mr. Iron Man (Live)" (Country-Reggae, ISRC:QM6N22632890, UPC:820200992949) and "Peace Pipe" (Conscious Hip-Hop, ISRC:QM6N22632979, UPC:820200962904). Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.`;
   const prompt=`Write a ${document.getElementById('sv-tone').value} sync pitch to ${contact} at ${company} for their ${document.getElementById('sv-ptype').value}${document.getElementById('sv-project').value?` "${document.getElementById('sv-project').value}"`:''}.Track: ${document.getElementById('sv-track').value}. ${document.getElementById('sv-notes').value?`Context: ${document.getElementById('sv-notes').value}`:''}`;
-  const raw=await ai(sys,prompt,1500);
+  const raw=await ai(sys,prompt);
   btn.innerHTML='✨ Generate Pitch';btn.disabled=false;
   let p;try{const m=raw.match(/\{[\s\S]*\}/);p=JSON.parse(m?m[0]:raw)}catch{document.getElementById('sv-preview').textContent=raw;return}
   curEmail.sv={subject:p.subject,body:p.body,contact,company};
@@ -898,21 +898,28 @@ function closeModal(t){document.getElementById('modal-'+t).classList.remove('ope
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
 
 // ---- AI ----
-async function ai(system,userMessage,maxTokens=1500,retried=false){
+async function ai(system,userMessage,retried=false){
   // Try Netlify function first, fall back to direct if key stored locally
   const localKey=localStorage.getItem('df_api_key');
   const endpoint=localKey?'https://api.anthropic.com/v1/messages':'/.netlify/functions/ai-proxy';
   const hdrs={'Content-Type':'application/json'};
+  let body={system,messages:[{role:'user',content:userMessage}]};
   if(!localKey)hdrs['x-df-passcode']=DFStore.passcode();
-  if(localKey){hdrs['x-api-key']=localKey;hdrs['anthropic-version']='2023-06-01';hdrs['anthropic-dangerous-direct-browser-access']='true';}
+  if(localKey){
+    hdrs['x-api-key']=localKey;hdrs['anthropic-version']='2023-06-01';hdrs['anthropic-dangerous-direct-browser-access']='true';
+    // Same request the proxy sends (netlify/functions/ai-proxy.js)
+    hdrs['anthropic-beta']='server-side-fallback-2026-07-01';
+    body={model:'claude-opus-5-5',max_tokens:16000,fallbacks:'default',output_config:{effort:'low'},...body};
+  }
   try{
-    const res=await fetch(endpoint,{method:'POST',headers:hdrs,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system,messages:[{role:'user',content:userMessage}]})});
-    if(res.status===401&&!localKey&&!retried&&DFStore.askPasscode())return ai(system,userMessage,maxTokens,true);
+    const res=await fetch(endpoint,{method:'POST',headers:hdrs,body:JSON.stringify(body)});
+    if(res.status===401&&!localKey&&!retried&&DFStore.askPasscode())return ai(system,userMessage,true);
     const data=await res.json();
     if(data.error) return `Error: ${data.error.message||JSON.stringify(data.error)}`;
-    // Netlify function returns {text:'...'}, Anthropic direct returns {content:[{text:'...'}]}
-    if(data.text) return data.text;
-    if(data.content?.[0]?.text) return data.content[0].text;
+    if(data.stop_reason==='refusal') return 'Error: The AI declined this request. Try rewording it.';
+    // The reply can open with a thinking block, so find the text
+    const text=data.content?.find(b=>b.type==='text')?.text;
+    if(text) return text;
     return JSON.stringify(data);
   }catch(err){return`Connection error: ${err.message}`}
 }
