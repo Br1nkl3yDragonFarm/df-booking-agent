@@ -429,6 +429,11 @@
     .toast.error { border-color: rgba(224, 82, 82, 0.4); }
     @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
+    .mobile-tabs { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; grid-template-columns: repeat(6, 1fr); background: var(--surface); border-top: 1px solid var(--border); padding: 4px 0 calc(4px + env(safe-area-inset-bottom)); }
+    .mtab { background: none; border: none; color: var(--gray); font-family: var(--font-b); font-size: 0.62rem; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; cursor: pointer; }
+    .mtab span { font-size: 1.15rem; }
+    .mtab.active { color: var(--gold-light); }
+
     /* ---- MOBILE ---- */
     @media (max-width: 768px) {
       .app { grid-template-columns: 1fr; }
@@ -437,6 +442,9 @@
       .stats-row { grid-template-columns: 1fr 1fr; }
       .composer-grid { grid-template-columns: 1fr; }
       .form-row, .form-row-3 { grid-template-columns: 1fr; }
+      .page { padding: 1.25rem 1rem 5.5rem; }
+      .mobile-tabs { display: grid; }
+      #df-sync-pill { bottom: 74px !important; }
     }
   </style>
 </head>
@@ -473,6 +481,9 @@
       <div class="nav-item" data-page="crm">
         <span class="nav-icon">📋</span> Lead Tracker
         <span class="nav-badge" id="crm-badge">0</span>
+      </div>
+      <div class="nav-item" data-page="calendar">
+        <span class="nav-icon">📅</span> Calendar
       </div>
       <div class="nav-item" data-page="booked">
         <span class="nav-icon">🎤</span> Booked Shows
@@ -788,6 +799,26 @@
     </div>
 
     <!-- BOOKED PAGE -->
+    <div class="page" id="page-calendar">
+      <div class="section-hdr cal-toolbar">
+        <div><h2 id="cal-title">Calendar</h2><p>Holds and confirmed shows. Tap a day to see it or add a hold.</p></div>
+        <div class="cal-nav">
+          <button class="btn btn-ghost" onclick="calMove(-1)" aria-label="Previous month">‹</button>
+          <button class="btn btn-ghost" onclick="calMove(0)">Today</button>
+          <button class="btn btn-ghost" onclick="calMove(1)" aria-label="Next month">›</button>
+        </div>
+      </div>
+      <div class="cal-filters" id="cal-filters"></div>
+      <div class="cal-legend">
+        <span><span class="cal-dot cal-dot-booked"></span>Confirmed (status Booked)</span>
+        <span><span class="cal-dot cal-dot-hold"></span>Hold (any other open status)</span>
+        <span style="color:#ff8a80">⚠ Double-booked</span>
+      </div>
+      <div id="cal-grid"></div>
+      <div id="cal-day"></div>
+      <div id="cal-agenda"></div>
+    </div>
+
     <div class="page" id="page-booked">
       <div class="section-hdr" style="margin-bottom:1.25rem;">
         <div><h2>Booked Shows</h2><p>Confirmed performances</p></div>
@@ -849,7 +880,7 @@
         </div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Event Date (if known)</label><input type="date" id="lead-date" /></div>
+        <div class="field"><label>Show Date (hold or confirmed)</label><input type="date" id="lead-date" /></div>
         <div class="field"><label>Follow Up On</label><input type="date" id="lead-followup" /></div>
       </div>
       <div class="field"><label>Notes</label><textarea id="lead-notes" rows="3" placeholder="Capacity, vibe, how you found them, what was discussed..."></textarea></div>
@@ -862,10 +893,20 @@
 </div>
 
 <!-- TOAST -->
+<nav class="mobile-tabs" aria-label="Sections">
+  <button class="mtab active" data-tab="overview" onclick="showPage('overview')"><span>📊</span>Overview</button>
+  <button class="mtab" data-tab="finder" onclick="showPage('finder')"><span>🔍</span>Finder</button>
+  <button class="mtab" data-tab="composer" onclick="showPage('composer')"><span>✉️</span>Email</button>
+  <button class="mtab" data-tab="crm" onclick="showPage('crm')"><span>📋</span>Leads</button>
+  <button class="mtab" data-tab="calendar" onclick="showPage('calendar')"><span>📅</span>Calendar</button>
+  <button class="mtab" data-tab="booked" onclick="showPage('booked')"><span>🎤</span>Booked</button>
+</nav>
+
 <div class="toast-container" id="toast-container"></div>
 
 <script src="crm-store.js"></script>
 <script src="followups.js"></script>
+<script src="calendar.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -884,8 +925,10 @@ function showPage(id) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   document.querySelector(`[data-page="${id}"]`)?.classList.add('active');
-  const titles = { overview: 'Overview', finder: 'Venue Finder', composer: 'Email Composer', crm: 'Lead Tracker', booked: 'Booked Shows' };
+  document.querySelectorAll('.mtab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  const titles = { overview: 'Overview', finder: 'Venue Finder', composer: 'Email Composer', crm: 'Lead Tracker', calendar: 'Calendar', booked: 'Booked Shows' };
   document.getElementById('page-title').textContent = titles[id] || id;
+  if (id === 'calendar') renderCalendar();
   if (id === 'crm') renderLeads();
   if (id === 'booked') renderBooked();
   if (id === 'overview') renderOverview();
@@ -1277,6 +1320,10 @@ function saveLead() {
     notes: document.getElementById('lead-notes').value.trim(),
   };
 
+  const existing = editingLeadId ? leads.find(l => l.id === editingLeadId) : {};
+  const warning = DFCalendar.clashWarning(leads, { ...existing, ...leadData, id: editingLeadId || '' });
+  if (warning && !confirm(warning)) return;
+
   if (editingLeadId) {
     const idx = leads.findIndex(l => l.id === editingLeadId);
     leads[idx] = DFFollow.schedule(leads[idx], { ...leads[idx], ...leadData });
@@ -1290,6 +1337,43 @@ function saveLead() {
   closeModal('add-lead-modal');
   renderLeads();
   renderOverview();
+  renderCalendar();
+}
+
+// ---- CALENDAR ----
+const CAL_ARTISTS = [['all', 'All artists'], ['Timothy Chance and Rasta Country', 'Timothy Chance & Rasta Country'], ['Poetic Nocturnal Creatures', 'Poetic Nocturnal Creatures']];
+const calState = { month: new Date(), artist: 'all', selected: '' };
+
+function renderCalendar() {
+  document.getElementById('cal-filters').innerHTML = CAL_ARTISTS.map(([value, label]) =>
+    `<button class="cal-filter${calState.artist === value ? ' on' : ''}" onclick="calFilter('${value}')">${label}</button>`).join('');
+  DFCalendar.render({
+    title: document.getElementById('cal-title'),
+    grid: document.getElementById('cal-grid'),
+    day: document.getElementById('cal-day'),
+    agenda: document.getElementById('cal-agenda')
+  }, leads, calState, { open: 'editLead', add: 'calAdd', select: 'calSelect' });
+}
+
+function calMove(step) {
+  calState.month = step ? new Date(calState.month.getFullYear(), calState.month.getMonth() + step, 1) : new Date();
+  if (!step) calState.selected = DFFollow.today();
+  renderCalendar();
+}
+
+function calFilter(artist) {
+  calState.artist = artist;
+  renderCalendar();
+}
+
+function calSelect(date) {
+  calState.selected = calState.selected === date ? '' : date;
+  renderCalendar();
+}
+
+function calAdd(date) {
+  openAddLead();
+  document.getElementById('lead-date').value = date;
 }
 
 // ---- FOLLOW-UPS ----
@@ -1329,6 +1413,7 @@ function deleteLead(id) {
   saveLeads();
   renderLeads();
   updateStats();
+  renderCalendar();
   toast('Lead removed', 'success');
 }
 
@@ -1413,6 +1498,7 @@ DFStore.connect('df_leads', items => {
   renderOverview();
   renderLeads();
   renderBooked();
+  renderCalendar();
 });
 </script>
 </body>
