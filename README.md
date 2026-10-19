@@ -46,6 +46,7 @@ Connect this repo to Netlify:
 ├── app.js           # Public page: nav and booking form
 ├── config.js        # Label and roster details
 ├── crm-store.js     # Syncs pipeline leads with the crm function
+├── followups.js     # Follow-up dates, "due today" panel and touch rhythm
 ├── netlify/functions/crm.mjs  # Shared lead storage (Netlify Blobs)
 ├── netlify.toml     # Netlify deploy config
 └── README.md

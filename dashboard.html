@@ -520,6 +520,8 @@
         </div>
       </div>
 
+      <div class="df-due-panel" id="due-panel"></div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
         <!-- Recent leads -->
         <div>
@@ -846,7 +848,10 @@
           </select>
         </div>
       </div>
-      <div class="field"><label>Event Date (if known)</label><input type="date" id="lead-date" /></div>
+      <div class="form-row">
+        <div class="field"><label>Event Date (if known)</label><input type="date" id="lead-date" /></div>
+        <div class="field"><label>Follow Up On</label><input type="date" id="lead-followup" /></div>
+      </div>
       <div class="field"><label>Notes</label><textarea id="lead-notes" rows="3" placeholder="Capacity, vibe, how you found them, what was discussed..."></textarea></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('add-lead-modal')">Cancel</button>
@@ -860,6 +865,7 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script src="crm-store.js"></script>
+<script src="followups.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -906,6 +912,10 @@ function updateStats() {
 
 function renderOverview() {
   updateStats();
+  DFFollow.renderDue(document.getElementById('due-panel'), leads, {
+    describe: l => [l.city, l.contactName].filter(Boolean).join(' · '),
+    handlers: { open: 'editLead', pitch: 'pitchFromLead', done: 'followDone', snooze: 'followSnooze' }
+  });
   const recent = [...leads].reverse().slice(0, 5);
   const container = document.getElementById('recent-leads-list');
   if (!recent.length) {
@@ -1166,7 +1176,7 @@ function renderLeads() {
         ${l.contactName ? `<div style="font-size:0.82rem">${esc(l.contactName)}</div>` : ''}
         ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" style="font-size:0.78rem;color:var(--blue);text-decoration:none" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>` : ''}
       </td>
-      <td><span class="status-badge status-${l.status}">${l.status}</span></td>
+      <td><span class="status-badge status-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div></td>
       <td style="font-size:0.78rem;color:var(--gray)">${formatDate(l.dateAdded)}</td>
       <td onclick="event.stopPropagation()">
         <div style="display:flex;gap:4px">
@@ -1210,6 +1220,7 @@ function openAddLead() {
   document.getElementById('lead-id').value = '';
   ['name','city','contact-name','contact-email','contact-phone','notes'].forEach(f => document.getElementById('lead-' + f).value = '');
   document.getElementById('lead-date').value = '';
+  document.getElementById('lead-followup').value = '';
   document.getElementById('lead-status').value = 'new';
   document.getElementById('lead-type').value = 'Bar / Club';
   document.getElementById('lead-artist').value = 'Both';
@@ -1225,6 +1236,7 @@ function openAddLeadPrefilled(data) {
   if (data.contactName) document.getElementById('lead-contact-name').value = data.contactName;
   if (data.status) document.getElementById('lead-status').value = data.status;
   if (data.notes) document.getElementById('lead-notes').value = data.notes;
+  DFFollow.suggest(document.getElementById('lead-status'), document.getElementById('lead-followup'));
 }
 
 function editLead(id) {
@@ -1242,6 +1254,7 @@ function editLead(id) {
   document.getElementById('lead-contact-phone').value = lead.contactPhone || '';
   document.getElementById('lead-status').value = lead.status || 'new';
   document.getElementById('lead-date').value = lead.eventDate || '';
+  document.getElementById('lead-followup').value = lead.followUp || '';
   document.getElementById('lead-notes').value = lead.notes || '';
   document.getElementById('add-lead-modal').classList.add('open');
 }
@@ -1260,22 +1273,47 @@ function saveLead() {
     contactPhone: document.getElementById('lead-contact-phone').value.trim(),
     status: document.getElementById('lead-status').value,
     eventDate: document.getElementById('lead-date').value,
+    followUp: document.getElementById('lead-followup').value,
     notes: document.getElementById('lead-notes').value.trim(),
   };
 
   if (editingLeadId) {
     const idx = leads.findIndex(l => l.id === editingLeadId);
-    leads[idx] = { ...leads[idx], ...leadData };
+    leads[idx] = DFFollow.schedule(leads[idx], { ...leads[idx], ...leadData });
     toast(`${name} updated ✓`, 'success');
   } else {
-    leads.push({ id: Date.now().toString(), dateAdded: new Date().toISOString(), ...leadData });
+    leads.push(DFFollow.schedule(null, { id: Date.now().toString(), dateAdded: new Date().toISOString(), ...leadData }));
     toast(`${name} added to leads ✓`, 'success');
   }
 
   saveLeads();
   closeModal('add-lead-modal');
   renderLeads();
-  updateStats();
+  renderOverview();
+}
+
+// ---- FOLLOW-UPS ----
+document.getElementById('lead-status').addEventListener('change', () =>
+  DFFollow.suggest(document.getElementById('lead-status'), document.getElementById('lead-followup')));
+
+function updateLead(id, change) {
+  const idx = leads.findIndex(l => l.id === id);
+  if (idx === -1) return null;
+  leads[idx] = change(leads[idx]);
+  saveLeads();
+  renderOverview();
+  renderLeads();
+  return leads[idx];
+}
+
+function followDone(id) {
+  const lead = updateLead(id, l => DFFollow.logTouch(l, 'contacted'));
+  if (lead) toast(DFFollow.touchMessage(lead), 'success');
+}
+
+function followSnooze(id) {
+  const lead = updateLead(id, DFFollow.snooze);
+  if (lead) toast(DFFollow.touchMessage(lead), 'success');
 }
 
 function addLead(data) {
@@ -1309,8 +1347,8 @@ function saveLeads() {
 }
 
 function exportLeads() {
-  const headers = ['Name','City','Type','Artist','Contact Name','Contact Email','Contact Phone','Status','Event Date','Notes','Date Added'];
-  const rows = leads.map(l => [l.name,l.city,l.type,l.artist,l.contactName,l.contactEmail,l.contactPhone,l.status,l.eventDate,l.notes,l.dateAdded].map(v => `"${(v||'').replace(/"/g,'""')}"`));
+  const headers = ['Name','City','Type','Artist','Contact Name','Contact Email','Contact Phone','Status','Event Date','Follow Up','Notes','Date Added'];
+  const rows = leads.map(l => [l.name,l.city,l.type,l.artist,l.contactName,l.contactEmail,l.contactPhone,l.status,l.eventDate,l.followUp,l.notes,l.dateAdded].map(v => `"${(v||'').replace(/"/g,'""')}"`));
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const a = document.createElement('a');
