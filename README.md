@@ -20,8 +20,8 @@ In Netlify → **dragonfarmbookingagent** → Environment variables, set `ANTHRO
 The private tools call it through `netlify/functions/ai-proxy.js`, which only answers requests carrying the `DF_CRM_PASSCODE` from step 3.
 Never put a real API key in the code.
 
-### 2. Update Booking Email
-In `app.js`, replace `booking@dragonfarmrecords.com` with your real booking email.
+### 2. Booking Email
+The public booking form and contact links send to `booking@dragonfarm.net` (set in `app.js` and `index.html`).
 
 ### 3. Turn On Shared Leads (CRM sync)
 Leads in the booking and sync pipelines are saved online (Netlify Blobs) so your phone and computer see the same list.
@@ -49,6 +49,7 @@ Connect this repo to Netlify:
 ├── followups.js     # Follow-up dates, "due today" panel and touch rhythm
 ├── calendar.js      # Show calendar: holds, confirmed shows, double-booking checks
 ├── deals.js         # Offers & contracts: deal terms, deposits, red-flag checks
+├── showday.js       # Show-day details and settlement: what we were paid vs. the deal
 ├── netlify/functions/crm.mjs  # Shared lead storage (Netlify Blobs)
 ├── netlify.toml     # Netlify deploy config
 └── README.md
