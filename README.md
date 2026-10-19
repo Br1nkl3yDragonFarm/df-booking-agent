@@ -24,7 +24,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
 
 ### 1. Add Your Anthropic API Key
 In Netlify → **dragonfarmbookingagent** → Environment variables, set `ANTHROPIC_API_KEY` (get one at https://console.anthropic.com).
-The private tools call it through `netlify/functions/ai-proxy.js`, which only answers requests carrying the `DF_CRM_PASSCODE` from step 3.
+The private tools call it through `netlify/functions/ai-proxy.mjs`, which only answers requests carrying the `DF_CRM_PASSCODE` from step 3.
 Never put a real API key in the code.
 
 ### 2. Booking Email
