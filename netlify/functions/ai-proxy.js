@@ -1,6 +1,29 @@
+const { timingSafeEqual } = require('crypto');
+
+// Same passcode as the CRM, so only the label's own tools can spend the API key.
+function passcodeMatches(given, expected) {
+  const a = Buffer.from(String(given || ''));
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+const MODEL = 'claude-sonnet-4-20250514';
+const MAX_TOKENS = 4000;
+
+const fail = (statusCode, message) => ({
+  statusCode,
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ error: { message } })
+});
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+  const passcode = process.env.DF_CRM_PASSCODE;
+  if (!passcode) return fail(503, 'DF_CRM_PASSCODE is not set in Netlify');
+  if (!passcodeMatches(event.headers['x-df-passcode'], passcode)) {
+    return fail(401, 'Enter the Dragon Farm passcode to use AI tools');
   }
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -18,8 +41,8 @@ exports.handler = async (event) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: body.model || 'claude-sonnet-4-20250514',
-        max_tokens: body.max_tokens || 1500,
+        model: MODEL,
+        max_tokens: Math.min(Number(body.max_tokens) || 1500, MAX_TOKENS),
         system: body.system || '',
         messages: body.messages
       })
