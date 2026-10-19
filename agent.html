@@ -283,7 +283,7 @@
     </div>
     <div class="sidebar-div"></div>
     <div class="nav-icon-btn" data-page="venues" onclick="go('venues',this,'green')">
-      🎤<span class="nav-tooltip">Venue Finder</span>
+      🎤<span class="nav-tooltip">Find Bookers</span>
     </div>
     <div class="nav-icon-btn" data-page="sync" onclick="go('sync',this,'purple')">
       🎬<span class="nav-tooltip">Sync Finder</span>
@@ -353,9 +353,9 @@
       <div class="tool-cards">
         <div class="tool-card tool-card-venue" onclick="go('venues',document.querySelector('[data-page=venues]'),'green')">
           <div class="tool-card-icon">🎤</div>
-          <div class="tool-card-tag tag-green">AI Powered</div>
-          <div class="tool-card-name">Venue Finder</div>
-          <div class="tool-card-desc">Search bars, clubs, festivals, dispensaries and more nationwide. Get real contacts instantly.</div>
+          <div class="tool-card-tag tag-green">Live web search</div>
+          <div class="tool-card-name">Find Bookers</div>
+          <div class="tool-card-desc">Venues, talent buyers, booking agencies, festivals, colleges and more, each linked to where it was found.</div>
         </div>
         <div class="tool-card tool-card-sync" onclick="go('sync',document.querySelector('[data-page=sync]'),'purple')">
           <div class="tool-card-icon">🎬</div>
@@ -400,25 +400,7 @@
 
     <!-- ===== VENUE FINDER ===== -->
     <div class="page" id="page-venues">
-      <div class="sec-hdr">
-        <div><h2>Venue Finder</h2><p>AI-powered booking discovery — search anywhere nationwide</p></div>
-      </div>
-      <div class="finder-box">
-        <div class="finder-row">
-          <div class="field"><label>City / State / Region</label><input type="text" id="vf-loc" placeholder="Nashville TN · Southeast · Nationwide..." /></div>
-          <div class="field"><label>Artist</label><select id="vf-artist"><option value="both">Both Artists</option><option value="Timothy Chance and Rasta Country">TC & Rasta Country</option><option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option></select></div>
-          <div class="field"><label>Venue Type</label><select id="vf-type"><option value="all types">All Types</option><option value="bar or live music venue">Bar / Live Music</option><option value="festival">Festival</option><option value="dispensary">Dispensary</option><option value="smoke shop">Smoke Shop</option><option value="college venue">College</option><option value="outdoor amphitheater">Outdoor / Amph.</option><option value="restaurant with live music">Restaurant</option><option value="private event space">Private Events</option></select></div>
-          <div class="field"><label>Results</label><select id="vf-count"><option value="6">6</option><option value="10" selected>10</option><option value="15">15</option></select></div>
-          <button class="btn btn-gold" id="vf-btn" style="align-self:flex-end" onclick="findVenues()">Search</button>
-        </div>
-      </div>
-      <div class="results-box">
-        <div class="results-hdr">
-          <span class="results-count" id="vf-count-label">No search yet</span>
-          <button class="btn btn-ghost" id="vf-addall" style="display:none" onclick="addAllVenues()">+ Add All to Pipeline</button>
-        </div>
-        <div id="vf-results"><div class="empty-state"><div class="empty-icon">🗺️</div><p>Enter a location and tap <strong>Search</strong></p></div></div>
-      </div>
+      <div id="finder-root"></div>
     </div>
 
     <!-- ===== SYNC FINDER ===== -->
@@ -635,7 +617,7 @@
         <div class="field"><label>City / State *</label><input type="text" id="vm-city" placeholder="Nashville, TN" /></div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Type</label><select id="vm-type"><option>Bar / Club</option><option>Festival</option><option>Dispensary</option><option>Smoke Shop</option><option>College</option><option>Outdoor / Amph.</option><option>Restaurant</option><option>Private Event</option><option>Other</option></select></div>
+        <div class="field"><label>Type</label><select id="vm-type"><option>Bar / Club</option><option>Festival</option><option>Dispensary</option><option>Smoke Shop</option><option>College</option><option>Outdoor / Amph.</option><option>Restaurant</option><option>Private Event</option><option>Promoter / Talent Buyer</option><option>Booking Agency</option><option>Brewery / Winery</option><option>Fair / City Event</option><option>Other</option></select></div>
         <div class="field"><label>Artist</label><select id="vm-artist"><option value="Both">Both Artists</option><option value="Timothy Chance and Rasta Country">TC & Rasta Country</option><option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option></select></div>
       </div>
       <div class="form-row">
@@ -694,7 +676,7 @@
 
 <nav class="mobile-tabs" aria-label="Sections">
   <button class="mtab active" data-tab="overview" onclick="goTab('overview')"><span>🏠</span>Home</button>
-  <button class="mtab" data-tab="venues" onclick="goTab('venues','green')"><span>🎤</span>Venues</button>
+  <button class="mtab" data-tab="venues" onclick="goTab('venues','green')"><span>🎤</span>Find</button>
   <button class="mtab" data-tab="sync" onclick="goTab('sync','purple')"><span>🎬</span>Sync</button>
   <button class="mtab" data-tab="compose" onclick="goTab('compose','gold')"><span>✉️</span>Email</button>
   <button class="mtab" data-tab="pipeline" onclick="goTab('pipeline','green')"><span>📋</span>Leads</button>
@@ -710,6 +692,7 @@
 <script src="calendar.js"></script>
 <script src="deals.js"></script>
 <script src="showday.js"></script>
+<script src="finder.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — UNIFIED APP
@@ -722,13 +705,13 @@ document.getElementById('vm-forms-slot').outerHTML=DFDeals.formHtml('vm')+DFShow
 let vLeads = DFStore.load('df_leads');
 let sLeads = DFStore.load('df_sync_leads');
 let vFilter='all', sFilter='all';
-let vResults=[], sResults=[];
+let sResults=[];
 let syncCat='Film & TV';
 let curEmail={bv:{subject:'',body:''},sv:{subject:'',body:''}};
 let editingVId=null, editingSId=null;
 
 // ---- NAVIGATION ----
-const pageMap={overview:'Overview',venues:'Venue Finder',sync:'Sync Finder',compose:'Email Composer',pipeline:'Booking Pipeline',syncpipe:'Sync Pipeline',calendar:'Calendar',shows:'Booked Shows'};
+const pageMap={overview:'Overview',venues:'Find Bookers',sync:'Sync Finder',compose:'Email Composer',pipeline:'Booking Pipeline',syncpipe:'Sync Pipeline',calendar:'Calendar',shows:'Booked Shows'};
 const badgeMap={overview:'Dashboard',venues:'AI Search',sync:'AI Search',compose:'Compose',pipeline:'CRM',syncpipe:'CRM',calendar:'Shows',shows:'Shows'};
 const badgeColor={overview:'badge-green',venues:'badge-green',sync:'badge-purple',compose:'badge-gold',pipeline:'badge-green',syncpipe:'badge-purple',calendar:'badge-green',shows:'badge-green'};
 
@@ -770,39 +753,12 @@ function renderOverview(){
   sr.innerHTML=rs.length?rs.map(l=>`<div class="recent-lead-item" onclick="editSLead('${l.id}')"><div><div style="font-size:0.85rem;font-weight:500">${esc(l.name)}</div><div style="font-size:0.72rem;color:var(--gray)">${esc(l.project||l.category)}</div></div><span class="status-badge s-${l.status}">${l.status}</span></div>`).join(''):'<div class="empty-state" style="padding:1rem"><div class="empty-icon">🎬</div>No sync leads yet</div>';
 }
 
-// ---- VENUE FINDER ----
-async function findVenues(){
-  const loc=document.getElementById('vf-loc').value.trim();
-  if(!loc){toast('Enter a location','err');return}
-  const artist=document.getElementById('vf-artist').value;
-  const type=document.getElementById('vf-type').value;
-  const count=document.getElementById('vf-count').value;
-  const btn=document.getElementById('vf-btn');
-  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
-  document.getElementById('vf-results').innerHTML='<div class="loading-state"><span class="spinner"></span>Searching for venues with AI...</div>';
-  document.getElementById('vf-addall').style.display='none';
-  const artistInfo=artist==='both'?'Timothy Chance and Rasta Country (Country-Reggae fusion) AND Poetic Nocturnal Creatures (Conscious Hip-Hop)':artist;
-  const sys='You are a booking agent for Dragon Farm Records. Respond with ONLY a JSON array starting with [ and ending with ]. No markdown. No text before or after the JSON. Each item must have: name, type, city, state, capacity, contact_name, contact_email, contact_phone, booking_tip, best_for_artist.';
-  const prompt=`Find ${count} real ${type} venues in ${loc} good for ${artistInfo}. Include realistic contact details.`;
-  const raw=await ai(sys,prompt,2000);
-  btn.innerHTML='Search';btn.disabled=false;
-  let venues=[];
-  try{
-    let txt=raw.replace(/```json|```/g,'').replace(/^[^\[]*/,'').replace(/[^\]]*$/,'').trim();
-    if(!txt.startsWith('['))txt='['+txt;
-    if(!txt.endsWith(']'))txt=txt+']';
-    venues=JSON.parse(txt);
-  }
-  catch{document.getElementById('vf-results').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(raw.substring(0,200))}</p></div>`;return}
-  vResults=venues;
-  document.getElementById('vf-count-label').textContent=`${venues.length} venues found in ${loc}`;
-  document.getElementById('vf-addall').style.display='inline-flex';
-  document.getElementById('vf-results').innerHTML=`<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Venue</th><th>Location</th><th>Type</th><th>Cap.</th><th>Contact</th><th>Tip</th><th>Actions</th></tr></thead><tbody>${venues.map((v,i)=>`<tr><td><div class="cell-name">${esc(v.name)}</div><div class="cell-sub">${esc(v.best_for_artist||'')}</div></td><td class="cell-contact">${esc(v.city)}, ${esc(v.state)}</td><td><span class="type-badge tb-green">${esc(v.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(v.capacity||'—')}</td><td class="cell-contact">${v.contact_name?`<div>${esc(v.contact_name)}</div>`:''} ${v.contact_email?`<a href="mailto:${esc(v.contact_email)}">${esc(v.contact_email)}</a>`:''} ${v.contact_phone?`<div>${esc(v.contact_phone)}</div>`:''}</td><td class="cell-note">${esc(v.booking_tip||'')}</td><td><div class="row-actions"><button class="btn btn-ghost" onclick="addVenueAt(${i})">+ Lead</button><button class="btn btn-ghost" onclick="pitchVenueAt(${i})">✉</button></div></td></tr>`).join('')}</tbody></table></div>`;
-}
-
-function addVenueAt(i){const v=vResults[i];if(!v)return;addVLead({name:v.name,city:`${v.city}, ${v.state}`,type:v.type,artist:'Both',contactName:v.contact_name||'',contactEmail:v.contact_email||'',contactPhone:v.contact_phone||'',notes:v.booking_tip||'',status:'new'});toast(`${v.name} added ✓`,'ok')}
-function addAllVenues(){vResults.forEach((_,i)=>addVenueAt(i));toast(`${vResults.length} venues added to pipeline ✓`,'ok')}
-function pitchVenueAt(i){const v=vResults[i];if(!v)return;document.getElementById('bv-venue').value=v.name;document.getElementById('bv-contact').value=v.contact_name||'';document.getElementById('bv-city').value=`${v.city}, ${v.state}`;go('compose',document.querySelector('[data-page=compose]'),'gold');toast(`Loaded ${v.name} into composer`,'ok')}
+// ---- FIND BOOKERS ----
+DFFinder.mount(document.getElementById('finder-root'),{onAdd(lead){
+  const before=vLeads.length;addVLead(lead);
+  if(vLeads.length===before){toast(`${lead.name} is already in your pipeline`,'err');return false}
+  renderVenuePipe();toast(`${lead.name} added to pipeline ✓`,'ok');return true;
+}});
 
 // ---- SYNC FINDER ----
 function selCat(el){document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');syncCat=el.dataset.cat}
