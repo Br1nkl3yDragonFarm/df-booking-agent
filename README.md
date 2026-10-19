@@ -48,6 +48,7 @@ Connect this repo to Netlify:
 ├── crm-store.js     # Syncs pipeline leads with the crm function
 ├── followups.js     # Follow-up dates, "due today" panel and touch rhythm
 ├── calendar.js      # Show calendar: holds, confirmed shows, double-booking checks
+├── deals.js         # Offers & contracts: deal terms, deposits, red-flag checks
 ├── netlify/functions/crm.mjs  # Shared lead storage (Netlify Blobs)
 ├── netlify.toml     # Netlify deploy config
 └── README.md
