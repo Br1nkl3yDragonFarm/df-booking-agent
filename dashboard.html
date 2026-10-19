@@ -823,6 +823,7 @@
       <div class="section-hdr" style="margin-bottom:1.25rem;">
         <div><h2>Booked Shows</h2><p>Confirmed performances</p></div>
       </div>
+      <div class="deal-totals" id="deal-totals"></div>
       <div id="booked-list" style="background:var(--card);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
         <div class="empty-state"><div class="empty-icon">🎤</div><p>No confirmed shows yet.<br/>Mark leads as "Booked" in your Lead Tracker to see them here.</p></div>
       </div>
@@ -883,6 +884,36 @@
         <div class="field"><label>Show Date (hold or confirmed)</label><input type="date" id="lead-date" /></div>
         <div class="field"><label>Follow Up On</label><input type="date" id="lead-followup" /></div>
       </div>
+      <details class="deal-box" id="lead-deal">
+        <summary>Deal &amp; contract</summary>
+        <div class="deal-grid">
+          <div class="field"><label>Deal Type</label>
+            <select id="lead-deal-type">
+              <option value="">Not set</option>
+              <option value="guarantee">Flat guarantee</option>
+              <option value="door">Door deal (% of tickets)</option>
+              <option value="vs">Guarantee vs. % (whichever is more)</option>
+              <option value="ticketbuy">Ticket buy / pay-to-play 🚩</option>
+            </select>
+          </div>
+          <div class="field"><label>Contract</label>
+            <select id="lead-deal-contract">
+              <option value="">No contract yet</option>
+              <option value="reviewing">Received, reviewing</option>
+              <option value="signed">Signed</option>
+            </select>
+          </div>
+          <div class="field"><label>Guarantee ($)</label><input type="number" min="0" step="any" inputmode="decimal" id="lead-deal-guarantee" placeholder="500" /></div>
+          <div class="field"><label>Our Share of the Door (%)</label><input type="number" min="0" max="100" step="any" inputmode="decimal" id="lead-deal-door" placeholder="70" /></div>
+          <div class="field"><label>Deposit ($)</label><input type="number" min="0" step="any" inputmode="decimal" id="lead-deal-deposit" placeholder="250" /></div>
+          <div class="field"><label>Deposit Due</label><input type="date" id="lead-deal-deposit-due" /></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:0.75rem">
+          <label class="deal-check"><input type="checkbox" id="lead-deal-expenses" /> The venue's expenses are listed in writing</label>
+          <label class="deal-check"><input type="checkbox" id="lead-deal-deposit-paid" /> Deposit received</label>
+        </div>
+        <div id="lead-deal-flags"></div>
+      </details>
       <div class="field"><label>Notes</label><textarea id="lead-notes" rows="3" placeholder="Capacity, vibe, how you found them, what was discussed..."></textarea></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('add-lead-modal')">Cancel</button>
@@ -907,6 +938,7 @@
 <script src="crm-store.js"></script>
 <script src="followups.js"></script>
 <script src="calendar.js"></script>
+<script src="deals.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -1219,7 +1251,7 @@ function renderLeads() {
         ${l.contactName ? `<div style="font-size:0.82rem">${esc(l.contactName)}</div>` : ''}
         ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" style="font-size:0.78rem;color:var(--blue);text-decoration:none" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>` : ''}
       </td>
-      <td><span class="status-badge status-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div></td>
+      <td><span class="status-badge status-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFDeals.issues(l).some(i => i.level === 'red') ? '<div class="deal-flag deal-flag-red">🚩 Deal needs attention</div>' : ''}</td>
       <td style="font-size:0.78rem;color:var(--gray)">${formatDate(l.dateAdded)}</td>
       <td onclick="event.stopPropagation()">
         <div style="display:flex;gap:4px">
@@ -1232,25 +1264,33 @@ function renderLeads() {
 }
 
 function renderBooked() {
-  const booked = leads.filter(l => l.status === 'booked');
+  const booked = leads.filter(l => l.status === 'booked')
+    .sort((a, b) => (a.eventDate || '9999').localeCompare(b.eventDate || '9999'));
+  const t = DFDeals.totals(leads);
+  document.getElementById('deal-totals').innerHTML = booked.length ? `
+    <div class="deal-total"><b>${t.shows}</b><span>upcoming booked shows</span></div>
+    <div class="deal-total"><b>${DFDeals.money(t.guaranteed)}</b><span>guaranteed</span></div>
+    <div class="deal-total"><b>${DFDeals.money(t.depositsOwed)}</b><span>deposits still owed to us</span></div>
+    <div class="deal-total"><b style="color:${t.unsigned ? '#ff8a80' : 'var(--cream)'}">${t.unsigned}</b><span>without a signed contract</span></div>` : '';
   const container = document.getElementById('booked-list');
   if (!booked.length) {
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎤</div><p>No confirmed shows yet.</p></div>';
     return;
   }
   container.innerHTML = booked.map(l => `
-    <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-      <div style="display:flex;align-items:center;gap:1rem;">
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;cursor:pointer" onclick="editLead('${l.id}')">
+      <div style="display:flex;align-items:flex-start;gap:1rem;min-width:0;flex:1 1 260px">
         <div style="font-size:2rem">🎤</div>
-        <div>
+        <div style="min-width:0">
           <div style="font-weight:500;color:var(--cream);font-size:0.95rem">${esc(l.name)}</div>
           <div style="font-size:0.8rem;color:var(--gray)">${esc(l.city)} · ${esc(l.type)} · ${esc(l.artist)}</div>
-          ${l.eventDate ? `<div style="font-family:var(--font-m);font-size:0.7rem;color:var(--green);margin-top:3px">📅 ${l.eventDate}</div>` : ''}
+          ${l.eventDate ? `<div style="font-family:var(--font-m);font-size:0.7rem;color:var(--green);margin-top:3px">📅 ${l.eventDate}</div>` : '<div style="font-size:0.74rem;color:#f0c060;margin-top:3px">📅 No show date yet</div>'}
+          ${DFDeals.card(l)}
         </div>
       </div>
       <div style="text-align:right">
         ${l.contactName ? `<div style="font-size:0.82rem;color:var(--gray-light)">${esc(l.contactName)}</div>` : ''}
-        ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" style="font-size:0.78rem;color:var(--blue);text-decoration:none">${esc(l.contactEmail)}</a>` : ''}
+        ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" style="font-size:0.78rem;color:var(--blue);text-decoration:none" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>` : ''}
       </div>
     </div>
   `).join('');
@@ -1267,6 +1307,7 @@ function openAddLead() {
   document.getElementById('lead-status').value = 'new';
   document.getElementById('lead-type').value = 'Bar / Club';
   document.getElementById('lead-artist').value = 'Both';
+  DFDeals.fill('lead', {});
   document.getElementById('add-lead-modal').classList.add('open');
 }
 
@@ -1299,6 +1340,7 @@ function editLead(id) {
   document.getElementById('lead-date').value = lead.eventDate || '';
   document.getElementById('lead-followup').value = lead.followUp || '';
   document.getElementById('lead-notes').value = lead.notes || '';
+  DFDeals.fill('lead', lead);
   document.getElementById('add-lead-modal').classList.add('open');
 }
 
@@ -1318,6 +1360,7 @@ function saveLead() {
     eventDate: document.getElementById('lead-date').value,
     followUp: document.getElementById('lead-followup').value,
     notes: document.getElementById('lead-notes').value.trim(),
+    ...DFDeals.read('lead'),
   };
 
   const existing = editingLeadId ? leads.find(l => l.id === editingLeadId) : {};
@@ -1338,6 +1381,7 @@ function saveLead() {
   renderLeads();
   renderOverview();
   renderCalendar();
+  renderBooked();
 }
 
 // ---- CALENDAR ----
@@ -1375,6 +1419,9 @@ function calAdd(date) {
   openAddLead();
   document.getElementById('lead-date').value = date;
 }
+
+// ---- DEALS ----
+DFDeals.wire('lead');
 
 // ---- FOLLOW-UPS ----
 document.getElementById('lead-status').addEventListener('change', () =>
@@ -1432,8 +1479,8 @@ function saveLeads() {
 }
 
 function exportLeads() {
-  const headers = ['Name','City','Type','Artist','Contact Name','Contact Email','Contact Phone','Status','Event Date','Follow Up','Notes','Date Added'];
-  const rows = leads.map(l => [l.name,l.city,l.type,l.artist,l.contactName,l.contactEmail,l.contactPhone,l.status,l.eventDate,l.followUp,l.notes,l.dateAdded].map(v => `"${(v||'').replace(/"/g,'""')}"`));
+  const headers = ['Name','City','Type','Artist','Contact Name','Contact Email','Contact Phone','Status','Event Date','Follow Up','Deal','Deposit','Contract','Notes','Date Added'];
+  const rows = leads.map(l => [l.name,l.city,l.type,l.artist,l.contactName,l.contactEmail,l.contactPhone,l.status,l.eventDate,l.followUp,DFDeals.terms(l),l.deposit ? `${DFDeals.money(l.deposit)}${l.depositPaid ? ' received' : ''}` : '',DFDeals.CONTRACTS[l.contract || ''],l.notes,l.dateAdded].map(v => `"${(v||'').replace(/"/g,'""')}"`));
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const a = document.createElement('a');
