@@ -329,6 +329,11 @@
         </div>
       </div>
 
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem">
+        <div class="df-due-panel" id="due-venue"></div>
+        <div class="df-due-panel" id="due-sync"></div>
+      </div>
+
       <div class="tool-cards">
         <div class="tool-card tool-card-venue" onclick="go('venues',document.querySelector('[data-page=venues]'),'green')">
           <div class="tool-card-icon">🎤</div>
@@ -597,6 +602,7 @@
         <div class="field"><label>Phone</label><input type="tel" id="vm-cphone" /></div>
         <div class="field"><label>Status</label><select id="vm-status"><option value="new">New</option><option value="contacted">Contacted</option><option value="interested">Interested</option><option value="followup">Follow Up</option><option value="booked">Booked ✓</option><option value="passed">Passed</option></select></div>
       </div>
+      <div class="field"><label>Follow Up On</label><input type="date" id="vm-followup" /></div>
       <div class="field"><label>Notes</label><textarea id="vm-notes" rows="3"></textarea></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('venue')">Cancel</button>
@@ -628,6 +634,7 @@
         <div class="field"><label>Fee / Value</label><input type="text" id="sm-fee" placeholder="$2,500 · TBD" /></div>
         <div class="field"><label>Status</label><select id="sm-status"><option value="new">New</option><option value="pitched">Pitched</option><option value="reviewing">Reviewing</option><option value="followup">Follow Up</option><option value="licensed">Licensed ✓</option><option value="passed">Passed</option></select></div>
       </div>
+      <div class="field"><label>Follow Up On</label><input type="date" id="sm-followup" /></div>
       <div class="field"><label>Notes</label><textarea id="sm-notes" rows="3"></textarea></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('sync')">Cancel</button>
@@ -640,6 +647,7 @@
 <div class="toasts" id="toasts"></div>
 
 <script src="crm-store.js"></script>
+<script src="followups.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — UNIFIED APP
@@ -681,6 +689,8 @@ function renderOverview(){
   document.getElementById('os-sync').textContent=sLeads.length;
   document.getElementById('os-booked').textContent=booked;
   document.getElementById('os-licensed').textContent=licensed;
+  DFFollow.renderDue(document.getElementById('due-venue'),vLeads,{title:'Booking follow-ups',describe:l=>[l.city,l.contactName].filter(Boolean).join(' · '),handlers:{open:'editVLead',pitch:'pitchFromVLead',done:'followDoneV',snooze:'followSnoozeV'}});
+  DFFollow.renderDue(document.getElementById('due-sync'),sLeads,{title:'Sync follow-ups',describe:l=>[l.project||l.category,l.contact].filter(Boolean).join(' · '),handlers:{open:'editSLead',pitch:'pitchFromSLead',done:'followDoneS',snooze:'followSnoozeS'}});
   // Recent venue leads
   const vr=document.getElementById('ov-venue-leads');
   const rv=[...vLeads].reverse().slice(0,4);
@@ -823,7 +833,7 @@ function renderVenuePipe(){
   const q=document.getElementById('vp-search').value.toLowerCase();
   const filtered=vLeads.filter(l=>(vFilter==='all'||l.status===vFilter)&&(!q||[l.name,l.city,l.type,l.contactName,l.contactEmail].join(' ').toLowerCase().includes(q)));
   const tb=document.getElementById('vp-tbody');
-  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editVLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.city)}</td><td><span class="type-badge tb-green">${esc(l.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(l.artist)}</td><td class="cell-contact">${l.contactName?`<div>${esc(l.contactName)}</div>`:''} ${l.contactEmail?`<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span></td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromVLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delVLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div>No leads found.</div></td></tr>`;
+  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editVLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.city)}</td><td><span class="type-badge tb-green">${esc(l.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(l.artist)}</td><td class="cell-contact">${l.contactName?`<div>${esc(l.contactName)}</div>`:''} ${l.contactEmail?`<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div></td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromVLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delVLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div>No leads found.</div></td></tr>`;
 }
 
 // ---- SYNC PIPELINE ----
@@ -833,24 +843,24 @@ function renderSyncPipe(){
   const catCls=c=>{if(!c)return'tb-purple';const l=c.toLowerCase();if(l.includes('tv')||l.includes('stream'))return'tb-blue';if(l.includes('game'))return'tb-green';if(l.includes('ad')||l.includes('brand'))return'tb-gold';return'tb-purple'};
   const filtered=sLeads.filter(l=>(sFilter==='all'||l.status===sFilter)&&(!q||[l.name,l.project,l.category,l.contact,l.email].join(' ').toLowerCase().includes(q)));
   const tb=document.getElementById('sp-tbody');
-  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editSLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.project||'—')}</td><td><span class="type-badge ${catCls(l.category)}">${esc(l.category||'—')}</span></td><td style="font-size:0.8rem;color:var(--gold-light)">${esc(l.track||'Both')}</td><td class="cell-contact">${l.contact?`<div>${esc(l.contact)}</div>`:''} ${l.email?`<a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span></td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromSLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delSLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🎬</div>No opportunities found.</div></td></tr>`;
+  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editSLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.project||'—')}</td><td><span class="type-badge ${catCls(l.category)}">${esc(l.category||'—')}</span></td><td style="font-size:0.8rem;color:var(--gold-light)">${esc(l.track||'Both')}</td><td class="cell-contact">${l.contact?`<div>${esc(l.contact)}</div>`:''} ${l.email?`<a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div></td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromSLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delSLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🎬</div>No opportunities found.</div></td></tr>`;
 }
 
 // ---- CRUD VENUE ----
 function openModal(type){type==='venue'?openVModal():openSModal()}
 function openVModal(data){
   editingVId=null;document.getElementById('vm-title').textContent='Add Booking Lead';
-  ['vm-id','vm-name','vm-city','vm-cname','vm-cemail','vm-cphone','vm-notes'].forEach(id=>document.getElementById(id).value='');
+  ['vm-id','vm-name','vm-city','vm-cname','vm-cemail','vm-cphone','vm-followup','vm-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('vm-status').value='new';document.getElementById('vm-type').value='Bar / Club';document.getElementById('vm-artist').value='Both';
-  if(data){if(data.name)document.getElementById('vm-name').value=data.name;if(data.city)document.getElementById('vm-city').value=data.city;if(data.type)document.getElementById('vm-type').value=data.type;if(data.artist)document.getElementById('vm-artist').value=data.artist;if(data.contactName)document.getElementById('vm-cname').value=data.contactName;if(data.status)document.getElementById('vm-status').value=data.status;if(data.notes)document.getElementById('vm-notes').value=data.notes}
+  if(data){if(data.name)document.getElementById('vm-name').value=data.name;if(data.city)document.getElementById('vm-city').value=data.city;if(data.type)document.getElementById('vm-type').value=data.type;if(data.artist)document.getElementById('vm-artist').value=data.artist;if(data.contactName)document.getElementById('vm-cname').value=data.contactName;if(data.status)document.getElementById('vm-status').value=data.status;if(data.notes)document.getElementById('vm-notes').value=data.notes;DFFollow.suggest(document.getElementById('vm-status'),document.getElementById('vm-followup'))}
   document.getElementById('modal-venue').classList.add('open');
 }
-function editVLead(id){const l=vLeads.find(x=>x.id===id);if(!l)return;editingVId=id;document.getElementById('vm-title').textContent='Edit Lead';document.getElementById('vm-id').value=id;document.getElementById('vm-name').value=l.name||'';document.getElementById('vm-city').value=l.city||'';document.getElementById('vm-type').value=l.type||'Bar / Club';document.getElementById('vm-artist').value=l.artist||'Both';document.getElementById('vm-cname').value=l.contactName||'';document.getElementById('vm-cemail').value=l.contactEmail||'';document.getElementById('vm-cphone').value=l.contactPhone||'';document.getElementById('vm-status').value=l.status||'new';document.getElementById('vm-notes').value=l.notes||'';document.getElementById('modal-venue').classList.add('open')}
+function editVLead(id){const l=vLeads.find(x=>x.id===id);if(!l)return;editingVId=id;document.getElementById('vm-title').textContent='Edit Lead';document.getElementById('vm-id').value=id;document.getElementById('vm-name').value=l.name||'';document.getElementById('vm-city').value=l.city||'';document.getElementById('vm-type').value=l.type||'Bar / Club';document.getElementById('vm-artist').value=l.artist||'Both';document.getElementById('vm-cname').value=l.contactName||'';document.getElementById('vm-cemail').value=l.contactEmail||'';document.getElementById('vm-cphone').value=l.contactPhone||'';document.getElementById('vm-status').value=l.status||'new';document.getElementById('vm-followup').value=l.followUp||'';document.getElementById('vm-notes').value=l.notes||'';document.getElementById('modal-venue').classList.add('open')}
 function saveVenueLead(){
   const name=document.getElementById('vm-name').value.trim();if(!name){toast('Name required','err');return}
-  const d={name,city:document.getElementById('vm-city').value.trim(),type:document.getElementById('vm-type').value,artist:document.getElementById('vm-artist').value,contactName:document.getElementById('vm-cname').value.trim(),contactEmail:document.getElementById('vm-cemail').value.trim(),contactPhone:document.getElementById('vm-cphone').value.trim(),status:document.getElementById('vm-status').value,notes:document.getElementById('vm-notes').value.trim()};
-  if(editingVId){const i=vLeads.findIndex(l=>l.id===editingVId);vLeads[i]={...vLeads[i],...d};toast(`${name} updated ✓`,'ok')}
-  else{vLeads.push({id:Date.now().toString()+Math.random(),dateAdded:new Date().toISOString(),...d});toast(`${name} added ✓`,'ok')}
+  const d={name,city:document.getElementById('vm-city').value.trim(),type:document.getElementById('vm-type').value,artist:document.getElementById('vm-artist').value,contactName:document.getElementById('vm-cname').value.trim(),contactEmail:document.getElementById('vm-cemail').value.trim(),contactPhone:document.getElementById('vm-cphone').value.trim(),status:document.getElementById('vm-status').value,followUp:document.getElementById('vm-followup').value,notes:document.getElementById('vm-notes').value.trim()};
+  if(editingVId){const i=vLeads.findIndex(l=>l.id===editingVId);vLeads[i]=DFFollow.schedule(vLeads[i],{...vLeads[i],...d});toast(`${name} updated ✓`,'ok')}
+  else{vLeads.push(DFFollow.schedule(null,{id:Date.now().toString()+Math.random(),dateAdded:new Date().toISOString(),...d}));toast(`${name} added ✓`,'ok')}
   saveVLeads();closeModal('venue');renderVenuePipe();renderOverview();
 }
 function addVLead(d){if(vLeads.some(l=>l.name===d.name))return;vLeads.push({id:Date.now().toString()+Math.random(),dateAdded:new Date().toISOString(),...d});saveVLeads();renderOverview()}
@@ -861,17 +871,17 @@ function saveVLeads(){DFStore.save('df_leads',vLeads)}
 // ---- CRUD SYNC ----
 function openSModal(data){
   editingSId=null;document.getElementById('sm-title').textContent='Add Sync Opportunity';
-  ['sm-id','sm-name','sm-project','sm-cname','sm-cemail','sm-fee','sm-notes'].forEach(id=>document.getElementById(id).value='');
+  ['sm-id','sm-name','sm-project','sm-cname','sm-cemail','sm-fee','sm-followup','sm-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('sm-status').value='new';document.getElementById('sm-cat').value='Film';document.getElementById('sm-track').value='Both';
-  if(data){if(data.name)document.getElementById('sm-name').value=data.name;if(data.project)document.getElementById('sm-project').value=data.project;if(data.category)document.getElementById('sm-cat').value=data.category;if(data.track)document.getElementById('sm-track').value=data.track.includes('Iron')?'Mr. Iron Man (Live)':data.track.includes('Peace')?'Peace Pipe':'Both';if(data.contact)document.getElementById('sm-cname').value=data.contact;if(data.status)document.getElementById('sm-status').value=data.status;if(data.notes)document.getElementById('sm-notes').value=data.notes}
+  if(data){if(data.name)document.getElementById('sm-name').value=data.name;if(data.project)document.getElementById('sm-project').value=data.project;if(data.category)document.getElementById('sm-cat').value=data.category;if(data.track)document.getElementById('sm-track').value=data.track.includes('Iron')?'Mr. Iron Man (Live)':data.track.includes('Peace')?'Peace Pipe':'Both';if(data.contact)document.getElementById('sm-cname').value=data.contact;if(data.status)document.getElementById('sm-status').value=data.status;if(data.notes)document.getElementById('sm-notes').value=data.notes;DFFollow.suggest(document.getElementById('sm-status'),document.getElementById('sm-followup'))}
   document.getElementById('modal-sync').classList.add('open');
 }
-function editSLead(id){const l=sLeads.find(x=>x.id===id);if(!l)return;editingSId=id;document.getElementById('sm-title').textContent='Edit Opportunity';document.getElementById('sm-id').value=id;document.getElementById('sm-name').value=l.name||'';document.getElementById('sm-project').value=l.project||'';document.getElementById('sm-cat').value=l.category||'Film';document.getElementById('sm-track').value=l.track||'Both';document.getElementById('sm-cname').value=l.contact||'';document.getElementById('sm-cemail').value=l.email||'';document.getElementById('sm-fee').value=l.fee||'';document.getElementById('sm-status').value=l.status||'new';document.getElementById('sm-notes').value=l.notes||'';document.getElementById('modal-sync').classList.add('open')}
+function editSLead(id){const l=sLeads.find(x=>x.id===id);if(!l)return;editingSId=id;document.getElementById('sm-title').textContent='Edit Opportunity';document.getElementById('sm-id').value=id;document.getElementById('sm-name').value=l.name||'';document.getElementById('sm-project').value=l.project||'';document.getElementById('sm-cat').value=l.category||'Film';document.getElementById('sm-track').value=l.track||'Both';document.getElementById('sm-cname').value=l.contact||'';document.getElementById('sm-cemail').value=l.email||'';document.getElementById('sm-fee').value=l.fee||'';document.getElementById('sm-status').value=l.status||'new';document.getElementById('sm-followup').value=l.followUp||'';document.getElementById('sm-notes').value=l.notes||'';document.getElementById('modal-sync').classList.add('open')}
 function saveSyncLead(){
   const name=document.getElementById('sm-name').value.trim();if(!name){toast('Name required','err');return}
-  const d={name,project:document.getElementById('sm-project').value.trim(),category:document.getElementById('sm-cat').value,track:document.getElementById('sm-track').value,contact:document.getElementById('sm-cname').value.trim(),email:document.getElementById('sm-cemail').value.trim(),fee:document.getElementById('sm-fee').value.trim(),status:document.getElementById('sm-status').value,notes:document.getElementById('sm-notes').value.trim()};
-  if(editingSId){const i=sLeads.findIndex(l=>l.id===editingSId);sLeads[i]={...sLeads[i],...d};toast(`${name} updated ✓`,'ok')}
-  else{sLeads.push({id:Date.now().toString()+Math.random(),dateAdded:new Date().toISOString(),...d});toast(`${name} added ✓`,'ok')}
+  const d={name,project:document.getElementById('sm-project').value.trim(),category:document.getElementById('sm-cat').value,track:document.getElementById('sm-track').value,contact:document.getElementById('sm-cname').value.trim(),email:document.getElementById('sm-cemail').value.trim(),fee:document.getElementById('sm-fee').value.trim(),status:document.getElementById('sm-status').value,followUp:document.getElementById('sm-followup').value,notes:document.getElementById('sm-notes').value.trim()};
+  if(editingSId){const i=sLeads.findIndex(l=>l.id===editingSId);sLeads[i]=DFFollow.schedule(sLeads[i],{...sLeads[i],...d});toast(`${name} updated ✓`,'ok')}
+  else{sLeads.push(DFFollow.schedule(null,{id:Date.now().toString()+Math.random(),dateAdded:new Date().toISOString(),...d}));toast(`${name} added ✓`,'ok')}
   saveSLeads();closeModal('sync');renderSyncPipe();renderOverview();
 }
 function addSLead(d){sLeads.push({id:Date.now().toString()+Math.random(),dateAdded:new Date().toISOString(),...d});saveSLeads();renderOverview()}
@@ -879,11 +889,19 @@ function delSLead(id){if(!confirm('Remove this opportunity?'))return;sLeads=sLea
 function pitchFromSLead(id){const l=sLeads.find(x=>x.id===id);if(!l)return;document.getElementById('sv-contact').value=l.contact||l.name||'';document.getElementById('sv-company').value=l.name||'';document.getElementById('sv-project').value=l.project||'';if(l.category)document.getElementById('sv-ptype').value=l.category;go('compose',document.querySelector('[data-page=compose]'),'gold');switchTab('sync-pitch')}
 function saveSLeads(){DFStore.save('df_sync_leads',sLeads)}
 
+// ---- FOLLOW-UPS ----
+['vm','sm'].forEach(p=>document.getElementById(p+'-status').addEventListener('change',()=>DFFollow.suggest(document.getElementById(p+'-status'),document.getElementById(p+'-followup'))));
+function updateFollow(list,id,change,save){const i=list.findIndex(l=>l.id===id);if(i===-1)return;list[i]=change(list[i]);save();renderOverview();renderVenuePipe();renderSyncPipe();toast(DFFollow.touchMessage(list[i]),'ok')}
+function followDoneV(id){updateFollow(vLeads,id,l=>DFFollow.logTouch(l,'contacted'),saveVLeads)}
+function followSnoozeV(id){updateFollow(vLeads,id,DFFollow.snooze,saveVLeads)}
+function followDoneS(id){updateFollow(sLeads,id,l=>DFFollow.logTouch(l,'pitched'),saveSLeads)}
+function followSnoozeS(id){updateFollow(sLeads,id,DFFollow.snooze,saveSLeads)}
+
 // ---- EXPORT ----
 function exportCSV(type){
   const leads=type==='venue'?vLeads:sLeads;
-  const h=type==='venue'?['Name','City','Type','Artist','Contact','Email','Phone','Status','Notes','Added']:['Name','Project','Category','Track','Contact','Email','Fee','Status','Notes','Added'];
-  const rows=leads.map(l=>type==='venue'?[l.name,l.city,l.type,l.artist,l.contactName,l.contactEmail,l.contactPhone,l.status,l.notes,l.dateAdded]:[l.name,l.project,l.category,l.track,l.contact,l.email,l.fee,l.status,l.notes,l.dateAdded]);
+  const h=type==='venue'?['Name','City','Type','Artist','Contact','Email','Phone','Status','Follow Up','Notes','Added']:['Name','Project','Category','Track','Contact','Email','Fee','Status','Follow Up','Notes','Added'];
+  const rows=leads.map(l=>type==='venue'?[l.name,l.city,l.type,l.artist,l.contactName,l.contactEmail,l.contactPhone,l.status,l.followUp,l.notes,l.dateAdded]:[l.name,l.project,l.category,l.track,l.contact,l.email,l.fee,l.status,l.followUp,l.notes,l.dateAdded]);
   const csv=[h,...rows].map(r=>r.map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`dragon-farm-${type}-leads.csv`;a.click();
   toast('Exported as CSV ✓','ok');

@@ -251,6 +251,8 @@
         <div class="stat-card"><div class="stat-card-label">Licensed</div><div class="stat-card-num" id="stat-licensed" style="color:var(--green)">0</div><div class="stat-card-sub">placements secured</div></div>
       </div>
 
+      <div class="df-due-panel" id="due-panel"></div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
         <div>
           <div class="section-hdr"><div><h2>Recent Opportunities</h2><p>Latest sync leads</p></div><button class="btn btn-ghost" onclick="showPage('crm')">View All</button></div>
@@ -561,6 +563,7 @@
         </div>
         <div class="field"><label>Fee / Deal Value</label><input type="text" id="lead-fee" placeholder="e.g. $2,500 · TBD" /></div>
       </div>
+      <div class="field"><label>Follow Up On</label><input type="date" id="lead-followup" /></div>
       <div class="field"><label>Notes</label><textarea id="lead-notes" rows="3" placeholder="Project details, tone needed, deadline, what was discussed..."></textarea></div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
@@ -573,6 +576,7 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script src="crm-store.js"></script>
+<script src="followups.js"></script>
 <script>
 // ---- STATE ----
 let leads = DFStore.load('df_sync_leads');
@@ -615,6 +619,10 @@ function updateStats() {
 
 function renderOverview() {
   updateStats();
+  DFFollow.renderDue(document.getElementById('due-panel'), leads, {
+    describe: l => [l.project || l.category, l.contact].filter(Boolean).join(' · '),
+    handlers: { open: 'editLead', pitch: 'pitchFromLead', done: 'followDone', snooze: 'followSnooze' }
+  });
   const recent = [...leads].reverse().slice(0, 5);
   const container = document.getElementById('recent-list');
   if (!recent.length) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">🎬</div><p>No leads yet. Use Opportunity Finder.</p></div>'; return; }
@@ -834,7 +842,7 @@ function renderLeads() {
       <td><span class="type-badge ${getCatClass(l.category)}">${esc(l.category||'—')}</span></td>
       <td style="font-size:0.8rem;color:var(--gold-light)">${esc(l.track||'Both')}</td>
       <td class="opp-company">${l.contact?`<div>${esc(l.contact)}</div>`:''} ${l.email?`<a href="mailto:${esc(l.email)}" style="color:var(--blue);text-decoration:none;font-size:0.78rem" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</td>
-      <td><span class="status-badge status-${l.status}">${l.status}</span></td>
+      <td><span class="status-badge status-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div></td>
       <td style="font-size:0.78rem;color:var(--gray)">${formatDate(l.dateAdded)}</td>
       <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
         <button class="btn btn-ghost" onclick="pitchFromLead('${l.id}')">✉</button>
@@ -865,7 +873,7 @@ function renderLicensed() {
 function openAddLead() {
   editingId = null;
   document.getElementById('modal-title').textContent = 'Add Sync Opportunity';
-  ['lead-name','lead-project','lead-contact','lead-email','lead-fee','lead-notes'].forEach(id => document.getElementById(id).value = '');
+  ['lead-name','lead-project','lead-contact','lead-email','lead-fee','lead-followup','lead-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('lead-status').value = 'new';
   document.getElementById('lead-category').value = 'Film';
   document.getElementById('lead-track').value = 'Both';
@@ -881,6 +889,7 @@ function openAddLeadPrefilled(data) {
   if (data.contact) document.getElementById('lead-contact').value = data.contact;
   if (data.status) document.getElementById('lead-status').value = data.status;
   if (data.notes) document.getElementById('lead-notes').value = data.notes;
+  DFFollow.suggest(document.getElementById('lead-status'), document.getElementById('lead-followup'));
 }
 
 function editLead(id) {
@@ -896,6 +905,7 @@ function editLead(id) {
   document.getElementById('lead-email').value = l.email || '';
   document.getElementById('lead-fee').value = l.fee || '';
   document.getElementById('lead-status').value = l.status || 'new';
+  document.getElementById('lead-followup').value = l.followUp || '';
   document.getElementById('lead-notes').value = l.notes || '';
   document.getElementById('add-lead-modal').classList.add('open');
 }
@@ -911,17 +921,40 @@ function saveLead() {
     email: document.getElementById('lead-email').value.trim(),
     fee: document.getElementById('lead-fee').value.trim(),
     status: document.getElementById('lead-status').value,
+    followUp: document.getElementById('lead-followup').value,
     notes: document.getElementById('lead-notes').value.trim(),
   };
   if (editingId) {
     const idx = leads.findIndex(l => l.id === editingId);
-    leads[idx] = { ...leads[idx], ...data };
+    leads[idx] = DFFollow.schedule(leads[idx], { ...leads[idx], ...data });
     toast(`${name} updated ✓`, 'success');
   } else {
-    leads.push({ id: Date.now().toString() + Math.random(), dateAdded: new Date().toISOString(), ...data });
+    leads.push(DFFollow.schedule(null, { id: Date.now().toString() + Math.random(), dateAdded: new Date().toISOString(), ...data }));
     toast(`${name} added ✓`, 'success');
   }
-  saveLeads(); closeModal(); renderLeads(); updateStats();
+  saveLeads(); closeModal(); renderLeads(); renderOverview();
+}
+
+// ---- FOLLOW-UPS ----
+document.getElementById('lead-status').addEventListener('change', () =>
+  DFFollow.suggest(document.getElementById('lead-status'), document.getElementById('lead-followup')));
+
+function updateLead(id, change) {
+  const idx = leads.findIndex(l => l.id === id);
+  if (idx === -1) return null;
+  leads[idx] = change(leads[idx]);
+  saveLeads(); renderOverview(); renderLeads();
+  return leads[idx];
+}
+
+function followDone(id) {
+  const lead = updateLead(id, l => DFFollow.logTouch(l, 'pitched'));
+  if (lead) toast(DFFollow.touchMessage(lead), 'success');
+}
+
+function followSnooze(id) {
+  const lead = updateLead(id, DFFollow.snooze);
+  if (lead) toast(DFFollow.touchMessage(lead), 'success');
 }
 
 function addLead(data) {
@@ -949,8 +982,8 @@ function pitchFromLead(id) {
 function saveLeads() { DFStore.save('df_sync_leads', leads); }
 
 function exportLeads() {
-  const headers = ['Name','Project','Category','Track','Contact','Email','Fee','Status','Notes','Date Added'];
-  const rows = leads.map(l => [l.name,l.project,l.category,l.track,l.contact,l.email,l.fee,l.status,l.notes,l.dateAdded].map(v => `"${(v||'').replace(/"/g,'""')}"`));
+  const headers = ['Name','Project','Category','Track','Contact','Email','Fee','Status','Follow Up','Notes','Date Added'];
+  const rows = leads.map(l => [l.name,l.project,l.category,l.track,l.contact,l.email,l.fee,l.status,l.followUp,l.notes,l.dateAdded].map(v => `"${(v||'').replace(/"/g,'""')}"`));
   const csv = [headers,...rows].map(r => r.join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv'});
   const a = document.createElement('a');
