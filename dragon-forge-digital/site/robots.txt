@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://dragon-forge-digital.netlify.app/sitemap.xml
