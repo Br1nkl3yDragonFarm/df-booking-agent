@@ -639,14 +639,15 @@
 
 <div class="toasts" id="toasts"></div>
 
+<script src="crm-store.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — UNIFIED APP
 // ============================================================
 
 // ---- STATE ----
-let vLeads = JSON.parse(localStorage.getItem('df_leads')||'[]');
-let sLeads = JSON.parse(localStorage.getItem('df_sync_leads')||'[]');
+let vLeads = DFStore.load('df_leads');
+let sLeads = DFStore.load('df_sync_leads');
 let vFilter='all', sFilter='all';
 let vResults=[], sResults=[];
 let syncCat='Film & TV';
@@ -855,7 +856,7 @@ function saveVenueLead(){
 function addVLead(d){if(vLeads.some(l=>l.name===d.name))return;vLeads.push({id:Date.now().toString()+Math.random(),added:new Date().toISOString(),...d});saveVLeads();renderOverview()}
 function delVLead(id){if(!confirm('Remove this lead?'))return;vLeads=vLeads.filter(l=>l.id!==id);saveVLeads();renderVenuePipe();renderOverview();toast('Removed','ok')}
 function pitchFromVLead(id){const l=vLeads.find(x=>x.id===id);if(!l)return;document.getElementById('bv-venue').value=l.name;document.getElementById('bv-contact').value=l.cname||'';document.getElementById('bv-city').value=l.city;go('compose',document.querySelector('[data-page=compose]'),'gold');switchTab('booking')}
-function saveVLeads(){localStorage.setItem('df_leads',JSON.stringify(vLeads))}
+function saveVLeads(){DFStore.save('df_leads',vLeads)}
 
 // ---- CRUD SYNC ----
 function openSModal(data){
@@ -876,7 +877,7 @@ function saveSyncLead(){
 function addSLead(d){sLeads.push({id:Date.now().toString()+Math.random(),added:new Date().toISOString(),...d});saveSLeads();renderOverview()}
 function delSLead(id){if(!confirm('Remove this opportunity?'))return;sLeads=sLeads.filter(l=>l.id!==id);saveSLeads();renderSyncPipe();renderOverview();toast('Removed','ok')}
 function pitchFromSLead(id){const l=sLeads.find(x=>x.id===id);if(!l)return;document.getElementById('sv-contact').value=l.cname||l.name||'';document.getElementById('sv-company').value=l.name||'';document.getElementById('sv-project').value=l.project||'';if(l.cat)document.getElementById('sv-ptype').value=l.cat;go('compose',document.querySelector('[data-page=compose]'),'gold');switchTab('sync-pitch')}
-function saveSLeads(){localStorage.setItem('df_sync_leads',JSON.stringify(sLeads))}
+function saveSLeads(){DFStore.save('df_sync_leads',sLeads)}
 
 // ---- EXPORT ----
 function exportCSV(type){
@@ -921,6 +922,8 @@ function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateStrin
 renderOverview();
 renderVenuePipe();
 renderSyncPipe();
+DFStore.connect('df_leads',items=>{vLeads=items;renderOverview();renderVenuePipe()});
+DFStore.connect('df_sync_leads',items=>{sLeads=items;renderOverview();renderSyncPipe()});
 </script>
 
 <!-- API KEY MODAL -->

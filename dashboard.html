@@ -859,13 +859,14 @@
 <!-- TOAST -->
 <div class="toast-container" id="toast-container"></div>
 
+<script src="crm-store.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
 // ============================================================
 
 // ---- STATE ----
-let leads = JSON.parse(localStorage.getItem('df_leads') || '[]');
+let leads = DFStore.load('df_leads');
 let currentFilter = 'all';
 let venueResults = [];
 let currentEmail = { subject: '', body: '', venue: '', contact: '', email: '' };
@@ -1304,7 +1305,7 @@ function pitchFromLead(id) {
 }
 
 function saveLeads() {
-  localStorage.setItem('df_leads', JSON.stringify(leads));
+  DFStore.save('df_leads', leads);
 }
 
 function exportLeads() {
@@ -1367,6 +1368,13 @@ function formatDate(iso) {
 // ---- INIT ----
 updateStats();
 renderOverview();
+DFStore.connect('df_leads', items => {
+  leads = items;
+  updateStats();
+  renderOverview();
+  renderLeads();
+  renderBooked();
+});
 </script>
 </body>
 </html>
