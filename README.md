@@ -49,6 +49,7 @@ Connect this repo to Netlify:
 ├── followups.js     # Follow-up dates, "due today" panel and touch rhythm
 ├── calendar.js      # Show calendar: holds, confirmed shows, double-booking checks
 ├── deals.js         # Offers & contracts: deal terms, deposits, red-flag checks
+├── showday.js       # Show-day details and settlement: what we were paid vs. the deal
 ├── netlify/functions/crm.mjs  # Shared lead storage (Netlify Blobs)
 ├── netlify.toml     # Netlify deploy config
 └── README.md
