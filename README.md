@@ -45,7 +45,8 @@ Connect this repo to Netlify:
 ```
 /
 ├── index.html       # Main page
-├── styles.css       # All styles
+├── styles.css       # Public page styles
+├── logo-badge.webp  # Badge cut out of logo.jpg for the public page
 ├── app.js           # Public page: nav and booking form
 ├── config.js        # Label and roster details
 ├── crm-store.js     # Syncs pipeline leads with the crm function
