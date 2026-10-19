@@ -40,6 +40,9 @@ export default async (req) => {
   if (!result.ok) return json(502, { error: result.error });
 
   const sent = { at: new Date().toISOString(), to, subject, kind, id: clean(result.id, 100) };
+  // Sync pitches log which song and which versions (clean, instrumental…) went out.
+  if (body.track) sent.track = clean(body.track, 120);
+  if (Array.isArray(body.versions)) sent.versions = body.versions.slice(0, 8).map(v => clean(v, 20)).filter(Boolean);
   if (leadId) await recordActivity(leadId, a => ({ ...a, sent: pushCapped(a.sent, sent) }));
   return json(200, { sent });
 };

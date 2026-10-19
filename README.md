@@ -18,6 +18,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - "Fill nearby dates": from a booked show, search for gigs within a 3-hour drive on the open days around it
   - Invoices (print, PDF or email) with optional Stripe card payment links; deposits paid online are marked received, and overdue deposits get a one-tap reminder
   - What's working (`report.html`): which kinds of leads, towns and lead sources turn into shows or placements, what they pay on average, and which emails get answered
+  - Sync kit: a fee quote for each kind of placement (from the label's sync playbook, adjusted for use, term, territory and exclusivity), a printable one-stop sync + master license, links to the full mix, clean, instrumental and edits ready to tick into a pitch, and a pitch log of which song and versions went to which supervisor
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
 ---
@@ -66,11 +67,14 @@ In **Find bookers** or **Find sync contacts**, set up a search and tap **⟳ Run
 - **Discord (optional):** in your Discord server, open the channel's **Edit Channel → Integrations → Webhooks → New Webhook**, copy its URL and add it in Netlify as `DISCORD_WEBHOOK_URL` (mark it secret).
 - **Run all now** and **Send a digest now** on the finder let you try it without waiting for Monday. Each search costs about the same as running it by hand.
 
-### 7. Press Kits
+### 7. Song Versions for Sync
+On the sync page, open **Pitch composer → Versions ready to send** and paste share links (Dropbox, Google Drive, DISCO…) for the full mix, clean and instrumental versions, plus BPM, mood, writers and publisher. Supervisors often need a clean or instrumental version; without them you lose placements. Have a music attorney look over the one-stop license before the first one goes out.
+
+### 8. Press Kits
 Open **Press Kits** (`epk-edit.html`) and fill in the artist's photo link, music and video links, past shows, draw and stage info.
 It starts from the bio on the public site. Add only facts you can stand behind: buyers check.
 
-### 8. Deploy to Netlify
+### 9. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -96,6 +100,7 @@ Connect this repo to Netlify:
 ├── epk-edit.html    # Press kit editor (private)
 ├── epk-data.js      # Press kit starting text, shared by the two pages above
 ├── report.html      # What's working report (private)
+├── sync-kit.js      # Sync quotes, one-stop license, versions on file, pitch log
 ├── report.js        # Report numbers: conversion and pay by kind, town and source; which pitches get replies
 ├── netlify/functions/finder-background.mjs  # Runs a search (Claude + web search) in the background, booking or sync mode
 ├── netlify/functions/finder-status.mjs      # Returns a finished search
@@ -107,6 +112,7 @@ Connect this repo to Netlify:
 ├── netlify/functions/payment-link.mjs       # Stripe payment link for an invoice
 ├── netlify/functions/stripe-webhook.mjs     # Stripe webhook: records payments
 ├── netlify/functions/epk.mjs                # Press kits: public read (counts tracked views), passcode save
+├── netlify/functions/catalog.mjs            # Song versions (links) and metadata for sync pitches
 ├── netlify/functions/weekly.mjs             # Weekly searches: save, remove, run now, send the digest now
 ├── netlify/functions/weekly-run.mjs         # Scheduled every Monday: starts the weekly run
 ├── netlify/functions/weekly-background.mjs  # Runs the saved searches, adds new leads, sends the digest

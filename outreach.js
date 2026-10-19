@@ -145,7 +145,9 @@
     return m.querySelector('.dfo-modal');
   }
 
-  // opts: { to, subject, body, kind, lead, kit (offer the press kit link), onSent(sentInfo) }
+  // opts: { to, subject, body, kind, lead, kit (offer the press kit link), onSent(sentInfo),
+  //         extras: [{ key, label, text, checked }] (optional lines to tick on; the ticked keys are
+  //         logged as `versions`), log: { track } (logged with the send) }
   function send(opts) {
     const ready = setupInfo.email;
     const box = show(`
@@ -154,6 +156,7 @@
         <label class="dfo-field"><span>To</span><input type="email" data-k="to" value="${esc(opts.to || emailOf(opts.lead))}" placeholder="name@venue.com" /></label>
         <label class="dfo-field"><span>Subject</span><input type="text" data-k="subject" value="${esc(opts.subject)}" /></label>
         <label class="dfo-field"><span>Message</span><textarea data-k="body" rows="12">${esc(opts.body)}</textarea></label>
+        ${(opts.extras || []).map((x, i) => `<label class="dfo-check"><input type="checkbox" data-x="${i}"${x.checked ? ' checked' : ''} /> ${esc(x.label)}</label>`).join('')}
         ${opts.kit && opts.lead ? `<label class="dfo-check"><input type="checkbox" data-k="kit" /> Add a tracked press kit link (you'll see when they open it)</label>` : ''}
         <div class="dfo-note">${ready
           ? `Sends from <b>${esc(setupInfo.from)}</b>. Replies come back to your booking inbox${setupInfo.replies ? ' and flag this lead' : ''}.`
@@ -168,6 +171,17 @@
     const $ = k => box.querySelector(`[data-k="${k}"]`);
     const status = (msg, kind) => { $('status').className = 'dfo-status' + (kind ? ' dfo-' + kind : ''); $('status').textContent = msg; };
     const kitLine = () => KIT_LINE + kitUrl(opts.lead);
+    const ticked = () => (opts.extras || []).filter((x, i) => box.querySelector(`[data-x="${i}"]`).checked);
+    let extraBlock = '';
+    const syncExtras = () => {
+      const body = extraBlock ? $('body').value.replace('\n\n' + extraBlock, '').replace(extraBlock, '') : $('body').value;
+      extraBlock = ticked().map(x => x.text).join('\n');
+      $('body').value = extraBlock ? body.replace(/\s+$/, '') + '\n\n' + extraBlock : body;
+    };
+    if (opts.extras?.length) {
+      box.querySelectorAll('[data-x]').forEach(c => c.addEventListener('change', syncExtras));
+      syncExtras();
+    }
     if ($('kit')) {
       $('kit').checked = opts.kind === 'pitch' || opts.kind === 'followup';
       const sync = () => {
@@ -177,6 +191,7 @@
       $('kit').addEventListener('change', sync);
       sync();
     }
+    const logged = () => ({ ...(opts.log || {}), ...(opts.extras?.length ? { versions: ticked().map(x => x.key) } : {}) });
     const msg = () => ({ to: $('to').value.trim(), subject: $('subject').value.trim(), text: $('body').value });
     const finish = sent => { close(); if (opts.onSent) opts.onSent(sent); };
 
@@ -192,7 +207,7 @@
     });
     box.querySelector('[data-a="manual"]')?.addEventListener('click', () => {
       const m = msg();
-      finish({ at: new Date().toISOString(), to: m.to, subject: m.subject, kind: opts.kind, manual: true });
+      finish({ at: new Date().toISOString(), to: m.to, subject: m.subject, kind: opts.kind, manual: true, ...logged() });
     });
     const sendBtn = box.querySelector('[data-a="send"]');
     if (sendBtn) {
@@ -205,7 +220,7 @@
         sendBtn.textContent = 'Sending…';
         let res, data = {};
         try {
-          res = await call(SEND, { method: 'POST', body: JSON.stringify({ ...m, kind: opts.kind || 'other', leadId: opts.lead?.id || '', sendId }) });
+          res = await call(SEND, { method: 'POST', body: JSON.stringify({ ...m, ...logged(), kind: opts.kind || 'other', leadId: opts.lead?.id || '', sendId }) });
           data = await res.json().catch(() => ({}));
         } catch { res = null; }
         if (!res || !res.ok) {
@@ -467,6 +482,6 @@ ${inv.notes ? `<p class="muted">${esc(inv.notes)}</p>` : ''}
 
   window.DFOut = {
     init, setup: () => setupInfo, activity, lastReply, needsReply, handled, markSent, reconcile, badges,
-    kitUrl, send, followUp, invoice, reminder, gaps, close
+    kitUrl, send, followUp, invoice, reminder, gaps, show, close
   };
 })();

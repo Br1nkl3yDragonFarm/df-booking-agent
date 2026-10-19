@@ -203,6 +203,8 @@
     .placement:hover .placement-name { color: var(--gold); }
     .placement-name { font-weight: 600; font-size: 1rem; }
     .placement-sub { font-size: 0.88rem; color: var(--bone-dim); }
+    .placement-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 0.5rem; }
+    .placement-actions .btn { padding: 4px 10px; font-size: 0.8rem; }
     .placement-fee { font-family: var(--font-display); font-size: 1.25rem; color: var(--flame); margin-top: 0.25rem; }
     .placement-contact { text-align: right; font-size: 0.88rem; }
 
@@ -304,6 +306,7 @@
         <div class="nav-label">Manage</div>
         <button class="nav-item" data-page="crm">Sync pipeline <span class="nav-badge" id="crm-badge">0</span></button>
         <button class="nav-item" data-page="licensed">Licensed <span class="nav-badge" id="licensed-badge">0</span></button>
+        <button class="nav-item" data-page="log">Pitch log</button>
       </div>
     </nav>
 
@@ -451,11 +454,9 @@
           </div>
 
           <div class="composer-box">
-            <h3>Catalog reference</h3>
-            <dl class="facts">
-              <div><dt>Mr. Iron Man (Live)</dt><dd>ISRC QM6N22632890, UPC 820200992949. Country reggae; energetic, rootsy, authentic.</dd></div>
-              <div><dt>Rights</dt><dd>Master and sync available through Dragon Farm Records.</dd></div>
-            </dl>
+            <h3>Versions ready to send</h3>
+            <p>Links to each version of the song. Ticked versions go into the pitch, and the pitch log records which ones each supervisor got. Country reggae; energetic, rootsy, authentic. Master and sync through Dragon Farm Records.</p>
+            <div id="versions-box"><p>Loading…</p></div>
           </div>
         </div>
       </div>
@@ -465,7 +466,7 @@
     <div class="page" id="page-crm">
       <div class="section-hdr">
         <div><p>Every opportunity from pitch to placement. Select a row to edit it.</p></div>
-        <button class="btn btn-ghost" onclick="exportLeads()">Export CSV</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="showPage('log')">Pitch log</button><button class="btn btn-ghost" onclick="exportLeads()">Export CSV</button></div>
       </div>
       <div class="crm-controls">
         <div class="crm-search"><input type="text" id="crm-search" placeholder="Search supervisors, studios, projects" aria-label="Search opportunities" oninput="renderLeads()" /></div>
@@ -485,6 +486,14 @@
           <tbody id="leads-tbody"><tr><td colspan="8"><div class="empty-state"><p>No sync leads yet.</p></div></td></tr></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- PITCH LOG -->
+    <div class="page" id="page-log">
+      <div class="section-hdr">
+        <div><p>Every sync email sent from the tool: which song and versions went to whom, and whether they answered.</p></div>
+      </div>
+      <div id="pitch-log"></div>
     </div>
 
     <!-- LICENSED -->
@@ -572,6 +581,7 @@
 <script src="followups.js"></script>
 <script src="finder.js"></script>
 <script src="outreach.js"></script>
+<script src="sync-kit.js"></script>
 <script>
 // ---- STATE ----
 let leads = DFStore.load('df_sync_leads');
@@ -587,12 +597,17 @@ function showPage(id) {
   document.getElementById('page-' + id).classList.add('active');
   document.querySelector(`[data-page="${id}"]`)?.classList.add('active');
   document.querySelectorAll('.mtab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
-  const titles = { overview:'Overview', finder:'Find sync contacts', composer:'Pitch composer', crm:'Sync pipeline', licensed:'Licensed placements' };
+  const titles = { overview:'Overview', finder:'Find sync contacts', composer:'Pitch composer', crm:'Sync pipeline', licensed:'Licensed placements', log:'Pitch log' };
   document.getElementById('page-title').textContent = titles[id] || id;
   if (id === 'crm') renderLeads();
   if (id === 'licensed') renderLicensed();
   if (id === 'overview') renderOverview();
-  if (id === 'composer') populateLeadSelect();
+  if (id === 'composer') { populateLeadSelect(); DFSyncKit.renderVersions(document.getElementById('versions-box')); }
+  if (id === 'log') renderLog();
+}
+
+function renderLog() {
+  document.getElementById('pitch-log').innerHTML = DFSyncKit.pitchLog(leads);
 }
 document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => showPage(item.dataset.page)));
 
@@ -698,7 +713,12 @@ function composerLead() {
 
 function sendPitch() {
   const lead = composerLead();
-  DFOut.send({ subject: currentPitch.subject, body: currentPitch.body, kind: 'pitch', lead, kit: !!lead, onSent: () => lead && followDone(lead.id) });
+  const track = document.getElementById('pm-track').value;
+  DFOut.send({
+    subject: currentPitch.subject, body: currentPitch.body, kind: 'pitch', lead, kit: !!lead,
+    extras: DFSyncKit.extrasFor({ track }), log: { track: track.split(' by ')[0] },
+    onSent: () => lead && followDone(lead.id)
+  });
 }
 
 function draftFollowUp(id) {
@@ -761,6 +781,7 @@ function renderLeads() {
       <td style="font-size:0.85rem;color:var(--bone-dim);white-space:nowrap">${formatDate(l.dateAdded)}</td>
       <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
         <button class="btn btn-ghost" onclick="pitchFromLead('${l.id}')" title="Write a pitch" aria-label="Write a pitch to ${esc(l.name)}">✉</button>
+        <button class="btn btn-ghost" onclick="quoteLead('${l.id}')" title="Quote a fee and make the license" aria-label="Quote ${esc(l.name)}">$</button>
         <button class="btn btn-danger" onclick="deleteLead('${l.id}')" title="Remove opportunity" aria-label="Remove ${esc(l.name)}">✕</button>
       </div></td>
     </tr>`).join('');
@@ -776,6 +797,7 @@ function renderLicensed() {
         <div class="placement-name">${esc(l.name)}${l.project?`, ${esc(l.project)}`:''}</div>
         <div class="placement-sub">${esc([l.category, trackLabel(l.track)].filter(Boolean).join(', '))}</div>
         ${l.fee?`<div class="placement-fee">${esc(l.fee)}</div>`:''}
+        <div class="placement-actions" onclick="event.stopPropagation()"><button class="btn btn-ghost" onclick="quoteLead('${l.id}')">$ Quote</button> <button class="btn btn-ghost" onclick="licenseLead('${l.id}')">📄 License</button></div>
       </div>
       ${l.contact||l.email?`<div class="placement-contact">${l.contact?`<div>${esc(l.contact)}</div>`:''}${l.email?`<a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</div>`:''}
     </div>`).join('');
@@ -891,6 +913,16 @@ function pitchFromLead(id) {
   showPage('composer');
 }
 
+function quoteLead(id) {
+  const l = leads.find(x => x.id === id);
+  if (l) DFSyncKit.openQuote(l, updated => { leads = leads.map(x => x.id === id ? updated : x); saveLeads(); renderLeads(); renderLicensed(); });
+}
+
+function licenseLead(id) {
+  const l = leads.find(x => x.id === id);
+  if (l) DFSyncKit.openLicense(l);
+}
+
 function saveLeads() { DFStore.save('df_sync_leads', leads); }
 
 function exportLeads() {
@@ -951,7 +983,7 @@ function formatDate(iso) { if (!iso) return '—'; return new Date(iso).toLocale
 
 // ---- INIT ----
 updateStats(); renderOverview();
-DFOut.init(() => { renderOverview(); renderLeads(); });
+DFOut.init(() => { renderOverview(); renderLeads(); if (document.getElementById('page-log').classList.contains('active')) renderLog(); });
 DFStore.connect('df_sync_leads', items => {
   leads = items;
   updateStats(); renderOverview(); renderLeads(); renderLicensed();
