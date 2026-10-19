@@ -286,7 +286,7 @@
       🎤<span class="nav-tooltip">Find Bookers</span>
     </div>
     <div class="nav-icon-btn" data-page="sync" onclick="go('sync',this,'purple')">
-      🎬<span class="nav-tooltip">Sync Finder</span>
+      🎬<span class="nav-tooltip">Find Sync Contacts</span>
     </div>
     <div class="sidebar-div"></div>
     <div class="nav-icon-btn" data-page="compose" onclick="go('compose',this,'gold')">
@@ -359,9 +359,9 @@
         </div>
         <div class="tool-card tool-card-sync" onclick="go('sync',document.querySelector('[data-page=sync]'),'purple')">
           <div class="tool-card-icon">🎬</div>
-          <div class="tool-card-tag tag-purple">Film · TV · Games</div>
-          <div class="tool-card-name">Sync Finder</div>
-          <div class="tool-card-desc">Find music supervisors, studios and brands looking for exactly your sound.</div>
+          <div class="tool-card-tag tag-purple">Live web search</div>
+          <div class="tool-card-name">Find Sync Contacts</div>
+          <div class="tool-card-desc">Music supervisors, sync agencies, ad agencies, game studios and open briefs, each linked to where it was found.</div>
         </div>
         <div class="tool-card tool-card-booking" onclick="go('compose',document.querySelector('[data-page=compose]'),'gold')">
           <div class="tool-card-icon">✉️</div>
@@ -405,31 +405,7 @@
 
     <!-- ===== SYNC FINDER ===== -->
     <div class="page" id="page-sync">
-      <div class="sec-hdr">
-        <div><h2>Sync Finder</h2><p>Find music supervisors, studios and brands across all media</p></div>
-      </div>
-      <div class="cat-grid">
-        <div class="cat-card sel" data-cat="Film & TV" onclick="selCat(this)"><div class="cat-icon">🎬</div><div class="cat-name">Film & TV</div><div class="cat-desc">Supervisors & streaming</div></div>
-        <div class="cat-card" data-cat="Video Games" onclick="selCat(this)"><div class="cat-icon">🎮</div><div class="cat-name">Video Games</div><div class="cat-desc">Studios & indie devs</div></div>
-        <div class="cat-card" data-cat="Advertising & Brands" onclick="selCat(this)"><div class="cat-icon">📱</div><div class="cat-name">Ads & Brands</div><div class="cat-desc">Agencies & campaigns</div></div>
-        <div class="cat-card" data-cat="All Categories" onclick="selCat(this)"><div class="cat-icon">🌐</div><div class="cat-name">All Categories</div><div class="cat-desc">Cast a wide net</div></div>
-      </div>
-      <div class="finder-box">
-        <div class="finder-row-sync">
-          <div class="field"><label>Search Focus (optional)</label><input type="text" id="sf-focus" placeholder="e.g. indie films · cannabis brands · horror games..." /></div>
-          <div class="field"><label>Track</label><select id="sf-track"><option value="both">Both Tracks</option><option value="Mr. Iron Man (Live)">Mr. Iron Man (Live)</option><option value="Peace Pipe">Peace Pipe</option></select></div>
-          <div class="field"><label>Budget</label><select id="sf-budget"><option value="all budgets">All Budgets</option><option value="indie">Indie</option><option value="mid-budget">Mid-Budget</option><option value="major">Major</option></select></div>
-          <div class="field"><label>Results</label><select id="sf-count"><option value="6">6</option><option value="10" selected>10</option><option value="15">15</option></select></div>
-          <button class="btn btn-purple" id="sf-btn" style="align-self:flex-end" onclick="findSync()">Search</button>
-        </div>
-      </div>
-      <div class="results-box">
-        <div class="results-hdr">
-          <span class="results-count" id="sf-count-label">No search yet</span>
-          <button class="btn btn-ghost" id="sf-addall" style="display:none" onclick="addAllSync()">+ Add All to Pipeline</button>
-        </div>
-        <div id="sf-results"><div class="empty-state"><div class="empty-icon">🎬</div><p>Select a category and tap <strong>Search</strong></p></div></div>
-      </div>
+      <div id="finder-root-sync"></div>
     </div>
 
     <!-- ===== EMAIL COMPOSER ===== -->
@@ -653,7 +629,7 @@
         <div class="field"><label>Project</label><input type="text" id="sm-project" /></div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Category</label><select id="sm-cat"><option>Film</option><option>TV Series</option><option>Streaming Show</option><option>Video Game</option><option>Advertisement</option><option>Brand Campaign</option><option>Documentary</option><option>Other</option></select></div>
+        <div class="field"><label>Category</label><select id="sm-cat"><option>Film</option><option>TV Series</option><option>Streaming Show</option><option>Video Game</option><option>Advertisement</option><option>Brand Campaign</option><option>Documentary</option><option>Trailer</option><option>Sync Agency / Library</option><option>Creator / Podcast</option><option>Other</option></select></div>
         <div class="field"><label>Track</label><select id="sm-track"><option value="Both">Both Tracks</option><option value="Mr. Iron Man (Live)">Mr. Iron Man (Live)</option><option value="Peace Pipe">Peace Pipe</option></select></div>
       </div>
       <div class="form-row">
@@ -705,13 +681,11 @@ document.getElementById('vm-forms-slot').outerHTML=DFDeals.formHtml('vm')+DFShow
 let vLeads = DFStore.load('df_leads');
 let sLeads = DFStore.load('df_sync_leads');
 let vFilter='all', sFilter='all';
-let sResults=[];
-let syncCat='Film & TV';
 let curEmail={bv:{subject:'',body:''},sv:{subject:'',body:''}};
 let editingVId=null, editingSId=null;
 
 // ---- NAVIGATION ----
-const pageMap={overview:'Overview',venues:'Find Bookers',sync:'Sync Finder',compose:'Email Composer',pipeline:'Booking Pipeline',syncpipe:'Sync Pipeline',calendar:'Calendar',shows:'Booked Shows'};
+const pageMap={overview:'Overview',venues:'Find Bookers',sync:'Find Sync Contacts',compose:'Email Composer',pipeline:'Booking Pipeline',syncpipe:'Sync Pipeline',calendar:'Calendar',shows:'Booked Shows'};
 const badgeMap={overview:'Dashboard',venues:'AI Search',sync:'AI Search',compose:'Compose',pipeline:'CRM',syncpipe:'CRM',calendar:'Shows',shows:'Shows'};
 const badgeColor={overview:'badge-green',venues:'badge-green',sync:'badge-purple',compose:'badge-gold',pipeline:'badge-green',syncpipe:'badge-purple',calendar:'badge-green',shows:'badge-green'};
 
@@ -760,41 +734,11 @@ DFFinder.mount(document.getElementById('finder-root'),{onAdd(lead){
   renderVenuePipe();toast(`${lead.name} added to pipeline ✓`,'ok');return true;
 }});
 
-// ---- SYNC FINDER ----
-function selCat(el){document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');syncCat=el.dataset.cat}
-
-async function findSync(){
-  const focus=document.getElementById('sf-focus').value.trim();
-  const track=document.getElementById('sf-track').value;
-  const budget=document.getElementById('sf-budget').value;
-  const count=document.getElementById('sf-count').value;
-  const btn=document.getElementById('sf-btn');
-  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
-  document.getElementById('sf-results').innerHTML='<div class="loading-state"><span class="spinner"></span>Searching for sync opportunities...</div>';
-  document.getElementById('sf-addall').style.display='none';
-  const trackInfo=track==='both'?'"Mr. Iron Man (Live)" (Country-Reggae) and "Peace Pipe" (Conscious Hip-Hop, cannabis)':track==='Mr. Iron Man (Live)'?'"Mr. Iron Man (Live)" by Timothy Chance and Rasta Country (Country-Reggae)':'"Peace Pipe" by Poetic Nocturnal Creatures (Conscious Hip-Hop, cannabis culture)';
-  const sys=`You are a sync licensing expert for Dragon Farm Records. Return ONLY a valid JSON array. No markdown. Each object: name, company, category, project_type, contact_name, contact_email, fit_reason, submission_notes, best_track.`;
-  const prompt=`Find ${count} real sync opportunities in ${syncCat==='All Categories'?'all media':syncCat} for ${trackInfo}. ${focus?`Focus: ${focus}`:''}. Budget: ${budget}. Include real music supervisors and licensing contacts.`;
-  const raw=await ai(sys,prompt,2500);
-  btn.innerHTML='Search';btn.disabled=false;
-  let opps=[];
-  try{
-    let txt=raw.replace(/```json|```/g,'').replace(/^[^\[]*/,'').replace(/[^\]]*$/,'').trim();
-    if(!txt.startsWith('['))txt='['+txt;
-    if(!txt.endsWith(']'))txt=txt+']';
-    opps=JSON.parse(txt);
-  }
-  catch{document.getElementById('sf-results').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><p>${esc(raw.substring(0,200))}</p></div>`;return}
-  sResults=opps;
-  document.getElementById('sf-count-label').textContent=`${opps.length} opportunities found`;
-  document.getElementById('sf-addall').style.display='inline-flex';
-  const catClass=c=>{if(!c)return'tb-purple';const l=c.toLowerCase();if(l.includes('tv')||l.includes('stream'))return'tb-blue';if(l.includes('game'))return'tb-green';if(l.includes('ad')||l.includes('brand'))return'tb-gold';return'tb-purple'};
-  document.getElementById('sf-results').innerHTML=`<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Supervisor / Studio</th><th>Category</th><th>Contact</th><th>Best Track</th><th>Why It Fits</th><th>Submit</th><th>Actions</th></tr></thead><tbody>${opps.map((o,i)=>`<tr><td><div class="cell-name">${esc(o.name)}</div><div class="cell-sub">${esc(o.company)}</div></td><td><span class="type-badge ${catClass(o.category)}">${esc(o.category||o.project_type)}</span></td><td class="cell-contact">${o.contact_name?`<div>${esc(o.contact_name)}</div>`:''} ${o.contact_email?`<a href="mailto:${esc(o.contact_email)}">${esc(o.contact_email)}</a>`:''}</td><td style="font-size:0.8rem;color:var(--gold-light)">${esc(o.best_track||'Both')}</td><td class="cell-note">${esc(o.fit_reason||'')}</td><td class="cell-note">${esc(o.submission_notes||'')}</td><td><div class="row-actions"><button class="btn btn-ghost" onclick="addSyncAt(${i})">+ Lead</button><button class="btn btn-ghost" onclick="pitchSyncAt(${i})">✉</button></div></td></tr>`).join('')}</tbody></table></div>`;
-}
-
-function addSyncAt(i){const o=sResults[i];if(!o)return;addSLead({name:o.name||o.company,project:o.project_type||'',category:o.category||'Film',track:o.best_track||'Both',contact:o.contact_name||'',email:o.contact_email||'',notes:(o.fit_reason||'')+(o.submission_notes?` | Submit: ${o.submission_notes}`:''),status:'new'});toast(`${o.name} added to sync pipeline ✓`,'ok')}
-function addAllSync(){sResults.forEach((_,i)=>addSyncAt(i));toast(`${sResults.length} opportunities added ✓`,'ok')}
-function pitchSyncAt(i){const o=sResults[i];if(!o)return;document.getElementById('sv-contact').value=o.contact_name||o.name||'';document.getElementById('sv-company').value=o.company||'';if(o.best_track&&o.best_track!=='Both')document.getElementById('sv-track').value=o.best_track.includes('Iron')?'Mr. Iron Man (Live) by Timothy Chance and Rasta Country':'Peace Pipe by Poetic Nocturnal Creatures';switchTab('sync-pitch');go('compose',document.querySelector('[data-page=compose]'),'gold');toast(`Loaded ${o.name} into composer`,'ok')}
+// ---- FIND SYNC CONTACTS ----
+DFFinder.mount(document.getElementById('finder-root-sync'),{mode:'sync',onAdd(lead){
+  if(sLeads.some(l=>l.name===lead.name)){toast(`${lead.name} is already in your sync pipeline`,'err');return false}
+  addSLead(lead);renderSyncPipe();toast(`${lead.name} added to sync pipeline ✓`,'ok');return true;
+}});
 
 // ---- EMAIL COMPOSER ----
 function switchTab(t){
