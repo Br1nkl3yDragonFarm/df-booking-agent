@@ -1,4 +1,5 @@
 const { timingSafeEqual } = require('crypto');
+const Anthropic = require('@anthropic-ai/sdk');
 
 // Same passcode as the CRM, so only the label's own tools can spend the API key.
 function passcodeMatches(given, expected) {
@@ -7,8 +8,12 @@ function passcodeMatches(given, expected) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-const MODEL = 'claude-sonnet-4-20250514';
-const MAX_TOKENS = 4000;
+const MODEL = 'claude-opus-5-5';
+// Thinking is always on and counts toward max_tokens, so leave room for it
+// on top of the reply. Low effort keeps these short drafting and advice
+// calls quick enough for a regular (non-background) function.
+const MAX_TOKENS = 16000;
+const EFFORT = 'low';
 
 const fail = (statusCode, message) => ({
   statusCode,
@@ -33,27 +38,30 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) }; }
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: Math.min(Number(body.max_tokens) || 1500, MAX_TOKENS),
-        system: body.system || '',
-        messages: body.messages
-      })
+    const client = new Anthropic({ apiKey });
+    const response = await client.beta.messages.create({
+      model: MODEL,
+      max_tokens: MAX_TOKENS,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      output_config: { effort: EFFORT },
+      system: body.system || '',
+      messages: body.messages
     });
-    const data = await response.json();
+    if (response.stop_reason === 'refusal') {
+      return fail(422, 'The AI declined this request. Try rewording it.');
+    }
+    // The pages read content[0].text, so hand back only the text blocks
+    // (the reply now starts with a thinking block).
     return {
-      statusCode: response.status,
+      statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify({ ...response, content: response.content.filter(b => b.type === 'text') })
     };
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    if (err instanceof Anthropic.APIError) {
+      return fail(err.status || 502, err.error?.error?.message || err.message);
+    }
+    return fail(500, err.message);
   }
 };
