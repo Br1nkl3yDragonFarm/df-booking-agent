@@ -149,7 +149,7 @@
     .today-empty { font-size: 0.85rem; color: var(--gray); }
     .today-link { display: inline-block; margin-top: 0.6rem; font-size: 0.78rem; color: var(--gold-light); text-decoration: none; }
     .tools-label { font-family: var(--font-m); font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray); margin-bottom: 1rem; }
-    .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2.5rem; }
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem; }
 
     .tool-card {
       border-radius: var(--r2);
@@ -345,10 +345,10 @@
           <div class="tool-desc">Find venues nationwide, track every lead, write outreach emails, and manage your full booking pipeline.</div>
         </div>
         <div class="tool-features">
-          <div class="tool-feature">AI Venue Finder — any city, any type</div>
-          <div class="tool-feature">Email Composer — AI writes the pitch</div>
-          <div class="tool-feature">Lead Tracker CRM</div>
-          <div class="tool-feature">Booked shows tracker</div>
+          <div class="tool-feature">Find Bookers — live web search</div>
+          <div class="tool-feature">Write &amp; send pitches, catch replies</div>
+          <div class="tool-feature">Lead Tracker CRM with follow-ups</div>
+          <div class="tool-feature">Booked shows, invoices &amp; settlement</div>
         </div>
         <div class="tool-arrow">→</div>
       </a>
@@ -362,8 +362,8 @@
           <div class="tool-desc">Find music supervisors and sync opportunities across all media. Pitch your catalog to film, TV, video games, and ad agencies.</div>
         </div>
         <div class="tool-features">
-          <div class="tool-feature">Opportunity Finder — AI searches all media</div>
-          <div class="tool-feature">Pitch Composer — professional sync emails</div>
+          <div class="tool-feature">Find Sync Contacts — live web search</div>
+          <div class="tool-feature">Write &amp; send sync pitches</div>
           <div class="tool-feature">Sync Pipeline CRM</div>
           <div class="tool-feature">Licensed placements tracker</div>
         </div>
@@ -380,11 +380,25 @@
         </div>
         <div class="tool-features">
           <div class="tool-feature">Artist roster — TC&RC + PNC</div>
-          <div class="tool-feature">Public venue finder</div>
           <div class="tool-feature">Sync licensing info</div>
-          <div class="tool-feature">Booking inquiry form</div>
+          <div class="tool-feature">Booking inquiry form → straight into your leads</div>
         </div>
         <div class="tool-arrow">↗</div>
+      </a>
+
+      <!-- PRESS KITS -->
+      <a href="epk-edit.html" class="tool-card tool-card-public">
+        <div class="tool-icon">📰</div>
+        <div>
+          <div class="tool-label tool-label-gold">Press Kits</div>
+          <div class="tool-name">Electronic<br/>Press Kits</div>
+          <div class="tool-desc">One page per artist with bio, music, live video, past shows and draw. Pitches link to it, and you see when a buyer opens it.</div>
+        </div>
+        <div class="tool-features">
+          <div class="tool-feature">Edit each artist's kit</div>
+          <div class="tool-feature">Tracked links in every pitch</div>
+        </div>
+        <div class="tool-arrow">→</div>
       </a>
 
     </div>
@@ -453,6 +467,8 @@
 <script src="followups.js"></script>
 <script src="deals.js"></script>
 <script src="showday.js"></script>
+<script src="calendar.js"></script>
+<script src="outreach.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM COMMAND CENTER
@@ -563,7 +579,7 @@ function renderToday() {
   // Follow-ups due across both pipelines
   const due = [...DFFollow.due(venue).map(l => ({ l, page: 'dashboard.html', kind: 'Booking' })),
                ...DFFollow.due(sync).map(l => ({ l, page: 'sync.html', kind: 'Sync' }))]
-    .sort((a, b) => a.l.followUp.localeCompare(b.l.followUp));
+    .sort((a, b) => (DFOut.needsReply(b.l) - DFOut.needsReply(a.l)) || (a.l.followUp || '').localeCompare(b.l.followUp || ''));
   document.getElementById('today-followups').innerHTML = due.length
     ? `<div class="today-big">${due.length}</div>` + due.slice(0, 4).map(({ l, page, kind }) =>
         `<a class="today-item" href="${page}">${hubEsc(l.name)} ${DFFollow.badge(l)}<small>${kind}${l.city ? ' · ' + hubEsc(l.city) : ''}${l.project ? ' · ' + hubEsc(l.project) : ''}</small></a>`).join('') +
@@ -610,6 +626,7 @@ document.getElementById('pw-input').addEventListener('keydown', e => {
 document.getElementById('gate').style.display = 'none';
 document.getElementById('hub').classList.add('show');
 loadStats();
+DFOut.init(renderToday);
 DFStore.connect('df_leads', loadStats);
 DFStore.connect('df_sync_leads', loadStats);
 </script>

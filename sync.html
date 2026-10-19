@@ -35,7 +35,7 @@
     .nav-item.active { background: rgba(130,80,255,0.1); color: var(--purple); border-color: var(--border); }
     .nav-item .nav-icon { font-size: 1rem; width: 18px; text-align: center; }
     .nav-badge { margin-left: auto; background: var(--purple); color: #fff; font-family: var(--font-m); font-size: 0.6rem; padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
-    .sidebar-footer { margin-top: auto; padding: 1rem 1.25rem 0; border-top: 1px solid var(--border); }
+    .sidebar-footer { margin-top: auto; padding: 1rem 1.25rem 2.5rem; /* clear of the sync badge */ border-top: 1px solid var(--border); }
     .sidebar-footer a { display: block; font-size: 0.78rem; color: var(--gray); text-decoration: none; margin-bottom: 0.4rem; transition: color 0.15s; }
     .sidebar-footer a:hover { color: var(--gold-light); }
 
@@ -227,6 +227,7 @@
       <div class="nav-item" data-page="licensed"><span class="nav-icon">🏆</span> Licensed <span class="nav-badge" id="licensed-badge" style="background:var(--green)">0</span></div>
     </div>
     <div class="sidebar-footer">
+      <a href="epk-edit.html">📰 Press Kits</a>
       <a href="dashboard.html">← Booking Agent</a>
       <a href="index.html">← Public Site</a>
     </div>
@@ -369,6 +370,7 @@
             <div id="pitch-preview" class="email-preview placeholder">Your AI sync pitch will appear here. Fill in the details and tap Generate.</div>
             <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
               <button class="btn btn-green" id="copy-btn" style="display:none" onclick="copyPitch()">📋 Copy Pitch</button>
+              <button class="btn btn-gold" id="send-btn" style="display:none" onclick="sendPitch()">📤 Review &amp; Send</button>
               <button class="btn btn-outline" id="mail-btn" style="display:none" onclick="openMailto()">📧 Open in Mail</button>
               <button class="btn btn-ghost" id="save-btn" style="display:none" onclick="saveFromPitch()">+ Add to Pipeline</button>
             </div>
@@ -508,12 +510,14 @@
 <script src="crm-store.js"></script>
 <script src="followups.js"></script>
 <script src="finder.js"></script>
+<script src="outreach.js"></script>
 <script>
 // ---- STATE ----
 let leads = DFStore.load('df_sync_leads');
 let currentFilter = 'all';
 let currentPitch = { subject: '', body: '', contact: '', company: '', email: '' };
 let editingId = null;
+let composerLeadId = null;
 
 // ---- NAV ----
 function showPage(id) {
@@ -545,7 +549,7 @@ function renderOverview() {
   updateStats();
   DFFollow.renderDue(document.getElementById('due-panel'), leads, {
     describe: l => [l.project || l.category, l.contact].filter(Boolean).join(' · '),
-    handlers: { open: 'editLead', pitch: 'pitchFromLead', done: 'followDone', snooze: 'followSnooze' }
+    handlers: { open: 'editLead', pitch: 'draftFollowUp', done: 'followDone', snooze: 'followSnooze' }
   });
   const recent = [...leads].reverse().slice(0, 5);
   const container = document.getElementById('recent-list');
@@ -625,13 +629,28 @@ Reference the specific ISRC/UPC codes. Be professional and concise — music sup
   currentPitch = { subject: parsed.subject, body: parsed.body, contact, company, email: '' };
   document.getElementById('pitch-subject').textContent = `Subject: ${parsed.subject}`;
   document.getElementById('pitch-preview').textContent = parsed.body;
-  ['copy-btn','mail-btn','save-btn'].forEach(id => document.getElementById(id).style.display = 'inline-flex');
+  ['send-btn','copy-btn','mail-btn','save-btn'].forEach(id => document.getElementById(id).style.display = 'inline-flex');
 }
 
 function copyPitch() {
   navigator.clipboard.writeText(`Subject: ${currentPitch.subject}\n\n${currentPitch.body}`)
     .then(() => toast('Pitch copied ✓', 'success'))
     .catch(() => toast('Copy failed', 'error'));
+}
+
+// The lead the composer is writing to: the one loaded, or one with the same company name.
+function composerLead() {
+  return leads.find(l => l.id === composerLeadId) || leads.find(l => l.name === document.getElementById('pm-company').value.trim()) || null;
+}
+
+function sendPitch() {
+  const lead = composerLead();
+  DFOut.send({ subject: currentPitch.subject, body: currentPitch.body, kind: 'pitch', lead, kit: !!lead, onSent: () => lead && followDone(lead.id) });
+}
+
+function draftFollowUp(id) {
+  const lead = leads.find(l => l.id === id);
+  if (lead) DFOut.followUp(lead, 'sync', () => followDone(id), msg => msg && toast(msg, 'success'));
 }
 
 function openMailto() {
@@ -652,6 +671,7 @@ function loadLeadIntoComposer() {
   if (!id) return;
   const lead = leads.find(l => l.id === id);
   if (!lead) return;
+  composerLeadId = id;
   document.getElementById('pm-contact').value = lead.contact || lead.name || '';
   document.getElementById('pm-company').value = lead.name || '';
   document.getElementById('pm-project').value = lead.project || '';
@@ -685,7 +705,7 @@ function renderLeads() {
       <td><span class="type-badge ${getCatClass(l.category)}">${esc(l.category||'—')}</span></td>
       <td style="font-size:0.8rem;color:var(--gold-light)">${esc(l.track||'Both')}</td>
       <td class="opp-company">${l.contact?`<div>${esc(l.contact)}</div>`:''} ${l.email?`<a href="mailto:${esc(l.email)}" style="color:var(--blue);text-decoration:none;font-size:0.78rem" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</td>
-      <td><span class="status-badge status-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div></td>
+      <td><span class="status-badge status-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}</td>
       <td style="font-size:0.78rem;color:var(--gray)">${formatDate(l.dateAdded)}</td>
       <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
         <button class="btn btn-ghost" onclick="pitchFromLead('${l.id}')">✉</button>
@@ -791,7 +811,7 @@ function updateLead(id, change) {
 }
 
 function followDone(id) {
-  const lead = updateLead(id, l => DFFollow.logTouch(l, 'pitched'));
+  const lead = updateLead(id, l => DFOut.markSent(l, 'pitched'));
   if (lead) toast(DFFollow.touchMessage(lead), 'success');
 }
 
@@ -815,6 +835,7 @@ function deleteLead(id) {
 function pitchFromLead(id) {
   const l = leads.find(x => x.id === id);
   if (!l) return;
+  composerLeadId = id;
   document.getElementById('pm-contact').value = l.contact || l.name || '';
   document.getElementById('pm-company').value = l.name || '';
   document.getElementById('pm-project').value = l.project || '';
@@ -878,6 +899,7 @@ function formatDate(iso) { if (!iso) return '—'; return new Date(iso).toLocale
 
 // ---- INIT ----
 updateStats(); renderOverview();
+DFOut.init(() => { renderOverview(); renderLeads(); });
 DFStore.connect('df_sync_leads', items => {
   leads = items;
   updateStats(); renderOverview(); renderLeads(); renderLicensed();

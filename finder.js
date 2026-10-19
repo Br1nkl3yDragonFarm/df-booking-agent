@@ -8,7 +8,8 @@
 //  Each finder remembers its last search, so you can leave the page and
 //  come back to the results.
 //
-//  Usage: DFFinder.mount(element, { mode: 'booking' | 'sync', onAdd(lead) -> true if added })
+//  Usage: const finder = DFFinder.mount(element, { mode: 'booking' | 'sync', onAdd(lead) -> true if added })
+//         finder.run({ location, artist, dates, categories })  // fill the form and search
 // ============================================================
 
 (function () {
@@ -58,6 +59,7 @@
       forLabel: 'For',
       forOptions: [['Both', 'Both artists'], ['Timothy Chance and Rasta Country', 'Timothy Chance & Rasta Country'], ['Poetic Nocturnal Creatures', 'Poetic Nocturnal Creatures']],
       similar: { label: 'Similar artists (optional)', placeholder: 'e.g. Slightly Stoopid, Zac Brown Band' },
+      dates: { label: 'Dates to fill (optional)', placeholder: 'e.g. Thu Oct 23, Sat Oct 25' },
       linkLabel: 'Booking page',
       toLead(r, q, type) {
         return {
@@ -71,7 +73,7 @@
           website: r.website,
           source: r.source_url,
           status: 'new',
-          notes: notesFor(r, 'Booking page')
+          notes: notesFor(r, 'Booking page', q.dates && `Pitched for: ${q.dates}`)
         };
       }
     },
@@ -149,6 +151,7 @@
               <select data-f="artist">${M.forOptions.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select>
             </div>
             <div class="field"><label>${esc(M.similar.label)}</label><input type="text" data-f="similar" placeholder="${esc(M.similar.placeholder)}" /></div>
+            ${M.dates ? `<div class="field"><label>${esc(M.dates.label)}</label><input type="text" data-f="dates" placeholder="${esc(M.dates.placeholder)}" /></div>` : ''}
             <div class="field"><label>How many</label>
               <select data-f="count"><option value="10">About 10</option><option value="15">About 15</option><option value="20">About 20</option></select>
             </div>
@@ -170,7 +173,7 @@
       const location = $('location').value.trim();
       if (!categories.length) return showStatus(`Pick at least one kind of ${M.noun}.`, 'warn');
       if (M.where.required && !location) return showStatus('Enter where to look.', 'warn');
-      const query = { mode: opts.mode || 'booking', categories, location, artist: $('artist').value, similar: $('similar').value.trim(), count: $('count').value };
+      const query = { mode: opts.mode || 'booking', categories, location, artist: $('artist').value, similar: $('similar').value.trim(), dates: $('dates') ? $('dates').value.trim() : '', count: $('count').value };
       const jobId = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
       state = { job: jobId, startedAt: Date.now(), results: [], query, added: {} };
       remember();
@@ -243,7 +246,7 @@
       const q = state.query || {};
       el.innerHTML = `
         <div class="fb-results-hdr">
-          <div><b>${state.results.length} found</b>${q.location ? ` · ${esc(q.location)}` : ''}${state.searches ? ` · ${state.searches} web searches` : ''}</div>
+          <div><b>${state.results.length} found</b>${q.location ? ` · ${esc(q.location)}` : ''}${q.dates ? ` · for ${esc(q.dates)}` : ''}${state.searches ? ` · ${state.searches} web searches` : ''}</div>
           <button class="btn btn-ghost" data-f="add-all">+ Add all to leads</button>
         </div>
         <div class="fb-list">${state.results.map((r, i) => {
@@ -276,18 +279,32 @@
       $('add-all').addEventListener('click', addAll);
     }
 
+    function fill(q) {
+      $('location').value = q.location || '';
+      $('artist').value = q.artist || 'Both';
+      $('similar').value = q.similar || '';
+      if ($('dates')) $('dates').value = q.dates || '';
+      $('count').value = String(q.count || 10);
+      if (q.categories) root.querySelectorAll('.fb-chip').forEach(b => b.classList.toggle('on', q.categories.includes(b.dataset.cat)));
+    }
+
     render();
     const last = recall();
     if (last && last.query) {
       state = { added: {}, results: [], ...last };
-      $('location').value = last.query.location || '';
-      $('artist').value = last.query.artist || 'Both';
-      $('similar').value = last.query.similar || '';
-      $('count').value = String(last.query.count || 10);
-      root.querySelectorAll('.fb-chip').forEach(b => b.classList.toggle('on', (last.query.categories || []).includes(b.dataset.cat)));
+      fill(last.query);
       renderResults();
       if (state.job) poll();
     }
+
+    return {
+      // Fill the form (anything not given is cleared) and start a search.
+      run(q) {
+        if (state.job) return showStatus('A search is already running. Wait for it to finish first.', 'warn');
+        fill({ ...q, categories: q.categories || M.defaults });
+        start();
+      }
+    };
   }
 
   const style = document.createElement('style');

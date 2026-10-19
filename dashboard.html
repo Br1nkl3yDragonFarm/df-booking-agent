@@ -100,7 +100,7 @@
 
     .sidebar-footer {
       margin-top: auto;
-      padding: 1rem 1.25rem 0;
+      padding: 1rem 1.25rem 2.5rem; /* clear of the sync badge in the corner */
       border-top: 1px solid var(--border);
     }
     .sidebar-footer a {
@@ -492,6 +492,7 @@
     </div>
 
     <div class="sidebar-footer">
+      <a href="epk-edit.html">📰 Press Kits</a>
       <a href="index.html">← Public Site</a>
     </div>
   </aside>
@@ -680,6 +681,7 @@
             <div id="email-preview" class="email-preview placeholder">Your AI-written booking pitch will appear here. Fill in the details on the left and tap Generate.</div>
             <div class="email-actions">
               <button class="btn btn-green" id="copy-email-btn" style="display:none;" onclick="copyEmail()">📋 Copy Email</button>
+              <button class="btn btn-gold" id="send-email-btn" style="display:none;" onclick="sendComposed()">📤 Review &amp; Send</button>
               <button class="btn btn-outline" id="mailto-btn" style="display:none;" onclick="openMailto()">📧 Open in Mail</button>
               <button class="btn btn-ghost" id="save-lead-from-email-btn" style="display:none;" onclick="saveLeadFromEmail()">+ Save as Lead</button>
             </div>
@@ -854,6 +856,7 @@
 <script src="deals.js"></script>
 <script src="showday.js"></script>
 <script src="finder.js"></script>
+<script src="outreach.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -867,6 +870,7 @@ let leads = DFStore.load('df_leads');
 let currentFilter = 'all';
 let currentEmail = { subject: '', body: '', venue: '', contact: '', email: '' };
 let editingLeadId = null;
+let composerLeadId = null;
 
 // ---- NAVIGATION ----
 function showPage(id) {
@@ -906,7 +910,7 @@ function renderOverview() {
   updateStats();
   DFFollow.renderDue(document.getElementById('due-panel'), leads, {
     describe: l => [l.city, l.contactName].filter(Boolean).join(' · '),
-    handlers: { open: 'editLead', pitch: 'pitchFromLead', done: 'followDone', snooze: 'followSnooze' }
+    handlers: { open: 'editLead', pitch: 'draftFollowUp', done: 'followDone', snooze: 'followSnooze' }
   });
   const recent = [...leads].reverse().slice(0, 5);
   const container = document.getElementById('recent-leads-list');
@@ -926,7 +930,7 @@ function renderOverview() {
 }
 
 // ---- FIND BOOKERS ----
-DFFinder.mount(document.getElementById('finder-root'), {
+const bookers = DFFinder.mount(document.getElementById('finder-root'), {
   onAdd(lead) {
     const before = leads.length;
     addLead(lead);
@@ -994,6 +998,7 @@ Make it personal, professional, and compelling. Include the artist's unique sell
 
   document.getElementById('email-subject').textContent = `Subject: ${parsed.subject}`;
   preview.textContent = parsed.body;
+  document.getElementById('send-email-btn').style.display = 'inline-flex';
   document.getElementById('copy-email-btn').style.display = 'inline-flex';
   document.getElementById('mailto-btn').style.display = 'inline-flex';
   document.getElementById('save-lead-from-email-btn').style.display = 'inline-flex';
@@ -1003,6 +1008,16 @@ function copyEmail() {
   navigator.clipboard.writeText(`Subject: ${currentEmail.subject}\n\n${currentEmail.body}`)
     .then(() => toast('Email copied to clipboard ✓', 'success'))
     .catch(() => toast('Copy failed — try selecting text manually', 'error'));
+}
+
+// The lead the composer is writing to: the one loaded, or one with the same venue name.
+function composerLead() {
+  return leads.find(l => l.id === composerLeadId) || leads.find(l => l.name === document.getElementById('em-venue').value.trim()) || null;
+}
+
+function sendComposed() {
+  const lead = composerLead();
+  DFOut.send({ subject: currentEmail.subject, body: currentEmail.body, kind: 'pitch', lead, to: lead ? lead.contactEmail : '', kit: !!lead, onSent: () => lead && afterSend(lead.id) });
 }
 
 function openMailto() {
@@ -1033,6 +1048,7 @@ function loadLeadIntoComposer() {
   if (!id) return;
   const lead = leads.find(l => l.id === id);
   if (!lead) return;
+  composerLeadId = id;
   document.getElementById('em-venue').value = lead.name;
   document.getElementById('em-contact').value = lead.contactName || '';
   document.getElementById('em-city').value = lead.city;
@@ -1072,7 +1088,7 @@ function renderLeads() {
         ${l.contactName ? `<div style="font-size:0.82rem">${esc(l.contactName)}</div>` : ''}
         ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" style="font-size:0.78rem;color:var(--blue);text-decoration:none" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>` : ''}
       </td>
-      <td><span class="status-badge status-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${[...DFDeals.issues(l), ...DFShow.issues(l)].some(i => i.level === 'red') ? '<div class="deal-flag deal-flag-red">🚩 Needs attention</div>' : ''}</td>
+      <td><span class="status-badge status-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}${[...DFDeals.issues(l), ...DFShow.issues(l)].some(i => i.level === 'red') ? '<div class="deal-flag deal-flag-red">🚩 Needs attention</div>' : ''}</td>
       <td style="font-size:0.78rem;color:var(--gray)">${formatDate(l.dateAdded)}</td>
       <td onclick="event.stopPropagation()">
         <div style="display:flex;gap:4px">
@@ -1085,7 +1101,8 @@ function renderLeads() {
 }
 
 function renderBooked() {
-  DFShow.renderShows({ totals: document.getElementById('deal-totals'), list: document.getElementById('booked-list') }, leads, 'editLead');
+  DFShow.renderShows({ totals: document.getElementById('deal-totals'), list: document.getElementById('booked-list') }, leads, 'editLead',
+    { gaps: 'fillGaps', invoice: 'openInvoice', remind: 'remindDeposit' });
 }
 
 // ---- LEAD CRUD ----
@@ -1234,7 +1251,7 @@ function updateLead(id, change) {
 }
 
 function followDone(id) {
-  const lead = updateLead(id, l => DFFollow.logTouch(l, 'contacted'));
+  const lead = updateLead(id, l => DFOut.markSent(l, 'contacted'));
   if (lead) toast(DFFollow.touchMessage(lead), 'success');
 }
 
@@ -1260,9 +1277,41 @@ function deleteLead(id) {
   toast('Lead removed', 'success');
 }
 
+// ---- OUTREACH & GETTING PAID ----
+function afterSend(id) {
+  const lead = updateLead(id, l => DFOut.markSent(l, 'contacted'));
+  if (lead) toast(`Sent ✓ ${DFFollow.touchMessage(lead)}`, 'success');
+}
+
+function draftFollowUp(id) {
+  const lead = leads.find(l => l.id === id);
+  if (lead) DFOut.followUp(lead, 'venue', () => afterSend(id), msg => msg && toast(msg, 'success'));
+}
+
+// Search for shows within a few hours' drive on the open days around a booked show.
+function fillGaps(id) {
+  const lead = leads.find(l => l.id === id);
+  if (!lead) return;
+  const gap = DFOut.gaps(leads, lead);
+  if (!gap.dates.length) { toast('No open dates within 3 days of this show', 'error'); return; }
+  showPage('finder');
+  bookers.run({ location: `Within about a 3-hour drive of ${lead.city || lead.name}`, artist: lead.artist || 'Both', dates: gap.text, categories: ['venues', 'buyers', 'breweries', 'community'] });
+}
+
+function openInvoice(id) {
+  const lead = leads.find(l => l.id === id);
+  if (lead) DFOut.invoice(lead, saved => { updateLead(id, () => saved); renderBooked(); });
+}
+
+function remindDeposit(id) {
+  const lead = leads.find(l => l.id === id);
+  if (lead) DFOut.reminder(lead, () => { updateLead(id, l => DFOut.handled(l)); toast('Reminder sent ✓', 'success'); });
+}
+
 function pitchFromLead(id) {
   const lead = leads.find(l => l.id === id);
   if (!lead) return;
+  composerLeadId = id;
   document.getElementById('em-venue').value = lead.name;
   document.getElementById('em-contact').value = lead.contactName || '';
   document.getElementById('em-city').value = lead.city;
@@ -1333,15 +1382,26 @@ function formatDate(iso) {
 }
 
 // ---- INIT ----
-updateStats();
-renderOverview();
-DFStore.connect('df_leads', items => {
-  leads = items;
+function renderAll() {
   updateStats();
   renderOverview();
   renderLeads();
   renderBooked();
   renderCalendar();
+}
+
+// Mark deposits paid online as received, then redraw with the latest activity.
+function onActivity() {
+  if (DFOut.reconcile(leads).length) saveLeads();
+  renderAll();
+}
+
+updateStats();
+renderOverview();
+DFOut.init(onActivity);
+DFStore.connect('df_leads', items => {
+  leads = items;
+  onActivity();
 });
 </script>
 </body>

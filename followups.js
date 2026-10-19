@@ -7,7 +7,8 @@
 //
 //  Rhythm from the CRM playbook: pitch, follow up about a week later,
 //  then about two weeks after that, then let the lead rest after the
-//  third touch instead of becoming a pest.
+//  third touch instead of becoming a pest. A reply we haven't answered
+//  (outreach.js) makes a lead due right away, whatever its date.
 // ============================================================
 
 (function () {
@@ -41,12 +42,14 @@
   }
 
   function isOpen(lead) { return !CLOSED.includes(lead.status); }
+  const replied = lead => !!(window.DFOut && DFOut.needsReply(lead));
 
+  // Unanswered replies first, then by follow-up date.
   function due(leads) {
     const t = today();
     return leads
-      .filter(l => isOpen(l) && l.followUp && l.followUp <= t)
-      .sort((a, b) => a.followUp.localeCompare(b.followUp));
+      .filter(l => isOpen(l) && ((l.followUp && l.followUp <= t) || replied(l)))
+      .sort((a, b) => (replied(b) - replied(a)) || (a.followUp || t).localeCompare(b.followUp || t));
   }
 
   function nextUp(leads) {
@@ -97,6 +100,7 @@
   }
 
   function badge(lead) {
+    if (isOpen(lead) && replied(lead)) return '<span class="df-fu df-fu-reply" title="They replied. Answer them.">💬 Replied</span>';
     if (!isOpen(lead) || !lead.followUp) return '';
     const days = daysUntil(lead.followUp);
     const [text, cls] = days < 0 ? [`${-days}d overdue`, 'late']
@@ -124,9 +128,10 @@
         <div class="df-due-main" onclick="${h.open}('${l.id}')">
           <div class="df-due-name">${esc(l.name)} ${badge(l)}</div>
           <div class="df-due-sub">${esc(opts.describe(l))}${l.touches ? ` · touch ${l.touches + 1} of ${MAX_TOUCHES}` : ''}${l.lastTouch ? ` · last ${shortDate(l.lastTouch)}` : ''}</div>
+          ${replied(l) ? `<div class="df-due-sub df-due-quote">“${esc(DFOut.lastReply(l).snippet || DFOut.lastReply(l).subject)}”</div>` : ''}
         </div>
         <div class="df-due-actions">
-          ${h.pitch ? `<button class="btn btn-ghost" title="Write the follow-up" onclick="${h.pitch}('${l.id}')">✉</button>` : ''}
+          ${h.pitch ? `<button class="btn btn-ghost" title="${replied(l) ? 'Draft an answer' : 'Draft the follow-up'}" onclick="${h.pitch}('${l.id}')">✉ ${replied(l) ? 'Answer' : 'Draft'}</button>` : ''}
           <button class="btn btn-ghost" title="I followed up today" onclick="${h.done}('${l.id}')">✓ Done</button>
           <button class="btn btn-ghost" title="Remind me in ${SNOOZE_DAYS} days" onclick="${h.snooze}('${l.id}')">Snooze ${SNOOZE_DAYS}d</button>
         </div>
@@ -140,6 +145,7 @@
     .df-fu-today{color:#f0c060;background:rgba(200,146,42,0.14);border-color:rgba(200,146,42,0.4)}
     .df-fu-soon{color:#e8dfc8;background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12)}
     .df-fu-later{color:#9aa39c;border-color:rgba(255,255,255,0.1)}
+    .df-fu-reply{color:#7ed6a0;background:rgba(42,180,100,0.14);border-color:rgba(42,180,100,0.45)}
     .df-due-panel{margin-bottom:1.5rem}
     .df-due-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:0.75rem}
     .df-due-head h2{margin:0}
@@ -150,6 +156,7 @@
     .df-due-main{cursor:pointer;min-width:0;flex:1 1 200px}
     .df-due-name{font-size:0.88rem;font-weight:500;color:var(--cream,#e8dfc8)}
     .df-due-sub{font-size:0.74rem;color:var(--gray,#9aa39c);margin-top:2px}
+    .df-due-quote{color:var(--gray-light,#c9c2ae);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:520px}
     .df-due-actions{display:flex;gap:4px;flex-shrink:0}
     .df-due-actions .btn{padding:4px 10px;font-size:0.75rem}
     .df-due-empty{padding:0.9rem 1rem;font-size:0.85rem;color:var(--gray,#9aa39c)}
