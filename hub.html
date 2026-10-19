@@ -142,7 +142,7 @@
     .stage-last .stage-num { color: var(--flame); }
 
     /* Tools */
-    .tools { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); }
+    .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: clamp(1.5rem, 4vw, 3rem); }
     .tool { display: block; text-decoration: none; padding-top: 1rem; border-top: 3px solid var(--gold); }
     .tool-name { font-family: var(--font-display); font-size: 1.75rem; color: var(--bone); line-height: 1.1; }
     .tool:hover .tool-name { color: var(--gold); }
@@ -209,6 +209,7 @@
       <nav class="topnav" aria-label="Tools">
         <a href="dashboard.html">Booking</a>
         <a href="sync.html">Sync</a>
+        <a href="epk-edit.html">Press kits</a>
         <a href="index.html" target="_blank" rel="noopener">Public page ↗</a>
       </nav>
     </div>
@@ -263,6 +264,11 @@
           <p class="tool-desc">Find music supervisors, trailer houses, ad agencies and game studios, write sync pitches, and track placements.</p>
           <span class="tool-open">Open sync</span>
         </a>
+        <a href="epk-edit.html" class="tool">
+          <span class="tool-name">Press kits</span>
+          <p class="tool-desc">One public page per artist with bio, music, live video, past shows and draw. Pitches link to it, and you see when a buyer opens it.</p>
+          <span class="tool-open">Edit press kits</span>
+        </a>
       </div>
       <p class="public-link">The public booking page is where promoters see the acts and send inquiries. <a href="index.html" target="_blank" rel="noopener">View it ↗</a></p>
     </section>
@@ -304,6 +310,8 @@
 <script src="followups.js"></script>
 <script src="deals.js"></script>
 <script src="showday.js"></script>
+<script src="calendar.js"></script>
+<script src="outreach.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM COMMAND CENTER
@@ -387,7 +395,7 @@ function renderToday() {
   // Follow-ups due across both pipelines
   const due = [...DFFollow.due(venue).map(l => ({ l, page: 'dashboard.html', kind: 'Booking' })),
                ...DFFollow.due(sync).map(l => ({ l, page: 'sync.html', kind: 'Sync' }))]
-    .sort((a, b) => a.l.followUp.localeCompare(b.l.followUp));
+    .sort((a, b) => (DFOut.needsReply(b.l) - DFOut.needsReply(a.l)) || (a.l.followUp || '').localeCompare(b.l.followUp || ''));
   document.getElementById('today-followups').innerHTML = due.length
     ? `<div class="today-big">${due.length}</div>` + due.slice(0, 4).map(({ l, page, kind }) =>
         `<a class="today-item" href="${page}">${hubEsc(l.name)} ${DFFollow.badge(l)}<small>${kind}${l.city ? ' · ' + hubEsc(l.city) : ''}${l.project ? ' · ' + hubEsc(l.project) : ''}</small></a>`).join('') +
@@ -425,6 +433,7 @@ document.getElementById('pw-input').addEventListener('keydown', e => {
 document.getElementById('gate').style.display = 'none';
 document.getElementById('hub').classList.add('show');
 loadStats();
+DFOut.init(renderToday);
 DFStore.connect('df_leads', loadStats);
 DFStore.connect('df_sync_leads', loadStats);
 </script>

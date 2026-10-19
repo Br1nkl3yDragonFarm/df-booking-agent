@@ -77,7 +77,8 @@ Use "" for anything you did not find. "category" is one of: ${Object.keys(BOOKIN
         `Location: ${q.location}.`,
         'Look for:',
         ...q.categories.map(c => `- ${BOOKING_CATEGORIES[c]}`),
-        q.similar && `Artists similar to ours, to find who books this kind of act: ${q.similar}.`
+        q.similar && `Artists similar to ours, to find who books this kind of act: ${q.similar}.`,
+        q.dates && `We want to fill these dates: ${q.dates}. Favor places that book on short notice or have openings then, and say so in "fit" when the page shows it.`
       ].filter(Boolean).join('\n');
     }
   },
@@ -199,6 +200,7 @@ export default async (req) => {
     location: clean(body.location, 120),
     artist: clean(body.artist, 80),
     similar: clean(body.similar, 200),
+    dates: modeName === 'booking' ? clean(body.dates, 200) : '',
     count: Math.min(Math.max(parseInt(body.count, 10) || 10, 3), MAX_RESULTS)
   };
   const store = getStore({ name: 'df-finder', consistency: 'strong' });

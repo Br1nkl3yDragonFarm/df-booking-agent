@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Press Kits — Dragon Farm Records</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c09; --surface: #0e1517; --card: #131c1e; --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --cream: #e8dfc8; --gray: #9aa39c; --gray-light: #c9c2ae; --gold: #c8922a; --gold-light: #f0c060; --green: #2ab464; --blue: #4a9eff;
+      --r: 8px; --r2: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--cream); font: 15px/1.55 'DM Sans', system-ui, sans-serif; overflow-x: hidden; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 96px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .top a { color: var(--gray); font-size: 0.85rem; text-decoration: none; margin-right: 12px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 2.2rem; margin: 0; }
+    .intro { color: var(--gray); font-size: 0.9rem; margin: 0 0 1.25rem; max-width: 640px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tab { background: transparent; border: 1px solid var(--border2); color: var(--gray-light); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; font-size: 0.85rem; }
+    .tab.on { border-color: var(--gold); color: var(--cream); background: rgba(200,146,42,0.12); }
+    .box { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem 1rem; }
+    .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .field.wide { grid-column: 1 / -1; }
+    .field span { font-family: 'DM Mono', monospace; font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray); }
+    .field small { color: var(--gray); font-size: 0.75rem; }
+    input, textarea { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.55rem 0.7rem; color: var(--cream); font: inherit; font-size: 0.9rem; width: 100%; }
+    textarea { resize: vertical; line-height: 1.5; }
+    .btn { border: 1px solid var(--border2); background: transparent; color: var(--cream); border-radius: var(--r); padding: 0.55rem 1rem; font: inherit; font-size: 0.85rem; cursor: pointer; }
+    .btn-gold { background: var(--gold); border-color: var(--gold); color: #120d03; font-weight: 500; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; align-items: center; }
+    .status { font-size: 0.85rem; color: var(--gray); }
+    .status.ok { color: #7ed6a0; } .status.err { color: #ff8a80; }
+    .inline { background: none; border: 0; color: var(--blue); cursor: pointer; padding: 0; font: inherit; font-size: 0.78rem; text-align: left; }
+    @media (max-width: 720px) { .box { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>📰 Press Kits</h1>
+    <div><a href="dashboard.html">← Booking Agent</a><a href="hub.html">Hub</a></div>
+  </div>
+  <p class="intro">Each artist gets a public press kit page. Pitches sent from the tool can include a tracked link to it, so you see when a buyer opens it. Links to music and video must start with https://.</p>
+  <div class="tabs" id="tabs"></div>
+  <div class="box" id="form"></div>
+  <div class="actions">
+    <button class="btn btn-gold" id="save">Save</button>
+    <button class="btn" id="preview">Preview ↗</button>
+    <button class="btn" id="copy">Copy public link</button>
+    <span class="status" id="status"></span>
+  </div>
+</div>
+
+<script src="crm-store.js"></script>
+<script src="epk-data.js"></script>
+<script>
+(function () {
+  const ENDPOINT = '/.netlify/functions/epk';
+  const TEXT = [
+    ['name', 'Artist name'], ['genre', 'Genre line'], ['tagline', 'Tagline', 'wide'], ['photo', 'Photo URL', 'wide', 'A hosted image link (https://…). Leave empty for no photo.'],
+    ['bio', 'Bio', 'wide', '', 7], ['draw', 'Draw', '', 'What you can honestly show: e.g. "180 paid at Exit/In, Mar 2026".', 3],
+    ['hometown', 'Based in'], ['shows', 'Past shows', 'wide', 'One per line.', 5], ['stage', 'Stage & tech', 'wide', 'Band size, input list, stage plot link, what you bring.', 4],
+    ['contact', 'Booking email']
+  ];
+  const LINKS = [['videos', 'Live video', 'YouTube links show as players.'], ['music', 'Music', 'Spotify links show as players; anything else shows as a button.'], ['socials', 'Social links', '']];
+  const SHORT = { tcrc: 'Timothy Chance & Rasta Country', pnc: 'Poetic Nocturnal Creatures' };
+  const ARTIST_NAME = { tcrc: 'Timothy Chance and Rasta Country', pnc: 'Poetic Nocturnal Creatures' };
+  let current = 'tcrc';
+  let kits = {};
+  const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const $ = id => document.getElementById(id);
+  const status = (msg, kind) => { $('status').className = 'status' + (kind ? ' ' + kind : ''); $('status').textContent = msg; };
+  const publicUrl = key => `${location.origin}/epk.html?a=${key}`;
+
+  // "Label | https://…" per line <-> [{label, url}]
+  const linesToLinks = text => text.split('\n').map(line => {
+    const [a, b] = line.includes('|') ? line.split('|') : ['', line];
+    return { label: a.trim(), url: b.trim() };
+  }).filter(l => l.url);
+  const linksToLines = links => (links || []).map(l => l.label ? `${l.label} | ${l.url}` : l.url).join('\n');
+
+  async function api(init) {
+    const go = () => fetch(ENDPOINT + (init ? '' : '?a=tcrc,pnc'), { ...(init || {}), headers: { 'Content-Type': 'application/json', 'x-df-passcode': DFStore.passcode() } });
+    let res = await go();
+    if (res.status === 401 && DFStore.askPasscode()) res = await go();
+    return res;
+  }
+
+  function renderTabs() {
+    $('tabs').innerHTML = DFEpk.ARTISTS.map(k => `<button class="tab${k === current ? ' on' : ''}" data-k="${k}">${SHORT[k]}</button>`).join('');
+    $('tabs').querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => { kits[current] = read(); current = b.dataset.k; renderTabs(); renderForm(); }));
+  }
+
+  function renderForm() {
+    const k = DFEpk.merge(current, kits[current]);
+    $('form').innerHTML =
+      TEXT.map(([key, label, wide, hint, rows]) => `<label class="field${wide ? ' wide' : ''}"><span>${label}</span>${rows
+        ? `<textarea data-k="${key}" rows="${rows}">${esc(k[key])}</textarea>`
+        : `<input type="text" data-k="${key}" value="${esc(k[key])}" />`}${hint ? `<small>${esc(hint)}</small>` : ''}${key === 'shows' ? '<button type="button" class="inline" id="fill-shows">+ Add played shows from the pipeline</button>' : ''}</label>`).join('') +
+      LINKS.map(([key, label, hint]) => `<label class="field wide"><span>${label}</span><textarea data-k="${key}" rows="3" placeholder="Label | https://…  (one per line)">${esc(linksToLines(k[key]))}</textarea>${hint ? `<small>${esc(hint)}</small>` : ''}</label>`).join('');
+    $('fill-shows').addEventListener('click', fillShows);
+  }
+
+  function read() {
+    const v = key => $('form').querySelector(`[data-k="${key}"]`).value;
+    const kit = {};
+    TEXT.forEach(([key]) => { kit[key] = v(key).trim(); });
+    LINKS.forEach(([key]) => { kit[key] = linesToLinks(v(key)); });
+    return kit;
+  }
+
+  // Played (booked, date passed) shows for this artist: "Mar 2026 — Exit/In, Nashville, TN".
+  function fillShows() {
+    const today = new Date().toISOString().slice(0, 10);
+    const played = DFStore.load('df_leads')
+      .filter(l => l.status === 'booked' && l.eventDate && l.eventDate < today && (l.artist === ARTIST_NAME[current] || l.artist === 'Both'))
+      .sort((a, b) => b.eventDate.localeCompare(a.eventDate))
+      .map(l => {
+        const [y, m] = l.eventDate.split('-').map(Number);
+        return `${new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} — ${[l.name, l.city].filter(Boolean).join(', ')}`;
+      });
+    if (!played.length) return status('No played shows for this artist in the pipeline yet.', 'err');
+    const box = $('form').querySelector('[data-k="shows"]');
+    const have = new Set(box.value.split('\n').map(s => s.trim()));
+    box.value = [...box.value.split('\n').filter(Boolean), ...played.filter(p => !have.has(p))].join('\n');
+    status(`Added ${played.length} show${played.length === 1 ? '' : 's'}. Check them, then Save.`, 'ok');
+  }
+
+  $('save').addEventListener('click', async () => {
+    kits[current] = read();
+    status('Saving…');
+    let res;
+    try { res = await api({ method: 'POST', body: JSON.stringify({ artist: current, kit: kits[current] }) }); } catch { res = null; }
+    if (!res || !res.ok) return status('Couldn’t save. Check your connection and passcode.', 'err');
+    kits[current] = (await res.json()).kit;
+    renderForm();
+    status('Saved ✓ The public page shows it now.', 'ok');
+  });
+  $('preview').addEventListener('click', () => window.open(publicUrl(current), '_blank'));
+  $('copy').addEventListener('click', () => navigator.clipboard.writeText(publicUrl(current))
+    .then(() => status('Link copied ✓ (untracked; pitches sent from the tool get a tracked link)', 'ok'))
+    .catch(() => status(publicUrl(current), '')));
+
+  renderTabs();
+  renderForm();
+  api().then(res => res.ok ? res.json() : null).then(data => {
+    if (data) { kits = Object.fromEntries(Object.entries(data.kits || {}).filter(([, v]) => v)); renderForm(); }
+  }).catch(() => status('Couldn’t load saved kits; showing the starting text.', 'err'));
+})();
+</script>
+</body>
+</html>

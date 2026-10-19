@@ -127,8 +127,9 @@
   }
 
   // Booked Shows: totals, then Upcoming and Played lists. `open` is the
-  // page's global function name that opens a lead for editing.
-  function renderShows(els, leads, open) {
+  // page's global function name that opens a lead for editing; `actions`
+  // optionally names the page's functions for { gaps, invoice, remind }.
+  function renderShows(els, leads, open, actions) {
     const booked = leads.filter(l => l.status === 'booked')
       .sort((a, b) => (a.eventDate || '9999').localeCompare(b.eventDate || '9999'));
     const upcoming = booked.filter(l => !isPlayed(l));
@@ -146,14 +147,29 @@
       els.list.innerHTML = '<div class="sd-empty">🎤 No confirmed shows yet. Mark a lead "Booked" to see it here.</div>';
       return;
     }
-    const box = list => `<div class="sd-box">${list.map(l => showCard(l, open)).join('')}</div>`;
+    const box = list => `<div class="sd-box">${list.map(l => showCard(l, open, actions)).join('')}</div>`;
     els.list.innerHTML =
       '<div class="sd-section-title">Upcoming</div>' +
       (upcoming.length ? box(upcoming) : '<div class="sd-empty">No upcoming shows.</div>') +
       (played.length ? `<div class="sd-section-title">Played</div>${artistTable(leads)}${box(played)}` : '');
   }
 
-  function showCard(l, open) {
+  function depositOverdue(l) {
+    return !!(num(l.deposit) && !l.depositPaid && l.depositDue && l.depositDue < today());
+  }
+
+  function actionButtons(l, actions) {
+    if (!actions) return '';
+    const btn = (fn, label, title) => fn ? `<button class="btn btn-ghost" title="${title}" onclick="event.stopPropagation();${fn}('${l.id}')">${label}</button>` : '';
+    const buttons = [
+      !isPlayed(l) && l.eventDate && btn(actions.gaps, '🗺 Fill nearby dates', 'Find shows within a few hours’ drive on the open days around this one'),
+      btn(actions.invoice, '🧾 Invoice', 'Make, print or email an invoice'),
+      depositOverdue(l) && btn(actions.remind, '⏰ Deposit reminder', 'Email a polite reminder about the overdue deposit')
+    ].filter(Boolean);
+    return buttons.length ? `<div class="dfo-show-actions">${buttons.join('')}</div>` : '';
+  }
+
+  function showCard(l, open, actions) {
     return `
       <div class="sd-card" onclick="${open}('${l.id}')">
         <div class="sd-card-main">
@@ -164,6 +180,8 @@
             ${l.eventDate ? `<div class="sd-card-date">📅 ${l.eventDate}</div>` : '<div class="sd-card-nodate">📅 No show date yet</div>'}
             ${DFDeals.card(l)}
             ${card(l)}
+            ${window.DFOut ? DFOut.badges(l) : ''}
+            ${actionButtons(l, actions)}
           </div>
         </div>
         <div class="sd-card-contact">

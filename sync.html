@@ -310,6 +310,7 @@
     <div class="sidebar-footer">
       <a href="hub.html">Command Center</a>
       <a href="dashboard.html">Booking agent</a>
+      <a href="epk-edit.html">Press kits</a>
       <a href="index.html" target="_blank" rel="noopener">Public page ↗</a>
     </div>
   </aside>
@@ -442,6 +443,7 @@
             <div id="pitch-preview" class="email-preview placeholder">The pitch appears here. Fill in the details and press Write the pitch.</div>
             <div class="email-actions">
               <button class="btn btn-green" id="copy-btn" style="display:none" onclick="copyPitch()">Copy pitch</button>
+              <button class="btn btn-gold" id="send-btn" style="display:none" onclick="sendPitch()">Review and send</button>
               <button class="btn btn-outline" id="mail-btn" style="display:none" onclick="openMailto()">Open in mail app</button>
               <button class="btn btn-ghost" id="save-btn" style="display:none" onclick="saveFromPitch()">Add to pipeline</button>
             </div>
@@ -578,12 +580,14 @@
 <script src="crm-store.js"></script>
 <script src="followups.js"></script>
 <script src="finder.js"></script>
+<script src="outreach.js"></script>
 <script>
 // ---- STATE ----
 let leads = DFStore.load('df_sync_leads');
 let currentFilter = 'all';
 let currentPitch = { subject: '', body: '', contact: '', company: '', email: '' };
 let editingId = null;
+let composerLeadId = null;
 
 // ---- NAV ----
 function showPage(id) {
@@ -616,7 +620,7 @@ function renderOverview() {
   updateStats();
   DFFollow.renderDue(document.getElementById('due-panel'), leads, {
     describe: l => [l.project || l.category, l.contact].filter(Boolean).join(' · '),
-    handlers: { open: 'editLead', pitch: 'pitchFromLead', done: 'followDone', snooze: 'followSnooze' }
+    handlers: { open: 'editLead', pitch: 'draftFollowUp', done: 'followDone', snooze: 'followSnooze' }
   });
   const recent = [...leads].reverse().slice(0, 5);
   const container = document.getElementById('recent-list');
@@ -688,13 +692,28 @@ Reference the specific ISRC/UPC codes. Be professional and concise — music sup
   currentPitch = { subject: parsed.subject, body: parsed.body, contact, company, email: '' };
   document.getElementById('pitch-subject').textContent = `Subject: ${parsed.subject}`;
   document.getElementById('pitch-preview').textContent = parsed.body;
-  ['copy-btn','mail-btn','save-btn'].forEach(id => document.getElementById(id).style.display = 'inline-flex');
+  ['send-btn','copy-btn','mail-btn','save-btn'].forEach(id => document.getElementById(id).style.display = 'inline-flex');
 }
 
 function copyPitch() {
   navigator.clipboard.writeText(`Subject: ${currentPitch.subject}\n\n${currentPitch.body}`)
     .then(() => toast('Pitch copied ✓', 'success'))
     .catch(() => toast('Copy failed', 'error'));
+}
+
+// The lead the composer is writing to: the one loaded, or one with the same company name.
+function composerLead() {
+  return leads.find(l => l.id === composerLeadId) || leads.find(l => l.name === document.getElementById('pm-company').value.trim()) || null;
+}
+
+function sendPitch() {
+  const lead = composerLead();
+  DFOut.send({ subject: currentPitch.subject, body: currentPitch.body, kind: 'pitch', lead, kit: !!lead, onSent: () => lead && followDone(lead.id) });
+}
+
+function draftFollowUp(id) {
+  const lead = leads.find(l => l.id === id);
+  if (lead) DFOut.followUp(lead, 'sync', () => followDone(id), msg => msg && toast(msg, 'success'));
 }
 
 function openMailto() {
@@ -715,6 +734,7 @@ function loadLeadIntoComposer() {
   if (!id) return;
   const lead = leads.find(l => l.id === id);
   if (!lead) return;
+  composerLeadId = id;
   document.getElementById('pm-contact').value = lead.contact || lead.name || '';
   document.getElementById('pm-company').value = lead.name || '';
   document.getElementById('pm-project').value = lead.project || '';
@@ -748,7 +768,7 @@ function renderLeads() {
       <td><span class="venue-type-badge">${esc(l.category||'')}</span></td>
       <td style="font-size:0.88rem;color:var(--bone-dim)">${esc(trackLabel(l.track))}</td>
       <td>${l.contact?`<div style="font-size:0.88rem">${esc(l.contact)}</div>`:''}${l.email?`<a href="mailto:${esc(l.email)}" style="font-size:0.85rem" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</td>
-      <td>${statusBadge(l.status)}<div>${DFFollow.badge(l)}</div></td>
+      <td>${statusBadge(l.status)}<div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}</td>
       <td style="font-size:0.85rem;color:var(--bone-dim);white-space:nowrap">${formatDate(l.dateAdded)}</td>
       <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
         <button class="btn btn-ghost" onclick="pitchFromLead('${l.id}')" title="Write a pitch" aria-label="Write a pitch to ${esc(l.name)}">✉</button>
@@ -851,7 +871,7 @@ function updateLead(id, change) {
 }
 
 function followDone(id) {
-  const lead = updateLead(id, l => DFFollow.logTouch(l, 'pitched'));
+  const lead = updateLead(id, l => DFOut.markSent(l, 'pitched'));
   if (lead) toast(DFFollow.touchMessage(lead), 'success');
 }
 
@@ -875,6 +895,7 @@ function deleteLead(id) {
 function pitchFromLead(id) {
   const l = leads.find(x => x.id === id);
   if (!l) return;
+  composerLeadId = id;
   document.getElementById('pm-contact').value = l.contact || l.name || '';
   document.getElementById('pm-company').value = l.name || '';
   document.getElementById('pm-project').value = l.project || '';
@@ -903,7 +924,6 @@ async function callAI(system, userMessage, maxTokens = 1500, retried = false) {
       method: 'POST',
       headers: {'Content-Type':'application/json','x-df-passcode':DFStore.passcode()},
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
         max_tokens: maxTokens,
         system,
         messages: [{role:'user',content:userMessage}]
@@ -943,6 +963,7 @@ function formatDate(iso) { if (!iso) return '—'; return new Date(iso).toLocale
 
 // ---- INIT ----
 updateStats(); renderOverview();
+DFOut.init(() => { renderOverview(); renderLeads(); });
 DFStore.connect('df_sync_leads', items => {
   leads = items;
   updateStats(); renderOverview(); renderLeads(); renderLicensed();
