@@ -160,32 +160,6 @@
     .track-facts dt { color: var(--bone-dim); }
     .track-facts dd { font-variant-numeric: tabular-nums; }
 
-    /* Settings */
-    .settings-row {
-      display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
-      padding: 1rem 0; border-top: 1px solid var(--scale);
-    }
-    .settings-row:last-child { border-bottom: 1px solid var(--scale); }
-    .settings-row-label { font-weight: 600; }
-    .settings-row-sub { font-size: 0.85rem; color: var(--bone-dim); }
-    .settings-row form { display: flex; gap: 0.5rem; align-items: center; }
-    .change-pw-input {
-      font: inherit; font-size: 0.95rem; color: var(--bone); background: var(--pine-deep);
-      border: 1px solid var(--scale); border-radius: 3px; padding: 0.5rem 0.75rem; width: 13rem;
-    }
-    .change-pw-input:focus-visible { outline: 2px solid var(--flame); outline-offset: 1px; }
-    .btn-sm { font: inherit; font-size: 0.9rem; font-weight: 700; padding: 0.5rem 1rem; border-radius: 3px; cursor: pointer; border: 1px solid transparent; }
-    .btn-gold-sm { background: var(--gold); color: var(--ink); }
-    .btn-gold-sm:hover { background: var(--bone); }
-    .btn-danger-sm { background: none; color: var(--red); border-color: rgba(255, 138, 128, 0.45); }
-    .btn-danger-sm:hover { background: rgba(255, 138, 128, 0.1); }
-
-    .toast {
-      position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 999;
-      background: var(--bone); color: var(--ink); font-weight: 600;
-      padding: 0.75rem 1.1rem; border-radius: 3px;
-    }
-
     @media (max-width: 860px) {
       .today-grid { grid-template-columns: 1fr; }
       .today-card, .today-card:first-child, .today-card:last-child { padding: 1.25rem 0 0.5rem; }
@@ -198,8 +172,6 @@
       .stage { flex-direction: column; gap: 0; }
       .stage + .stage::before { display: none; }
       .stages { gap: 1.75rem; }
-      .settings-row form, .change-pw-input { width: 100%; }
-      .change-pw-input { flex: 1; }
     }
     @media (prefers-reduced-motion: reduce) {
       .gate-input.error { animation: none; }
@@ -325,38 +297,6 @@
       </div>
     </section>
 
-    <!-- SETTINGS -->
-    <section class="section">
-      <h2>Settings</h2>
-      <div class="settings-row">
-        <div>
-          <div class="settings-row-label">Change password</div>
-          <div class="settings-row-sub">Update your Command Center password</div>
-        </div>
-        <form onsubmit="event.preventDefault(); changePassword()">
-          <input type="password" class="change-pw-input" id="new-pw" placeholder="New password" aria-label="New password" />
-          <button class="btn-sm btn-gold-sm">Save</button>
-        </form>
-      </div>
-      <div class="settings-row">
-        <div>
-          <div class="settings-row-label">Booking email</div>
-          <div class="settings-row-sub">Update the email shown on your public site</div>
-        </div>
-        <form onsubmit="event.preventDefault(); saveEmail()">
-          <input type="email" class="change-pw-input" id="booking-email" placeholder="booking@..." aria-label="Booking email" />
-          <button class="btn-sm btn-gold-sm">Save</button>
-        </form>
-      </div>
-      <div class="settings-row">
-        <div>
-          <div class="settings-row-label">Clear all data</div>
-          <div class="settings-row-sub">Remove every lead from the booking and sync pipelines</div>
-        </div>
-        <button class="btn-sm btn-danger-sm" onclick="clearAllData()">Clear data</button>
-      </div>
-    </section>
-
   </main>
 </div>
 
@@ -412,30 +352,6 @@ function logout() {
   location.reload();
 }
 
-function changePassword() {
-  const newPw = document.getElementById('new-pw').value.trim();
-  if (!newPw || newPw.length < 4) { alert('Password must be at least 4 characters.'); return; }
-  localStorage.setItem(PW_KEY, newPw);
-  document.getElementById('new-pw').value = '';
-  showToast('Password updated');
-}
-
-function saveEmail() {
-  const email = document.getElementById('booking-email').value.trim();
-  if (!email) return;
-  localStorage.setItem('df_booking_email', email);
-  document.getElementById('booking-email').value = '';
-  showToast('Booking email saved');
-}
-
-function clearAllData() {
-  if (!confirm('This will delete ALL leads in both booking and sync pipelines. Are you sure?')) return;
-  DFStore.save('df_leads', []);
-  DFStore.save('df_sync_leads', []);
-  loadStats();
-  showToast('All pipeline data cleared');
-}
-
 // ---- STATS ----
 function loadStats() {
   const venueLeads = DFStore.load('df_leads');
@@ -455,8 +371,6 @@ function loadStats() {
 
   renderToday();
 
-  const savedEmail = localStorage.getItem('df_booking_email');
-  if (savedEmail) document.getElementById('booking-email').placeholder = savedEmail;
 }
 
 // ---- TODAY ----
@@ -500,16 +414,6 @@ function renderToday() {
         `<a class="today-item" href="dashboard.html">${hubEsc(l.name)}<small>${hubEsc(issue.text)}</small></a>`).join('') +
       (flagged.length > 4 ? `<a class="today-link" href="dashboard.html">And ${flagged.length - 4} more</a>` : '')
     : '<div class="today-empty">Nothing flagged.</div>';
-}
-
-// ---- TOAST ----
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.setAttribute('role', 'status');
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
 }
 
 // ---- ENTER KEY ----
