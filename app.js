@@ -4,22 +4,81 @@
 // ============================================================
 
 // ---- NAV ----
-// The mobile menu is handled by the inline script in index.html.
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobile-menu');
 
-// Scroll nav highlight
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('nav');
-  if (window.scrollY > 60) {
-    nav.style.background = 'rgba(8, 12, 9, 0.97)';
-  } else {
-    nav.style.background = 'rgba(8, 12, 9, 0.9)';
-  }
+hamburger.addEventListener('click', () => {
+  const open = mobileMenu.classList.toggle('open');
+  hamburger.setAttribute('aria-expanded', String(open));
 });
+mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  mobileMenu.classList.remove('open');
+  hamburger.setAttribute('aria-expanded', 'false');
+}));
 
 // ---- BOOKING FORM ----
 const bookingForm = document.getElementById('booking-form');
 const submitBtn = document.getElementById('submit-btn');
 const formSuccess = document.getElementById('form-success');
+const artistSelect = document.getElementById('bf-artist');
+const typeSelect = document.getElementById('bf-type');
+
+// "Book this act" and "Ask about licensing" links pre-fill the form.
+document.querySelectorAll('a[data-artist], a[data-event-type]').forEach(link => {
+  link.addEventListener('click', () => {
+    if (link.dataset.artist) artistSelect.value = link.dataset.artist;
+    if (link.dataset.eventType) typeSelect.value = link.dataset.eventType;
+    updatePoster();
+  });
+});
+
+// ---- LIVE POSTER ----
+// The poster beside the form fills in with the artist, venue, city and date.
+const poster = document.getElementById('poster-live');
+const posterPart = name => poster.querySelector(`[data-poster="${name}"]`);
+const ACTS = {
+  tc: 'Timothy Chance & Rasta Country',
+  pnc: 'Poetic Nocturnal Creatures'
+};
+
+function setSlot(name, value, blank) {
+  const slot = posterPart(name);
+  const text = slot.querySelector('span');
+  const filled = Boolean(value);
+  const next = filled ? value : blank;
+  if (text.textContent === next) return;
+  text.textContent = next;
+  slot.classList.toggle('is-set', filled);
+  if (filled) {
+    slot.classList.remove('stamp');
+    void slot.offsetWidth; // restart the stamp animation
+    slot.classList.add('stamp');
+  }
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  const [y, m, d] = value.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+  });
+}
+
+function updatePoster() {
+  const artist = artistSelect.value;
+  const onlyPnc = artist === 'Poetic Nocturnal Creatures';
+  const solo = artist === 'Timothy Chance and Rasta Country' || onlyPnc;
+  posterPart('act-1').textContent = onlyPnc ? ACTS.pnc : ACTS.tc;
+  posterPart('with').hidden = solo;
+  posterPart('act-2').hidden = solo;
+
+  setSlot('venue', document.getElementById('bf-org').value.trim(), 'Your venue');
+  setSlot('city', document.getElementById('bf-location').value.trim(), 'Your city');
+  setSlot('date', formatDate(document.getElementById('bf-date').value), 'Your date');
+}
+
+bookingForm.addEventListener('input', updatePoster);
+bookingForm.addEventListener('change', updatePoster);
 
 bookingForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -27,14 +86,14 @@ bookingForm.addEventListener('submit', async (e) => {
   const name = document.getElementById('bf-name').value;
   const org = document.getElementById('bf-org').value;
   const email = document.getElementById('bf-email').value;
-  const artist = document.getElementById('bf-artist').value;
-  const type = document.getElementById('bf-type').value;
+  const artist = artistSelect.value;
+  const type = typeSelect.value;
   const date = document.getElementById('bf-date').value;
   const budget = document.getElementById('bf-budget').value;
   const location = document.getElementById('bf-location').value;
   const details = document.getElementById('bf-details').value;
 
-  submitBtn.textContent = 'Sending...';
+  submitBtn.textContent = 'Sending…';
   submitBtn.disabled = true;
 
   // Email version of the inquiry, used if the form service can't be reached
@@ -65,14 +124,15 @@ bookingForm.addEventListener('submit', async (e) => {
     sent = false;
   }
   if (sent) {
-    successText.textContent = "✅ Your inquiry has been sent! We'll be in touch within 48 hours.";
+    successText.textContent = "Inquiry sent. We'll reply within 48 hours.";
     bookingForm.reset();
+    updatePoster();
   } else {
-    successText.textContent = '✉️ Your email app should open with the inquiry filled in. Just press send. If it doesn’t, email booking@dragonfarm.net.';
+    successText.textContent = 'Your email app should open with the inquiry filled in. Press send there. If it doesn’t open, email booking@dragonfarm.net.';
     window.location.href = mailtoLink;
   }
 
-  submitBtn.textContent = 'Send Booking Inquiry →';
+  submitBtn.textContent = 'Send inquiry';
   submitBtn.disabled = false;
   formSuccess.classList.add('show');
   setTimeout(() => formSuccess.classList.remove('show'), 8000);

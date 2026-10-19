@@ -3,347 +3,262 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dragon Farm Records — Booking Hub</title>
+  <title>Book Dragon Farm Records</title>
+  <meta name="description" content="Book Timothy Chance and Rasta Country or Poetic Nocturnal Creatures, or license their music. Dragon Farm Records, Nashville." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:ital,wdth,wght@0,62..125,300..800;1,62..125,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
+  <a class="skip-link" href="#book">Skip to the booking form</a>
+
   <!-- NAV -->
-  <nav id="nav">
+  <header id="nav">
     <div class="nav-inner">
-      <div class="nav-logo">
-        <span class="logo-icon">🐉</span>
-        <span class="logo-text">Dragon Farm Records</span>
-      </div>
-      <ul class="nav-links">
-        <li><a href="#artists">Artists</a></li>
-        <li><a href="#sync">Sync</a></li>
-        <li><a href="#book" class="nav-cta">Book Now</a></li>
-      </ul>
-      <button class="hamburger" id="hamburger" aria-label="Menu">
+      <a class="nav-logo" href="#top">
+        <img src="logo-badge.webp" alt="" width="40" height="43" />
+        <span>Dragon Farm Records</span>
+      </a>
+      <nav aria-label="Main">
+        <ul class="nav-links">
+          <li><a href="#artists">The acts</a></li>
+          <li><a href="#sync">Licensing</a></li>
+          <li><a href="#book" class="nav-cta">Book a show</a></li>
+        </ul>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
         <span></span><span></span><span></span>
       </button>
     </div>
     <div class="mobile-menu" id="mobile-menu">
-      <a href="#artists">Artists</a>
-      <a href="#sync">Sync</a>
-      <a href="#book">Book Now</a>
+      <a href="#artists">The acts</a>
+      <a href="#sync">Licensing</a>
+      <a href="#book">Book a show</a>
     </div>
-  </nav>
+  </header>
 
-  <!-- HERO -->
-  <section id="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-content">
-      <p class="hero-eyebrow">Nashville, TN · Est. 2024</p>
-      <h1 class="hero-title">Book the<br/><span class="gold">Dragon Farm</span><br/>Roster</h1>
-      <p class="hero-sub">Independent multi-genre label spanning Hip-Hop, Reggae & Country.<br/>We bring the fire to your stage.</p>
-      <div class="hero-actions">
-        <a href="#book" class="btn btn-gold">Book an Artist</a>
-        <a href="#artists" class="btn btn-ghost">View Roster</a>
-      </div>
-      <div class="hero-stats">
-        <div class="stat"><span class="stat-num">2</span><span class="stat-label">Debut Singles</span></div>
-        <div class="stat-div"></div>
-        <div class="stat"><span class="stat-num">3</span><span class="stat-label">Genres</span></div>
-        <div class="stat-div"></div>
-        <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Energy</span></div>
-      </div>
-    </div>
-    <div class="hero-scroll">scroll</div>
-  </section>
+  <main id="top">
 
-  <!-- ARTISTS -->
-  <section id="artists">
-    <div class="container">
-      <div class="section-header">
-        <p class="section-tag">The Roster</p>
-        <h2>Dragon Farm Artists</h2>
-        <p class="section-sub">Two acts. Two sounds. One label on fire.</p>
-      </div>
-
-      <div class="artists-grid">
-        <!-- Artist 1 -->
-        <div class="artist-card">
-          <div class="artist-genre-badge country-reggae">Country · Reggae</div>
-          <div class="artist-avatar tc">TC</div>
-          <h3 class="artist-name">Timothy Chance<br/><span class="and">& Rasta Country</span></h3>
-          <p class="artist-bio">A genre-defying fusion of Country soul and Reggae roots. Timothy Chance and Rasta Country bring an unforgettable live experience that crosses every line — fiddles meet riddims, boots meet the dance floor.</p>
-          <div class="artist-single">
-            <span class="single-label">Debut Single</span>
-            <span class="single-title">Mr. Iron Man (Live)</span>
-            <span class="single-meta">UPC: 820200992949</span>
+    <!-- HERO -->
+    <section id="hero">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h1>Put a Dragon Farm act on your bill.</h1>
+          <p class="hero-sub">Country reggae and conscious hip-hop out of Nashville, for clubs, festivals, campuses, dispensaries and private events. Tell us about your show and we'll reply within 48 hours.</p>
+          <div class="hero-actions">
+            <a href="#book" class="btn btn-flame">Fill in the blanks</a>
+            <a href="#artists" class="btn-text">Meet the acts</a>
           </div>
-          <div class="artist-tags">
-            <span class="tag">Festivals</span>
-            <span class="tag">Clubs</span>
-            <span class="tag">Bars</span>
-            <span class="tag">Private Events</span>
+        </div>
+
+        <figure class="poster poster-hero" aria-label="Show poster with the venue, city and date left blank">
+          <img class="poster-badge" src="logo-badge.webp" alt="Dragon Farm Records badge: a green dragon holding a flaming microphone" width="480" height="512" />
+          <p class="poster-presents">Dragon Farm Records presents</p>
+          <p class="poster-act">Timothy Chance &amp; Rasta Country</p>
+          <p class="poster-with">with</p>
+          <p class="poster-act poster-act-small">Poetic Nocturnal Creatures</p>
+          <div class="poster-slots">
+            <p class="slot slot-venue"><span>Your venue</span></p>
+            <p class="slot"><span>Your city</span></p>
+            <p class="slot"><span>Your date</span></p>
           </div>
-          <a href="#book" class="btn btn-outline artist-btn">Book This Act</a>
-        </div>
+        </figure>
+      </div>
+    </section>
 
-        <!-- Artist 2 -->
-        <div class="artist-card">
-          <div class="artist-genre-badge hiphop">Hip-Hop · Conscious</div>
-          <div class="artist-avatar pnc">PNC</div>
-          <h3 class="artist-name">Poetic Nocturnal<br/><span class="and">Creatures</span></h3>
-          <p class="artist-bio">Conscious Hip-Hop with depth, intention, and cultural resonance. Poetic Nocturnal Creatures blend spoken word artistry with hard beats and vivid storytelling — built for listeners who think and move.</p>
-          <div class="artist-single">
-            <span class="single-label">Debut Single</span>
-            <span class="single-title">Peace Pipe</span>
-            <span class="single-meta">UPC: 820200962904</span>
+    <!-- ARTISTS -->
+    <section id="artists">
+      <div class="container">
+        <h2>Two acts, one bill</h2>
+        <p class="section-sub">Book either one, or both for a full night.</p>
+
+        <div class="bill">
+          <article class="act">
+            <h3>Timothy Chance &amp; Rasta Country</h3>
+            <p class="act-genre">Country reggae</p>
+            <p class="act-bio">Country soul over reggae roots. Fiddles meet riddims and boots meet the dance floor, in a live show that crosses every line.</p>
+            <dl class="act-facts">
+              <div><dt>Debut single</dt><dd>Mr. Iron Man (Live)</dd></div>
+              <div><dt>Plays</dt><dd>Festivals, clubs, bars and private events</dd></div>
+              <div><dt>UPC</dt><dd>820200992949</dd></div>
+            </dl>
+            <a href="#book" class="btn btn-line" data-artist="Timothy Chance and Rasta Country">Book Timothy Chance</a>
+          </article>
+
+          <article class="act">
+            <h3>Poetic Nocturnal Creatures</h3>
+            <p class="act-genre">Conscious hip-hop</p>
+            <p class="act-bio">Spoken word over hard beats. Vivid storytelling with depth and intention, built for listeners who think and move.</p>
+            <dl class="act-facts">
+              <div><dt>Debut single</dt><dd>Peace Pipe</dd></div>
+              <div><dt>Plays</dt><dd>Colleges, dispensaries, smoke shops and festivals</dd></div>
+              <div><dt>UPC</dt><dd>820200962904</dd></div>
+            </dl>
+            <a href="#book" class="btn btn-line" data-artist="Poetic Nocturnal Creatures">Book Poetic Nocturnal Creatures</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SYNC -->
+    <section id="sync">
+      <div class="container sync-layout">
+        <div class="sync-intro">
+          <h2>License the music</h2>
+          <p class="section-sub">Both catalogs are open for film, TV, ads and games, with master and sync rights from one place, custom edits on request and fast clearance.</p>
+          <a href="#book" class="btn btn-flame" data-event-type="Sync / Licensing">Ask about licensing</a>
+        </div>
+        <dl class="sync-list">
+          <div>
+            <dt>Film and TV</dt>
+            <dd>Editorial, documentary and drama placements on broadcast and streaming.</dd>
           </div>
-          <div class="artist-tags">
-            <span class="tag">Colleges</span>
-            <span class="tag">Dispensaries</span>
-            <span class="tag">Festivals</span>
-            <span class="tag">Smoke Shops</span>
+          <div>
+            <dt>Ads and social</dt>
+            <dd>Campaigns and brand partnerships, especially lifestyle, wellness, outdoor and cannabis brands.</dd>
           </div>
-          <a href="#book" class="btn btn-outline artist-btn">Book This Act</a>
-        </div>
+          <div>
+            <dt>Games</dt>
+            <dd>Background and featured placements for indie and studio titles. Exclusive soundtrack deals considered.</dd>
+          </div>
+        </dl>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- SYNC DEALS -->
-  <section id="sync">
-    <div class="container">
-      <div class="section-header">
-        <p class="section-tag">Licensing</p>
-        <h2>Sync & Licensing</h2>
-        <p class="section-sub">Place Dragon Farm music in film, TV, ads, games and more.</p>
-      </div>
+    <!-- BOOKING FORM -->
+    <section id="book">
+      <div class="container">
+        <h2>Book a show</h2>
+        <p class="section-sub">Fill in what you know. Your venue, city and date go on the poster as you type, and the inquiry comes straight to our booking team.</p>
 
-      <div class="sync-grid">
-        <div class="sync-card">
-          <div class="sync-icon">🎬</div>
-          <h4>Film & TV</h4>
-          <p>Both artists are available for sync licensing in film, television, and streaming platform placements. Our catalog spans Country-Reggae fusion and conscious Hip-Hop — perfect for editorial, documentary, and drama.</p>
-          <ul class="sync-list">
-            <li>Full master + sync rights available</li>
-            <li>Custom edits on request</li>
-            <li>Competitive indie licensing rates</li>
-          </ul>
-        </div>
-        <div class="sync-card">
-          <div class="sync-icon">📱</div>
-          <h4>Ads & Digital</h4>
-          <p>Looking for authentic, culture-forward sound for campaigns? Dragon Farm artists bring genuine energy to brand partnerships — especially in cannabis, lifestyle, wellness, and outdoor markets.</p>
-          <ul class="sync-list">
-            <li>Social media & digital ad licensing</li>
-            <li>Brand partnership deals welcome</li>
-            <li>Cannabis-friendly catalog</li>
-          </ul>
-        </div>
-        <div class="sync-card">
-          <div class="sync-icon">🎮</div>
-          <h4>Games & Interactive</h4>
-          <p>From indie games to AAA titles, our multi-genre catalog brings versatile energy to interactive media. Both acts are open to exclusive game soundtrack deals and non-exclusive placements.</p>
-          <ul class="sync-list">
-            <li>Background & feature placements</li>
-            <li>Exclusive deals considered</li>
-            <li>Quick clearance turnaround</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="sync-cta-box">
-        <div class="sync-cta-text">
-          <h3>Ready to license?</h3>
-          <p>Send us details about your project and we'll get you cleared fast.</p>
-        </div>
-        <a href="#book" class="btn btn-gold">Start a Sync Deal</a>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- BOOKING FORM -->
-  <section id="book">
-    <div class="container">
-      <div class="section-header">
-        <p class="section-tag">Let's Talk</p>
-        <h2>Book an Artist</h2>
-        <p class="section-sub">Promoters, venues, festival bookers — fill this out and we'll be in touch within 48 hours.</p>
-      </div>
-
-      <div class="book-layout">
-        <div class="book-form-wrap">
+        <div class="book-layout">
           <form id="booking-form" class="booking-form" name="booking-inquiry" method="POST" data-netlify="true" netlify-honeypot="bot-field">
             <input type="hidden" name="form-name" value="booking-inquiry" />
             <p hidden><label>Leave this empty: <input name="bot-field" /></label></p>
-            <div class="form-row">
-              <div class="field-group">
-                <label for="bf-name">Your Name *</label>
-                <input type="text" id="bf-name" name="name" required placeholder="Jane Smith" />
+
+            <fieldset>
+              <legend>About you</legend>
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="bf-name">Your name</label>
+                  <input type="text" id="bf-name" name="name" required autocomplete="name" placeholder="Jane Smith" />
+                </div>
+                <div class="field-group">
+                  <label for="bf-org">Venue or organization</label>
+                  <input type="text" id="bf-org" name="organization" required autocomplete="organization" placeholder="The Basement East" />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="bf-email">Email</label>
+                  <input type="email" id="bf-email" name="email" required autocomplete="email" placeholder="booking@venue.com" />
+                </div>
+                <div class="field-group">
+                  <label for="bf-phone">Phone <span class="optional">optional</span></label>
+                  <input type="tel" id="bf-phone" name="phone" autocomplete="tel" placeholder="(615) 555-0100" />
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>The show</legend>
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="bf-artist">Artist</label>
+                  <select id="bf-artist" name="artist" required>
+                    <option value="">Choose an artist</option>
+                    <option value="Timothy Chance and Rasta Country">Timothy Chance and Rasta Country</option>
+                    <option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option>
+                    <option value="Both">Both artists</option>
+                    <option value="Open">Not sure, recommend one</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label for="bf-type">Event type</label>
+                  <select id="bf-type" name="event_type" required>
+                    <option value="">Choose a type</option>
+                    <option>Bar / Club Night</option>
+                    <option>Festival</option>
+                    <option>Dispensary Event</option>
+                    <option>College Show</option>
+                    <option>Private Event</option>
+                    <option>Outdoor / Amphitheater</option>
+                    <option>Sync / Licensing</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="bf-date">Date <span class="optional">optional</span></label>
+                  <input type="date" id="bf-date" name="event_date" />
+                </div>
+                <div class="field-group">
+                  <label for="bf-budget">Budget <span class="optional">optional</span></label>
+                  <select id="bf-budget" name="budget">
+                    <option value="">Prefer not to say</option>
+                    <option>Under $500</option>
+                    <option>$500 – $1,500</option>
+                    <option>$1,500 – $5,000</option>
+                    <option>$5,000 – $10,000</option>
+                    <option>$10,000+</option>
+                  </select>
+                </div>
               </div>
               <div class="field-group">
-                <label for="bf-org">Organization / Venue *</label>
-                <input type="text" id="bf-org" name="organization" required placeholder="The Bluebird Cafe" />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="field-group">
-                <label for="bf-email">Email *</label>
-                <input type="email" id="bf-email" name="email" required placeholder="booking@venue.com" />
+                <label for="bf-location">City <span class="optional">optional</span></label>
+                <input type="text" id="bf-location" name="location" autocomplete="address-level2" placeholder="Nashville, TN" />
               </div>
               <div class="field-group">
-                <label for="bf-phone">Phone</label>
-                <input type="tel" id="bf-phone" name="phone" placeholder="(615) 555-0100" />
+                <label for="bf-details">About the event <span class="optional">optional</span></label>
+                <textarea id="bf-details" name="details" rows="5" placeholder="Audience size, set length, other acts on the bill, anything we should know"></textarea>
               </div>
-            </div>
-            <div class="form-row">
-              <div class="field-group">
-                <label for="bf-artist">Artist *</label>
-                <select id="bf-artist" name="artist" required>
-                  <option value="">Select an artist</option>
-                  <option value="Timothy Chance and Rasta Country">Timothy Chance and Rasta Country</option>
-                  <option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option>
-                  <option value="Both">Both Artists</option>
-                  <option value="Open">Open — Recommend One</option>
-                </select>
-              </div>
-              <div class="field-group">
-                <label for="bf-type">Event Type *</label>
-                <select id="bf-type" name="event_type" required>
-                  <option value="">Select type</option>
-                  <option>Bar / Club Night</option>
-                  <option>Festival</option>
-                  <option>Dispensary Event</option>
-                  <option>College Show</option>
-                  <option>Private Event</option>
-                  <option>Outdoor / Amphitheater</option>
-                  <option>Sync / Licensing</option>
-                  <option>Other</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="field-group">
-                <label for="bf-date">Event Date</label>
-                <input type="date" id="bf-date" name="event_date" />
-              </div>
-              <div class="field-group">
-                <label for="bf-budget">Estimated Budget</label>
-                <select id="bf-budget" name="budget">
-                  <option value="">Prefer not to say</option>
-                  <option>Under $500</option>
-                  <option>$500 – $1,500</option>
-                  <option>$1,500 – $5,000</option>
-                  <option>$5,000 – $10,000</option>
-                  <option>$10,000+</option>
-                </select>
-              </div>
-            </div>
-            <div class="field-group full">
-              <label for="bf-location">Event Location / City</label>
-              <input type="text" id="bf-location" name="location" placeholder="Nashville, TN" />
-            </div>
-            <div class="field-group full">
-              <label for="bf-details">Tell Us About Your Event</label>
-              <textarea id="bf-details" name="details" rows="5" placeholder="Describe your event, audience size, vibe, any special requirements..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-gold submit-btn" id="submit-btn">Send Booking Inquiry →</button>
-            <div class="form-success" id="form-success">
-              <span id="form-success-text">✅ Your inquiry has been sent! We'll be in touch within 48 hours.</span>
-            </div>
+            </fieldset>
+
+            <button type="submit" class="btn btn-flame submit-btn" id="submit-btn">Send inquiry</button>
+            <p class="form-success" id="form-success" role="status" aria-live="polite">
+              <span id="form-success-text">Inquiry sent. We'll reply within 48 hours.</span>
+            </p>
           </form>
-        </div>
 
-        <div class="book-sidebar">
-          <div class="sidebar-card">
-            <h4>Contact Us Directly</h4>
-            <div class="contact-item">
-              <span class="contact-icon">📧</span>
-              <div>
-                <p class="contact-label">Booking Email</p>
-                <a href="mailto:booking@dragonfarm.net" class="contact-val">booking@dragonfarm.net</a>
+          <aside class="book-side">
+            <figure class="poster poster-live" id="poster-live" aria-hidden="true">
+              <p class="poster-presents">Dragon Farm Records presents</p>
+              <p class="poster-act" data-poster="act-1">Timothy Chance &amp; Rasta Country</p>
+              <p class="poster-with" data-poster="with">with</p>
+              <p class="poster-act poster-act-small" data-poster="act-2">Poetic Nocturnal Creatures</p>
+              <div class="poster-slots">
+                <p class="slot slot-venue" data-poster="venue"><span>Your venue</span></p>
+                <p class="slot" data-poster="city"><span>Your city</span></p>
+                <p class="slot" data-poster="date"><span>Your date</span></p>
               </div>
-            </div>
-            <div class="contact-item">
-              <span class="contact-icon">📍</span>
-              <div>
-                <p class="contact-label">Based In</p>
-                <p class="contact-val">Nashville, TN</p>
-              </div>
-            </div>
-            <div class="contact-item">
-              <span class="contact-icon">⏱️</span>
-              <div>
-                <p class="contact-label">Response Time</p>
-                <p class="contact-val">Within 48 hours</p>
-              </div>
-            </div>
-          </div>
+            </figure>
 
-          <div class="sidebar-card">
-            <h4>We Play Well With</h4>
-            <div class="compat-tags">
-              <span class="tag">Dispensaries</span>
-              <span class="tag">Smoke Shops</span>
-              <span class="tag">Festivals</span>
-              <span class="tag">Bars & Clubs</span>
-              <span class="tag">Colleges</span>
-              <span class="tag">Outdoor Events</span>
-              <span class="tag">Private Parties</span>
-              <span class="tag">Brand Activations</span>
+            <div class="contact">
+              <p>Rather email? Write to <a href="mailto:booking@dragonfarm.net">booking@dragonfarm.net</a>.</p>
+              <p>We're based in Nashville and reply within 48 hours.</p>
             </div>
-          </div>
-
-          <div class="sidebar-card mascot-card">
-            <div class="mascot-inner">
-              <span class="mascot-emoji">🐉</span>
-              <div>
-                <p class="mascot-name">CD — Chance the Dragon</p>
-                <p class="mascot-desc">Brand ambassador & social media mascot of Dragon Farm Records.</p>
-              </div>
-            </div>
-          </div>
+          </aside>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+
+  </main>
 
   <!-- FOOTER -->
   <footer id="footer">
-    <div class="container">
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <span class="footer-logo">🐉 Dragon Farm Records</span>
-          <p class="footer-tagline">Nashville, TN · Hip-Hop · Reggae · Country</p>
-        </div>
-        <div class="footer-links">
-          <a href="#artists">Roster</a>
-          <a href="#sync">Sync</a>
-          <a href="#book">Booking</a>
-        </div>
+    <div class="container footer-inner">
+      <img src="logo-badge.webp" alt="" width="56" height="60" />
+      <div>
+        <p class="footer-name">Dragon Farm Records</p>
+        <p>Independent label in Nashville, Tennessee. The dragon on the badge is Chance, our mascot.</p>
       </div>
-      <div class="footer-bottom">
-        <p>© 2025 Dragon Farm Records. All rights reserved.</p>
-        <p>Booking inquiries: <a href="mailto:booking@dragonfarm.net">booking@dragonfarm.net</a></p>
-      </div>
+      <p class="footer-mail"><a href="mailto:booking@dragonfarm.net">booking@dragonfarm.net</a></p>
     </div>
+    <p class="container footer-copy">© 2026 Dragon Farm Records</p>
   </footer>
-
-
-<script>
-// Hamburger menu - inline fix
-document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.getElementById('hamburger');
-  var menu = document.getElementById('mobile-menu');
-  if (btn && menu) {
-    btn.addEventListener('click', function() {
-      menu.classList.toggle('open');
-    });
-    menu.querySelectorAll('a').forEach(function(a) {
-      a.addEventListener('click', function() { menu.classList.remove('open'); });
-    });
-  }
-});
-</script>
 
   <script src="config.js"></script>
   <script src="app.js"></script>
