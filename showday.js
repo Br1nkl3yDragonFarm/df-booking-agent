@@ -16,7 +16,7 @@
 
 (function () {
   const SOON_DAYS = 7;
-  const SHORT = { 'Timothy Chance and Rasta Country': 'TCRC', 'Poetic Nocturnal Creatures': 'PNC', 'Both artists': 'Both' };
+  const SHORT = { 'Timothy Chance and Rasta Country': 'TCRC' };
 
   function esc(s) {
     return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

@@ -45,13 +45,11 @@ const SYNC_CATEGORIES = {
 };
 
 const BOOKING_ARTISTS = {
-  'Timothy Chance and Rasta Country': 'Timothy Chance and Rasta Country (country-reggae fusion)',
-  'Poetic Nocturnal Creatures': 'Poetic Nocturnal Creatures (conscious hip-hop)'
+  'Timothy Chance and Rasta Country': 'Timothy Chance and Rasta Country (country-reggae fusion)'
 };
 
 const SYNC_TRACKS = {
-  'Mr. Iron Man (Live)': '"Mr. Iron Man (Live)" by Timothy Chance and Rasta Country (country-reggae fusion)',
-  'Peace Pipe': '"Peace Pipe" by Poetic Nocturnal Creatures (conscious hip-hop, cannabis culture)'
+  'Mr. Iron Man (Live)': '"Mr. Iron Man (Live)" by Timothy Chance and Rasta Country (country-reggae fusion)'
 };
 
 const RULES = `Rules:

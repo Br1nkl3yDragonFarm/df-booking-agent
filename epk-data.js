@@ -8,7 +8,7 @@
 // ============================================================
 
 window.DFEpk = {
-  ARTISTS: ['tcrc', 'pnc'],
+  ARTISTS: ['tcrc'],
   DEFAULTS: {
     tcrc: {
       name: 'Timothy Chance and Rasta Country',
@@ -16,16 +16,6 @@ window.DFEpk = {
       tagline: 'Fiddles meet riddims and boots meet the dance floor.',
       hometown: '',
       bio: 'Country soul over reggae roots. Fiddles meet riddims and boots meet the dance floor, in a live show that crosses every line.\n\nPlays festivals, clubs, bars and private events.\nDebut single: "Mr. Iron Man (Live)" (UPC 820200992949).',
-      photo: '', draw: '', shows: '', stage: '',
-      contact: 'booking@dragonfarm.net',
-      videos: [], music: [], socials: []
-    },
-    pnc: {
-      name: 'Poetic Nocturnal Creatures',
-      genre: 'Conscious hip-hop',
-      tagline: 'Spoken word over hard beats.',
-      hometown: '',
-      bio: 'Spoken word over hard beats. Vivid storytelling with depth and intention, built for listeners who think and move.\n\nPlays colleges, dispensaries, smoke shops and festivals.\nDebut single: "Peace Pipe" (UPC 820200962904).',
       photo: '', draw: '', shows: '', stage: '',
       contact: 'booking@dragonfarm.net',
       videos: [], music: [], socials: []

@@ -23,12 +23,6 @@ const DRAGON_FARM_CONFIG = {
       genres: ["Country", "Reggae", "Country-Reggae fusion"],
       upc: "820200992949",
       single: "Mr. Iron Man (Live)"
-    },
-    {
-      name: "Poetic Nocturnal Creatures",
-      genres: ["Hip-Hop", "Conscious Hip-Hop"],
-      upc: "820200962904",
-      single: "Peace Pipe"
     }
   ]
 };

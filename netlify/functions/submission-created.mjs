@@ -10,7 +10,8 @@
 
 import { addLeadIfNew, clean, labelToday } from '../lib/store.mjs';
 
-const ARTISTS = ['Timothy Chance and Rasta Country', 'Poetic Nocturnal Creatures'];
+// The label's one act for now.
+const ACT = 'Timothy Chance and Rasta Country';
 
 // The form's event types, mapped to the lead form's venue types.
 const VENUE_TYPES = {
@@ -26,7 +27,6 @@ function inquiryNotes(d) {
   return [
     `Website inquiry${d.event_type ? ` (${clean(d.event_type, 60)})` : ''}.`,
     d.budget && `Budget: ${clean(d.budget, 60)}.`,
-    d.artist === 'Open' && 'Asked us to recommend an act.',
     clean(d.details, 2000)
   ].filter(Boolean).join(' ');
 }
@@ -45,7 +45,7 @@ function inquiryLead(submission, today) {
   };
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean(d.email, 120)) ? clean(d.email, 120) : '';
   if (d.event_type === 'Sync / Licensing') {
-    return { list: 'sync', lead: { ...base, project: '', category: 'Other', track: 'Both', contact: clean(d.name, 120), email } };
+    return { list: 'sync', lead: { ...base, project: '', category: 'Other', track: 'Mr. Iron Man (Live)', contact: clean(d.name, 120), email } };
   }
   return {
     list: 'venue',
@@ -53,7 +53,7 @@ function inquiryLead(submission, today) {
       ...base,
       city: clean(d.location, 120),
       type: VENUE_TYPES[d.event_type] || 'Other',
-      artist: ARTISTS.includes(d.artist) ? d.artist : 'Both',
+      artist: ACT,
       contactName: clean(d.name, 120),
       contactEmail: email,
       contactPhone: clean(d.phone, 40),

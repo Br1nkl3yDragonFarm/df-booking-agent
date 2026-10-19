@@ -6,7 +6,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
 ---
 
 ## Features
-- **Artist Roster** — Timothy Chance and Rasta Country & Poetic Nocturnal Creatures
+- **Artist Roster** — Timothy Chance and Rasta Country (Poetic Nocturnal Creatures is off the roster for now)
 - **Sync & Licensing** — Film, TV, ads, games licensing info
 - **Booking Inquiry Form** — Direct booking requests with mailto fallback; each one lands in the booking (or sync) pipeline as a lead due today
 - **Press kits** (`epk.html`) — A public page per artist: bio, music, live video, past shows, draw, stage info
@@ -59,7 +59,7 @@ A reply is matched to its lead by the sender's address, or by the lead's website
 Each payment link takes one payment. When a deposit is paid, the lead's deposit is marked received the next time a page opens.
 
 ### 6. Press Kits
-Open **Press Kits** (`epk-edit.html`) and fill in each artist's photo link, music and video links, past shows, draw and stage info.
+Open **Press Kits** (`epk-edit.html`) and fill in the artist's photo link, music and video links, past shows, draw and stage info.
 It starts from the bio on the public site. Add only facts you can stand behind: buyers check.
 
 ### 7. Deploy to Netlify
@@ -84,7 +84,7 @@ Connect this repo to Netlify:
 ├── showday.js       # Show-day details and settlement: what we were paid vs. the deal
 ├── finder.js        # Find Bookers and Find Sync Contacts: live web search for bookers and sync contacts
 ├── outreach.js      # Send emails, replies, follow-up drafts, press kit links, invoices, reminders, open dates
-├── epk.html         # Public press kit page (epk.html?a=tcrc, ?a=pnc or ?a=tcrc,pnc)
+├── epk.html         # Public press kit page (epk.html?a=tcrc)
 ├── epk-edit.html    # Press kit editor (private)
 ├── epk-data.js      # Press kit starting text, shared by the two pages above
 ├── netlify/functions/finder-background.mjs  # Runs a search (Claude + web search) in the background, booking or sync mode
@@ -110,7 +110,6 @@ Connect this repo to Netlify:
 | Artist | Genre | Single | UPC |
 |--------|-------|--------|-----|
 | Timothy Chance and Rasta Country | Country-Reggae | Mr. Iron Man (Live) | 820200992949 |
-| Poetic Nocturnal Creatures | Conscious Hip-Hop | Peace Pipe | 820200962904 |
 
 ---
 

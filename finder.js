@@ -57,7 +57,7 @@
       defaults: ['venues', 'buyers', 'festivals'],
       where: { label: 'Where', placeholder: 'Nashville, TN · Southeast · Within 3 hours of Atlanta', required: true },
       forLabel: 'For',
-      forOptions: [['Both', 'Both artists'], ['Timothy Chance and Rasta Country', 'Timothy Chance & Rasta Country'], ['Poetic Nocturnal Creatures', 'Poetic Nocturnal Creatures']],
+      forOptions: [['Timothy Chance and Rasta Country', 'Timothy Chance & Rasta Country']],
       similar: { label: 'Similar artists (optional)', placeholder: 'e.g. Slightly Stoopid, Zac Brown Band' },
       dates: { label: 'Dates to fill (optional)', placeholder: 'e.g. Thu Oct 23, Sat Oct 25' },
       linkLabel: 'Booking page',
@@ -66,7 +66,7 @@
           name: r.name,
           city: [r.city, r.state].filter(Boolean).join(', '),
           type,
-          artist: q.artist || 'Both',
+          artist: q.artist || 'Timothy Chance and Rasta Country',
           contactName: contactOf(r),
           contactEmail: r.email,
           contactPhone: r.phone,
@@ -96,15 +96,15 @@
       defaults: ['supervisors', 'libraries', 'briefs'],
       where: { label: 'Focus (optional)', placeholder: 'e.g. indie films, Netflix dramas, horror games, outdoor brands', required: false },
       forLabel: 'Track',
-      forOptions: [['Both', 'Both tracks'], ['Mr. Iron Man (Live)', 'Mr. Iron Man (Live)'], ['Peace Pipe', 'Peace Pipe']],
-      similar: { label: 'Sounds like (optional)', placeholder: 'e.g. Rebelution, Chronixx, Common' },
+      forOptions: [['Mr. Iron Man (Live)', 'Mr. Iron Man (Live)']],
+      similar: { label: 'Sounds like (optional)', placeholder: 'e.g. Rebelution, Chronixx, Zac Brown Band' },
       linkLabel: 'Submission page',
       toLead(r, q, category) {
         return {
           name: r.name,
           project: r.project,
           category,
-          track: q.artist || 'Both',
+          track: q.artist || 'Mr. Iron Man (Live)',
           contact: contactOf(r),
           email: r.email,
           website: r.website,
@@ -281,7 +281,8 @@
 
     function fill(q) {
       $('location').value = q.location || '';
-      $('artist').value = q.artist || 'Both';
+      // A search saved for an act or track no longer offered falls back to the first one.
+      $('artist').value = M.forOptions.some(([v]) => v === q.artist) ? q.artist : M.forOptions[0][0];
       $('similar').value = q.similar || '';
       if ($('dates')) $('dates').value = q.dates || '';
       $('count').value = String(q.count || 10);

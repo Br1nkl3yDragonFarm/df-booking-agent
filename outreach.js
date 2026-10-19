@@ -121,15 +121,9 @@
   }
 
   // ---- press kit links ----
-  function artistKey(lead) {
-    const a = `${lead?.artist || ''} ${lead?.track || ''}`;
-    if (/Timothy|Iron Man/i.test(a)) return 'tcrc';
-    if (/Poetic|Peace Pipe/i.test(a)) return 'pnc';
-    return 'tcrc,pnc';
-  }
   function kitUrl(lead) {
     const ref = lead && lead.id ? `&r=${encodeURIComponent(lead.id)}` : '';
-    return `${location.origin}/epk.html?a=${artistKey(lead)}${ref}`;
+    return `${location.origin}/epk.html?a=tcrc${ref}`;
   }
 
   // ---- send modal ----
@@ -247,13 +241,14 @@
     const sent = latest(a.sent);
     const sync = kind === 'sync';
     notify && notify(reply ? 'Drafting an answer…' : 'Drafting the follow-up…');
-    const system = `You write short emails for Dragon Farm Records, an independent label in Nashville, TN (${LABEL.email}). Artists: Timothy Chance and Rasta Country (country-reggae, single "Mr. Iron Man (Live)") and Poetic Nocturnal Creatures (conscious hip-hop, single "Peace Pipe").
+    const system = `You write short emails for Dragon Farm Records, an independent label in Nashville, TN (${LABEL.email}). Artist: Timothy Chance and Rasta Country (country-reggae, single "Mr. Iron Man (Live)").
 Rules: under 130 words, warm and direct, one clear ask. Use only the facts given; never invent dates, numbers, venues, past conversations or promises. Sign off as "Dragon Farm Records".
 Reply with only JSON: {"subject": "...", "body": "..."}`;
     const facts = [
       `${sync ? 'Company' : 'Venue'}: ${lead.name}${lead.city ? ` (${lead.city})` : ''}`,
       contactOf(lead) && `Contact: ${contactOf(lead)}`,
-      sync ? `Track: ${lead.track || 'both tracks'}${lead.project ? `; their project: ${lead.project}` : ''}` : `Artist: ${lead.artist || 'both artists'}`,
+      // One act for now, so older leads saved for another act or "Both" get this act's facts.
+      sync ? `Track: Mr. Iron Man (Live)${lead.project ? `; their project: ${lead.project}` : ''}` : 'Artist: Timothy Chance and Rasta Country',
       lead.eventDate && `Date discussed: ${niceDate(lead.eventDate)}`,
       sent && `Our last email (${shortStamp(sent.at)}): "${sent.subject}"`,
       `Times we've reached out: ${lead.touches || (sent ? 1 : 0)}`,

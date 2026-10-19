@@ -45,7 +45,7 @@
     <h1>📰 Press Kits</h1>
     <div><a href="dashboard.html">← Booking Agent</a><a href="hub.html">Hub</a></div>
   </div>
-  <p class="intro">Each artist gets a public press kit page. Pitches sent from the tool can include a tracked link to it, so you see when a buyer opens it. Links to music and video must start with https://.</p>
+  <p class="intro">The artist has a public press kit page. Pitches sent from the tool can include a tracked link to it, so you see when a buyer opens it. Links to music and video must start with https://.</p>
   <div class="tabs" id="tabs"></div>
   <div class="box" id="form"></div>
   <div class="actions">
@@ -68,8 +68,8 @@
     ['contact', 'Booking email']
   ];
   const LINKS = [['videos', 'Live video', 'YouTube links show as players.'], ['music', 'Music', 'Spotify links show as players; anything else shows as a button.'], ['socials', 'Social links', '']];
-  const SHORT = { tcrc: 'Timothy Chance & Rasta Country', pnc: 'Poetic Nocturnal Creatures' };
-  const ARTIST_NAME = { tcrc: 'Timothy Chance and Rasta Country', pnc: 'Poetic Nocturnal Creatures' };
+  const SHORT = { tcrc: 'Timothy Chance & Rasta Country' };
+  const ARTIST_NAME = { tcrc: 'Timothy Chance and Rasta Country' };
   let current = 'tcrc';
   let kits = {};
   const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -85,7 +85,7 @@
   const linksToLines = links => (links || []).map(l => l.label ? `${l.label} | ${l.url}` : l.url).join('\n');
 
   async function api(init) {
-    const go = () => fetch(ENDPOINT + (init ? '' : '?a=tcrc,pnc'), { ...(init || {}), headers: { 'Content-Type': 'application/json', 'x-df-passcode': DFStore.passcode() } });
+    const go = () => fetch(ENDPOINT + (init ? '' : '?a=' + DFEpk.ARTISTS.join(',')), { ...(init || {}), headers: { 'Content-Type': 'application/json', 'x-df-passcode': DFStore.passcode() } });
     let res = await go();
     if (res.status === 401 && DFStore.askPasscode()) res = await go();
     return res;

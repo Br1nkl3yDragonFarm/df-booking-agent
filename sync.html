@@ -360,11 +360,6 @@
                 <div class="roster-sub">Timothy Chance &amp; Rasta Country, country reggae. ISRC QM6N22632890</div>
                 <div class="roster-sub">Best for westerns, road films, lifestyle brands, outdoor campaigns</div>
               </div>
-              <div class="roster-row">
-                <div class="roster-name">Peace Pipe</div>
-                <div class="roster-sub">Poetic Nocturnal Creatures, conscious hip-hop. ISRC QM6N22632979</div>
-                <div class="roster-sub">Best for cannabis brands, social docs, indie films, conscious lifestyle ads</div>
-              </div>
             </div>
           </div>
         </section>
@@ -405,9 +400,7 @@
               <div class="field">
                 <label for="pm-track">Track to pitch</label>
                 <select id="pm-track">
-                  <option value="both">Both tracks</option>
                   <option value="Mr. Iron Man (Live) by Timothy Chance and Rasta Country">Mr. Iron Man (Live), Timothy Chance &amp; Rasta Country</option>
-                  <option value="Peace Pipe by Poetic Nocturnal Creatures">Peace Pipe, Poetic Nocturnal Creatures</option>
                 </select>
               </div>
               <div class="field">
@@ -460,7 +453,6 @@
             <h3>Catalog reference</h3>
             <dl class="facts">
               <div><dt>Mr. Iron Man (Live)</dt><dd>ISRC QM6N22632890, UPC 820200992949. Country reggae; energetic, rootsy, authentic.</dd></div>
-              <div><dt>Peace Pipe</dt><dd>ISRC QM6N22632979, UPC 820200962904. Conscious hip-hop; thoughtful, cultural, smooth.</dd></div>
               <div><dt>Rights</dt><dd>Master and sync available through Dragon Farm Records.</dd></div>
             </dl>
           </div>
@@ -533,9 +525,7 @@
         <div class="field">
           <label for="lead-track">Track</label>
           <select id="lead-track">
-            <option value="Both">Both tracks</option>
             <option value="Mr. Iron Man (Live)">Mr. Iron Man (Live)</option>
-            <option value="Peace Pipe">Peace Pipe</option>
           </select>
         </div>
       </div>
@@ -672,8 +662,7 @@ async function generatePitch() {
   const system = `You are a professional music sync licensing agent for Dragon Farm Records, Nashville, TN.
 Catalog:
 - "Mr. Iron Man (Live)" by Timothy Chance and Rasta Country (Country-Reggae, ISRC: QM6N22632890, UPC: 820200992949) — energetic, rootsy, authentic
-- "Peace Pipe" by Poetic Nocturnal Creatures (Conscious Hip-Hop, ISRC: QM6N22632979, UPC: 820200962904) — thoughtful, smooth, cannabis-cultural
-Both tracks: master + sync rights available through Dragon Farm Records.
+Master + sync rights available through Dragon Farm Records.
 Return ONLY a JSON object: { "subject": string, "body": string }. No markdown.`;
 
   const prompt = `Write a ${tone} sync licensing pitch to ${contact || 'Music Supervisor'} at ${company || 'the studio'} for their ${type}${project ? ` "${project}"` : ''}.
@@ -739,7 +728,6 @@ function loadLeadIntoComposer() {
   document.getElementById('pm-company').value = lead.name || '';
   document.getElementById('pm-project').value = lead.project || '';
   if (lead.category) document.getElementById('pm-type').value = lead.category;
-  if (lead.track && lead.track !== 'Both') document.getElementById('pm-track').value = lead.track.includes('Iron') ? 'Mr. Iron Man (Live) by Timothy Chance and Rasta Country' : 'Peace Pipe by Poetic Nocturnal Creatures';
   toast(`Loaded ${lead.name} ✓`, 'success');
 }
 
@@ -799,7 +787,7 @@ function openAddLead() {
   ['lead-name','lead-project','lead-contact','lead-email','lead-fee','lead-followup','lead-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('lead-status').value = 'new';
   document.getElementById('lead-category').value = 'Film';
-  document.getElementById('lead-track').value = 'Both';
+  document.getElementById('lead-track').value = 'Mr. Iron Man (Live)';
   document.getElementById('add-lead-modal').classList.add('open');
 }
 
@@ -808,7 +796,6 @@ function openAddLeadPrefilled(data) {
   if (data.name) document.getElementById('lead-name').value = data.name;
   if (data.project) document.getElementById('lead-project').value = data.project;
   if (data.category) document.getElementById('lead-category').value = data.category;
-  if (data.track) document.getElementById('lead-track').value = data.track.includes('Iron') ? 'Mr. Iron Man (Live)' : data.track.includes('Peace') ? 'Peace Pipe' : 'Both';
   if (data.contact) document.getElementById('lead-contact').value = data.contact;
   if (data.status) document.getElementById('lead-status').value = data.status;
   if (data.notes) document.getElementById('lead-notes').value = data.notes;
@@ -823,7 +810,7 @@ function editLead(id) {
   document.getElementById('lead-name').value = l.name || '';
   document.getElementById('lead-project').value = l.project || '';
   document.getElementById('lead-category').value = l.category || 'Film';
-  document.getElementById('lead-track').value = l.track || 'Both';
+  document.getElementById('lead-track').value = 'Mr. Iron Man (Live)';
   document.getElementById('lead-contact').value = l.contact || '';
   document.getElementById('lead-email').value = l.email || '';
   document.getElementById('lead-fee').value = l.fee || '';

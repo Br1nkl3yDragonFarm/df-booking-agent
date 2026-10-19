@@ -33,14 +33,9 @@ document.querySelectorAll('a[data-artist], a[data-event-type]').forEach(link => 
 });
 
 // ---- LIVE POSTER ----
-// The poster beside the form fills in with the artist, venue, city and date.
+// The poster beside the form fills in with the venue, city and date.
 const poster = document.getElementById('poster-live');
 const posterPart = name => poster.querySelector(`[data-poster="${name}"]`);
-const ACTS = {
-  tc: 'Timothy Chance & Rasta Country',
-  pnc: 'Poetic Nocturnal Creatures'
-};
-
 function setSlot(name, value, blank) {
   const slot = posterPart(name);
   const text = slot.querySelector('span');
@@ -65,13 +60,6 @@ function formatDate(value) {
 }
 
 function updatePoster() {
-  const artist = artistSelect.value;
-  const onlyPnc = artist === 'Poetic Nocturnal Creatures';
-  const solo = artist === 'Timothy Chance and Rasta Country' || onlyPnc;
-  posterPart('act-1').textContent = onlyPnc ? ACTS.pnc : ACTS.tc;
-  posterPart('with').hidden = solo;
-  posterPart('act-2').hidden = solo;
-
   setSlot('venue', document.getElementById('bf-org').value.trim(), 'Your venue');
   setSlot('city', document.getElementById('bf-location').value.trim(), 'Your city');
   setSlot('date', formatDate(document.getElementById('bf-date').value), 'Your date');

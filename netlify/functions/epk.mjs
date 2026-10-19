@@ -1,7 +1,7 @@
 // ============================================================
 //  DRAGON FARM — PRESS KITS (EPK)
 //
-//  GET  ?a=tcrc|pnc            public: the artist's press kit as saved
+//  GET  ?a=tcrc                public: the artist's press kit as saved
 //  GET  ?a=...&r=<lead id>     same, and counts a view for that lead, so
 //                              a tracked link in a pitch shows when the
 //                              buyer opened it
@@ -12,7 +12,8 @@ import { getStore } from '@netlify/blobs';
 import { passcodeMatches } from '../lib/passcode.mjs';
 import { clean, findLeadById, json, recordActivity, updateJSON } from '../lib/store.mjs';
 
-const ARTISTS = ['tcrc', 'pnc'];
+// Poetic Nocturnal Creatures (pnc) is off the roster for now; its saved kit is kept.
+const ARTISTS = ['tcrc'];
 const TEXT_FIELDS = { name: 120, genre: 120, tagline: 200, hometown: 120, bio: 4000, photo: 500, draw: 1000, shows: 3000, stage: 2000, contact: 200 };
 const LINK_FIELDS = ['videos', 'music', 'socials'];
 const MAX_LINKS = 12;

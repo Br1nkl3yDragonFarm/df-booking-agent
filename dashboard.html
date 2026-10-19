@@ -352,10 +352,6 @@
                 <div class="roster-name">Timothy Chance &amp; Rasta Country</div>
                 <div class="roster-sub">Country reggae. Debut single Mr. Iron Man (Live)</div>
               </div>
-              <div class="roster-row">
-                <div class="roster-name">Poetic Nocturnal Creatures</div>
-                <div class="roster-sub">Conscious hip-hop. Debut single Peace Pipe</div>
-              </div>
             </div>
           </div>
         </section>
@@ -410,9 +406,7 @@
               <div class="field">
                 <label for="em-artist">Artist to pitch</label>
                 <select id="em-artist">
-                  <option value="both">Both artists (Dragon Farm Records)</option>
                   <option value="Timothy Chance and Rasta Country">Timothy Chance and Rasta Country</option>
-                  <option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option>
                 </select>
               </div>
               <div class="field">
@@ -563,9 +557,7 @@
         <div class="field">
           <label for="lead-artist">Artist</label>
           <select id="lead-artist">
-            <option value="Both">Both artists</option>
             <option value="Timothy Chance and Rasta Country">Timothy Chance &amp; Rasta Country</option>
-            <option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option>
           </select>
         </div>
       </div>
@@ -626,6 +618,9 @@
 
 // ---- FORM SECTIONS (shared with agent.html) ----
 document.getElementById('lead-forms-slot').outerHTML = DFDeals.formHtml('lead') + DFShow.formHtml('lead');
+
+// The label's one act for now; older leads saved for another act or "Both" are treated as this act.
+const ACT = 'Timothy Chance and Rasta Country';
 
 // ---- STATE ----
 let leads = DFStore.load('df_leads');
@@ -727,14 +722,11 @@ async function generateEmail() {
   preview.textContent = 'Writing your pitch...';
 
   const system = `You are a professional music booking agent writing outreach emails for Dragon Farm Records, Nashville, TN.
-Dragon Farm Records has two artists:
-- Timothy Chance and Rasta Country: Country-Reggae fusion, debut single "Mr. Iron Man (Live)"  
-- Poetic Nocturnal Creatures: Conscious Hip-Hop, debut single "Peace Pipe" (cannabis-culture friendly)
-Both acts are available for bookings. Write compelling, authentic booking pitch emails.
+Dragon Farm Records' artist is Timothy Chance and Rasta Country: Country-Reggae fusion, debut single "Mr. Iron Man (Live)". They are available for bookings. Write compelling, authentic booking pitch emails.
 Return ONLY a JSON object with: subject (string), body (string). No markdown, no other text.`;
 
   const prompt = `Write a ${tone} booking pitch email to ${contact || 'the Booking Manager'} at ${venue}, a ${vtype} in ${city}.
-Artist: ${artist === 'both' ? 'Dragon Farm Records (both artists)' : artist}
+Artist: ${artist}
 ${dates ? `Proposed dates: ${dates}` : ''}
 ${notes ? `Additional context: ${notes}` : ''}
 Make it personal, professional, and compelling. Include the artist's unique selling points. End with a clear call to action.`;
@@ -815,7 +807,7 @@ function loadLeadIntoComposer() {
   document.getElementById('em-contact').value = lead.contactName || '';
   document.getElementById('em-city').value = lead.city;
   document.getElementById('em-vtype').value = lead.type || 'Bar / Club';
-  document.getElementById('em-artist').value = lead.artist === 'Both' ? 'both' : lead.artist;
+  document.getElementById('em-artist').value = ACT;
   toast(`Loaded ${lead.name} ✓`, 'success');
 }
 
@@ -877,7 +869,7 @@ function openAddLead() {
   document.getElementById('lead-followup').value = '';
   document.getElementById('lead-status').value = 'new';
   document.getElementById('lead-type').value = 'Bar / Club';
-  document.getElementById('lead-artist').value = 'Both';
+  document.getElementById('lead-artist').value = ACT;
   DFDeals.fill('lead', {});
   DFShow.fill('lead', {});
   document.getElementById('add-lead-modal').classList.add('open');
@@ -904,7 +896,7 @@ function editLead(id) {
   document.getElementById('lead-name').value = lead.name || '';
   document.getElementById('lead-city').value = lead.city || '';
   document.getElementById('lead-type').value = lead.type || 'Bar / Club';
-  document.getElementById('lead-artist').value = lead.artist || 'Both';
+  document.getElementById('lead-artist').value = ACT;
   document.getElementById('lead-contact-name').value = lead.contactName || '';
   document.getElementById('lead-contact-email').value = lead.contactEmail || '';
   document.getElementById('lead-contact-phone').value = lead.contactPhone || '';
@@ -959,7 +951,7 @@ function saveLead() {
 }
 
 // ---- CALENDAR ----
-const CAL_ARTISTS = [['all', 'All artists'], ['Timothy Chance and Rasta Country', 'Timothy Chance & Rasta Country'], ['Poetic Nocturnal Creatures', 'Poetic Nocturnal Creatures']];
+const CAL_ARTISTS = [['all', 'All artists'], ['Timothy Chance and Rasta Country', 'Timothy Chance & Rasta Country']];
 const calState = { month: new Date(), artist: 'all', selected: '' };
 
 function renderCalendar() {
@@ -1057,7 +1049,7 @@ function fillGaps(id) {
   const gap = DFOut.gaps(leads, lead);
   if (!gap.dates.length) { toast('No open dates within 3 days of this show', 'error'); return; }
   showPage('finder');
-  bookers.run({ location: `Within about a 3-hour drive of ${lead.city || lead.name}`, artist: lead.artist || 'Both', dates: gap.text, categories: ['venues', 'buyers', 'breweries', 'community'] });
+  bookers.run({ location: `Within about a 3-hour drive of ${lead.city || lead.name}`, artist: ACT, dates: gap.text, categories: ['venues', 'buyers', 'breweries', 'community'] });
 }
 
 function openInvoice(id) {
@@ -1077,7 +1069,7 @@ function pitchFromLead(id) {
   document.getElementById('em-venue').value = lead.name;
   document.getElementById('em-contact').value = lead.contactName || '';
   document.getElementById('em-city').value = lead.city;
-  document.getElementById('em-artist').value = lead.artist === 'Both' ? 'both' : lead.artist;
+  document.getElementById('em-artist').value = ACT;
   showPage('composer');
 }
 
