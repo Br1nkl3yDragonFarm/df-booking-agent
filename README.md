@@ -20,6 +20,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - What's working (`report.html`): which kinds of leads, towns and lead sources turn into shows or placements, what they pay on average, and which emails get answered
   - Sync kit: a fee quote for each kind of placement (from the label's sync playbook, adjusted for use, term, territory and exclusivity), a printable one-stop sync + master license, links to the full mix, clean, instrumental and edits ready to tick into a pitch, and a pitch log of which song and versions went to which supervisor
   - Brand deals (`brands.html`): find sponsors and lifestyle brands that fit the band (drinks, outdoor, Western lifestyle, trucks, food, gear, events, cannabis where legal), an AI-drafted pitch that leads with fit and a content idea, and a deal check that flags exposure-only pay, rights grabs and forever exclusivity
+  - Fan list: a QR code for the merch table (from any booked show) opens a sign-up page; fans land on a private list counted by town, with CSV export, removal on request, counts for the press kit's draw and a fans-by-town table in the report
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
 ---
@@ -71,11 +72,14 @@ In **Find bookers** or **Find sync contacts**, set up a search and tap **⟳ Run
 ### 7. Song Versions for Sync
 On the sync page, open **Pitch composer → Versions ready to send** and paste share links (Dropbox, Google Drive, DISCO…) for the full mix, clean and instrumental versions, plus BPM, mood, writers and publisher. Supervisors often need a clean or instrumental version; without them you lose placements. Have a music attorney look over the one-stop license before the first one goes out.
 
-### 8. Press Kits
+### 8. Fan List at Shows
+On **Booked shows**, tap **📱 Fan QR** on a show and **Print a sign** for the merch table. Fans scan it, add their email and town, and land on the private **Fan list** (`fan-list.html`). Sign-ups come in through Netlify Forms (the form is named `fan-signup`; Netlify's spam filter applies), so form detection must stay on in Netlify. Export the list as CSV to your email tool to send news, and remove anyone who asks. In the press kit editor, **+ Add fan list numbers** puts the real counts in the draw.
+
+### 9. Press Kits
 Open **Press Kits** (`epk-edit.html`) and fill in the artist's photo link, music and video links, past shows, draw and stage info.
 It starts from the bio on the public site. Add only facts you can stand behind: buyers check.
 
-### 9. Deploy to Netlify
+### 10. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -103,17 +107,23 @@ Connect this repo to Netlify:
 ├── report.html      # What's working report (private)
 ├── sync-kit.js      # Sync quotes, one-stop license, versions on file, pitch log
 ├── brands.html      # Brand deals: pipeline, brand finder, pitches, deal check (private)
+├── fans.html        # Public fan sign-up page the merch-table QR code opens (Netlify form "fan-signup")
+├── fan-list.html    # Fan list by town, CSV export, QR maker (private)
+├── fans.js          # Fan list helpers and the QR code / printable sign
+├── vendor/qrcode.js # QR code generator (qrcode-generator 1.4.4, MIT, Kazuhiko Arase)
 ├── report.js        # Report numbers: conversion and pay by kind, town and source; which pitches get replies
 ├── netlify/functions/finder-background.mjs  # Runs a search (Claude + web search) in the background, booking or sync mode
 ├── netlify/functions/finder-status.mjs      # Returns a finished search
 ├── netlify/functions/crm.mjs                # Shared lead storage (Netlify Blobs): booking, sync and brand pipelines
-├── netlify/functions/submission-created.mjs # Turns each booking-inquiry form submission into a lead (runs on the form event)
+├── netlify/functions/submission-created.mjs # Booking inquiries become leads; fan sign-ups go to the fan list (runs on the form event)
 ├── netlify/functions/email.mjs              # Sends email through Resend
 ├── netlify/functions/email-inbound.mjs      # Resend webhook: matches replies to leads
 ├── netlify/functions/activity.mjs           # Emails sent, replies, press kit views and payments, per lead
 ├── netlify/functions/payment-link.mjs       # Stripe payment link for an invoice
 ├── netlify/functions/stripe-webhook.mjs     # Stripe webhook: records payments
 ├── netlify/functions/epk.mjs                # Press kits: public read (counts tracked views), passcode save
+├── netlify/functions/fans.mjs               # Fan list: read and remove (passcode)
+├── netlify/lib/fans.mjs                     # Adds fan sign-ups (one entry per email)
 ├── netlify/functions/catalog.mjs            # Song versions (links) and metadata for sync pitches
 ├── netlify/functions/weekly.mjs             # Weekly searches: save, remove, run now, send the digest now
 ├── netlify/functions/weekly-run.mjs         # Scheduled every Monday: starts the weekly run

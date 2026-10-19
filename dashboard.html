@@ -305,6 +305,7 @@
       <a href="sync.html">Sync agent</a>
       <a href="epk-edit.html">Press kits</a>
       <a href="brands.html">Brand deals</a>
+      <a href="fan-list.html">Fan list</a>
       <a href="report.html">What's working</a>
       <a href="index.html" target="_blank" rel="noopener">Public page ↗</a>
     </div>
@@ -613,6 +614,8 @@
 <script src="showday.js"></script>
 <script src="finder.js"></script>
 <script src="outreach.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script src="fans.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -858,7 +861,7 @@ function renderLeads() {
 
 function renderBooked() {
   DFShow.renderShows({ totals: document.getElementById('deal-totals'), list: document.getElementById('booked-list') }, leads, 'editLead',
-    { gaps: 'fillGaps', invoice: 'openInvoice', remind: 'remindDeposit' });
+    { gaps: 'fillGaps', invoice: 'openInvoice', remind: 'remindDeposit', fans: 'fanQr' });
 }
 
 // ---- LEAD CRUD ----
@@ -1052,6 +1055,11 @@ function fillGaps(id) {
   if (!gap.dates.length) { toast('No open dates within 3 days of this show', 'error'); return; }
   showPage('finder');
   bookers.run({ location: `Within about a 3-hour drive of ${lead.city || lead.name}`, artist: ACT, dates: gap.text, categories: ['venues', 'buyers', 'breweries', 'community'] });
+}
+
+function fanQr(id) {
+  const lead = leads.find(l => l.id === id);
+  if (lead) DFFans.openForShow(lead);
 }
 
 function openInvoice(id) {

@@ -6,8 +6,12 @@
 //  ties it to that event). The inquiry becomes a lead with a follow-up
 //  due today, so it shows up in "Follow-ups due" right away. Sync and
 //  licensing inquiries go to the sync pipeline.
+//
+//  Fan sign-ups from shows (the fan-signup form on fans.html) go to the
+//  private fan list instead.
 // ============================================================
 
+import { addFan } from '../lib/fans.mjs';
 import { addLeadIfNew, clean, labelToday } from '../lib/store.mjs';
 
 // The label's one act for now.
@@ -66,6 +70,11 @@ export default async (req) => {
   let submission;
   try { submission = (await req.json()).payload || {}; }
   catch { return new Response('', { status: 400 }); }
+  if (submission.form_name === 'fan-signup') {
+    const d = submission.data || {};
+    await addFan({ email: d.email, name: d.name, city: d.city, show: d.show, at: submission.created_at });
+    return new Response('');
+  }
   if (submission.form_name !== 'booking-inquiry') return new Response('');
 
   const { list, lead } = inquiryLead(submission, labelToday());

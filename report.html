@@ -62,9 +62,10 @@
 <script src="calendar.js"></script>
 <script src="outreach.js"></script>
 <script src="report.js"></script>
+<script src="fans.js"></script>
 <script>
 function renderReport() {
-  const report = DFReport.build(DFStore.load('df_leads'), DFStore.load('df_sync_leads'), DFOut.activity, DFStore.load('df_brand_leads'));
+  const report = DFReport.build(DFStore.load('df_leads'), DFStore.load('df_sync_leads'), DFOut.activity, DFStore.load('df_brand_leads'), DFFans.all());
   document.getElementById('report').innerHTML = DFReport.html(report);
 }
 DFOut.init(renderReport);
@@ -72,6 +73,7 @@ DFStore.connect('df_leads', renderReport);
 DFStore.connect('df_sync_leads', renderReport);
 DFStore.connect('df_brand_leads', renderReport);
 renderReport();
+DFFans.load().then(renderReport);
 </script>
 </body>
 </html>

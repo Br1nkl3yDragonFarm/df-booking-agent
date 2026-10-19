@@ -13,7 +13,7 @@
 //             says; sync: the fee when it's a dollar amount; brand: the
 //             first dollar amount in the offer
 //
-//  Usage: DFReport.build(venueLeads, syncLeads, DFOut.activity, brandLeads) -> report
+//  Usage: DFReport.build(venueLeads, syncLeads, DFOut.activity, brandLeads, fans) -> report
 //         DFReport.html(report) -> markup
 // ============================================================
 
@@ -21,6 +21,7 @@
   const ANSWERED = { venue: ['interested', 'booked'], sync: ['reviewing', 'licensed'], brand: ['talking', 'signed'] };
   const WON = { venue: 'booked', sync: 'licensed', brand: 'signed' };
   const MIN_FOR_ADVICE = 3; // pitched leads a group needs before we call it a pattern
+  const FANS_FOR_ADVICE = 25; // fans in a town worth bringing up when asking for more money
 
   function esc(s) {
     return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -122,12 +123,25 @@
     const later = after[2] + after[3];
     if (emailed >= 5 && later > 0) tips.push(`${later} of your replies came after a follow-up, not the first email. Keep sending follow-ups.`);
     if (emailed >= 5 && noReply / emailed > 0.8) tips.push(`${noReply} of ${emailed} emailed leads haven’t replied. Check that you’re reaching the actual talent buyer, not a general inbox.`);
+    const crowd = (r.fans || []).filter(f => f.fans >= FANS_FOR_ADVICE && f.key !== 'No town set')[0];
+    if (crowd) tips.push(`<b>${esc(crowd.key)}</b>: ${crowd.fans} fans on your list. Use that number when you ask for a bigger guarantee there.`);
     const s = best(r.sync.byCategory, winRate);
     if (s) tips.push(`In sync, <b>${esc(s.key)}</b> pitches land best: ${s.won} of ${s.pitched} licensed.`);
     return tips;
   }
 
-  function build(venueLeads, syncLeads, activityOf, brandLeads) {
+  // Fans on the list per town, beside the shows booked there and what they paid.
+  function fanTowns(fans, venueRows) {
+    const counts = new Map();
+    (fans || []).forEach(f => { const t = town(f.city); counts.set(t, (counts.get(t) || 0) + 1); });
+    return [...counts.entries()].map(([key, count]) => {
+      const shows = venueRows.filter(r => r.won && town(r.lead.city) === key);
+      const paid = shows.map(r => r.pay).filter(Boolean);
+      return { key, fans: count, shows: shows.length, avgPay: paid.length ? paid.reduce((s, v) => s + v, 0) / paid.length : null };
+    }).sort((a, b) => b.fans - a.fans || a.key.localeCompare(b.key));
+  }
+
+  function build(venueLeads, syncLeads, activityOf, brandLeads, fans) {
     const v = (venueLeads || []).map(l => facts(l, 'venue', activityOf));
     const s = (syncLeads || []).map(l => facts(l, 'sync', activityOf));
     const b = (brandLeads || []).map(l => facts(l, 'brand', activityOf));
@@ -144,7 +158,8 @@
         byOrigin: group(s, origin)
       },
       brand: { rows: b, byCategory: group(b, l => l.category || 'Other') },
-      pitches: pitches([...v, ...s, ...b])
+      pitches: pitches([...v, ...s, ...b]),
+      fans: fanTowns(fans, v)
     };
     report.advice = advice(report);
     return report;
@@ -190,7 +205,11 @@
       ${pitchHtml(r.pitches)}
       ${table('Sync: by kind of placement', 'Kind', r.sync.byCategory, 'Licensed', 'Avg fee')}
       ${table('Sync: where the lead came from', 'Source', r.sync.byOrigin, 'Licensed', 'Avg fee')}
-      ${table('Brand deals: by kind of brand', 'Kind', r.brand.byCategory, 'Signed', 'Avg fee')}`;
+      ${table('Brand deals: by kind of brand', 'Kind', r.brand.byCategory, 'Signed', 'Avg fee')}
+      ${r.fans.length ? `<section class="rp-block"><h2>Fans by town</h2><div class="rp-scroll"><table class="rp-table">
+        <thead><tr><th>Town</th><th>Fans on the list</th><th>Shows booked there</th><th>Avg pay there</th></tr></thead>
+        <tbody>${r.fans.map(f => `<tr><td>${esc(f.key)}</td><td><b>${f.fans}</b></td><td>${f.shows}</td><td>${f.avgPay ? money(f.avgPay) : '—'}</td></tr>`).join('')}</tbody>
+      </table></div></section>` : ''}`;
   }
 
   window.DFReport = { build, html, town };

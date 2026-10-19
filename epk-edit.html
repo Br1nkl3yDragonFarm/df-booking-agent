@@ -58,6 +58,7 @@
 
 <script src="crm-store.js"></script>
 <script src="epk-data.js"></script>
+<script src="fans.js"></script>
 <script>
 (function () {
   const ENDPOINT = '/.netlify/functions/epk';
@@ -101,9 +102,20 @@
     $('form').innerHTML =
       TEXT.map(([key, label, wide, hint, rows]) => `<label class="field${wide ? ' wide' : ''}"><span>${label}</span>${rows
         ? `<textarea data-k="${key}" rows="${rows}">${esc(k[key])}</textarea>`
-        : `<input type="text" data-k="${key}" value="${esc(k[key])}" />`}${hint ? `<small>${esc(hint)}</small>` : ''}${key === 'shows' ? '<button type="button" class="inline" id="fill-shows">+ Add played shows from the pipeline</button>' : ''}</label>`).join('') +
+        : `<input type="text" data-k="${key}" value="${esc(k[key])}" />`}${hint ? `<small>${esc(hint)}</small>` : ''}${key === 'shows' ? '<button type="button" class="inline" id="fill-shows">+ Add played shows from the pipeline</button>' : ''}${key === 'draw' ? '<button type="button" class="inline" id="fill-fans">+ Add fan list numbers</button>' : ''}</label>`).join('') +
       LINKS.map(([key, label, hint]) => `<label class="field wide"><span>${label}</span><textarea data-k="${key}" rows="3" placeholder="Label | https://…  (one per line)">${esc(linksToLines(k[key]))}</textarea>${hint ? `<small>${esc(hint)}</small>` : ''}</label>`).join('');
     $('fill-shows').addEventListener('click', fillShows);
+    $('fill-fans').addEventListener('click', fillFans);
+  }
+
+  // The fan list's real counts, e.g. "Email list: 240 fans (Nashville, TN 120, Memphis, TN 40)".
+  async function fillFans() {
+    const line = DFFans.drawLine(await DFFans.load());
+    if (!line) return status('No fan sign-ups yet. Print a QR sign for the merch table from Booked shows.', 'err');
+    const box = $('form').querySelector('[data-k="draw"]');
+    const rest = box.value.split('\n').filter(s => s.trim() && !s.startsWith('Email list:'));
+    box.value = [...rest, line].join('\n');
+    status('Added the fan list counts. Check them, then Save.', 'ok');
   }
 
   function read() {

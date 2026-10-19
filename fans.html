@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join the List — Timothy Chance &amp; Rasta Country</title>
+  <meta name="description" content="Get first word when Timothy Chance and Rasta Country play near you." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:ital,wdth,wght@0,62..125,300..800;1,62..125,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .fan-wrap { max-width: 32rem; margin: 0 auto; padding: 2rem 16px 4rem; }
+    .fan-wrap .poster { transform: none; margin-bottom: 2rem; }
+    .fan-wrap h1 { font-size: clamp(1.8rem, 1.4rem + 2vw, 2.6rem); margin: 0 0 0.5rem; }
+    .fan-form .field-group input { width: 100%; }
+    .fan-consent { display: flex; gap: 0.6rem; align-items: flex-start; font-size: var(--step--1); color: var(--bone-dim); margin: 0.25rem 0 1.25rem; }
+    .fan-consent input { margin-top: 0.3rem; }
+    .fan-done { display: none; text-align: center; padding: 1rem 0; }
+    .fan-done.show { display: block; }
+    .fan-error { color: #ff8a80; font-size: var(--step--1); min-height: 1.2em; }
+    .fan-form .btn { width: 100%; }
+  </style>
+</head>
+<body>
+  <main class="fan-wrap">
+    <figure class="poster" aria-label="Show poster">
+      <img class="poster-badge" src="logo-badge.webp" alt="Dragon Farm Records badge" width="480" height="512" />
+      <p class="poster-presents">Dragon Farm Records presents</p>
+      <p class="poster-act">Timothy Chance &amp; Rasta Country</p>
+      <div class="poster-slots"><p class="slot slot-venue is-set" id="fan-show-slot" hidden><span id="fan-show"></span></p></div>
+    </figure>
+
+    <div id="fan-form-wrap">
+      <h1>Join the list</h1>
+      <p class="section-sub">Get first word when we play near you, plus new music. A few emails a month at most.</p>
+      <form id="fan-form" class="booking-form fan-form" name="fan-signup" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+        <input type="hidden" name="form-name" value="fan-signup" />
+        <input type="hidden" name="show" id="fan-show-input" />
+        <p hidden><label>Leave this empty: <input name="bot-field" /></label></p>
+        <div class="field-group">
+          <label for="fan-email">Email</label>
+          <input type="email" id="fan-email" name="email" required autocomplete="email" inputmode="email" placeholder="you@example.com" />
+        </div>
+        <div class="field-group">
+          <label for="fan-city">Your town</label>
+          <input type="text" id="fan-city" name="city" required autocomplete="address-level2" placeholder="Nashville, TN" />
+        </div>
+        <div class="field-group">
+          <label for="fan-name">Name <span class="optional">optional</span></label>
+          <input type="text" id="fan-name" name="name" autocomplete="given-name" />
+        </div>
+        <label class="fan-consent"><input type="checkbox" id="fan-ok" required /> <span>Email me about shows near me and new music. I can unsubscribe any time by replying “unsubscribe”.</span></label>
+        <p class="fan-error" id="fan-error" role="alert"></p>
+        <button type="submit" class="btn btn-flame" id="fan-submit">Sign me up</button>
+      </form>
+    </div>
+    <div class="fan-done" id="fan-done" role="status">
+      <h1>You're on the list</h1>
+      <p class="section-sub">Thanks for coming out. We'll let you know when we're back in town.</p>
+    </div>
+  </main>
+  <script>
+  // ?show=Exit/In, Nashville · Sat, Oct 31 & city=Nashville, TN come from the QR code at the merch table.
+  (function () {
+    const params = new URLSearchParams(location.search);
+    const show = (params.get('show') || '').slice(0, 160);
+    const city = (params.get('city') || '').slice(0, 120);
+    if (show) {
+      document.getElementById('fan-show').textContent = show;
+      document.getElementById('fan-show-slot').hidden = false;
+      document.getElementById('fan-show-input').value = show;
+    }
+    if (city) document.getElementById('fan-city').value = city;
+    const form = document.getElementById('fan-form');
+    const error = document.getElementById('fan-error');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('fan-email').value.trim();
+      if (!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(email)) { error.textContent = 'Check your email address.'; return; }
+      if (!document.getElementById('fan-city').value.trim()) { error.textContent = 'Add your town so we know where to tell you about shows.'; return; }
+      if (!document.getElementById('fan-ok').checked) { error.textContent = 'Tick the box so we can email you.'; return; }
+      error.textContent = '';
+      const btn = document.getElementById('fan-submit');
+      btn.disabled = true; btn.textContent = 'Signing you up…';
+      let ok = false;
+      try {
+        const res = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(new FormData(form)).toString() });
+        ok = res.ok;
+      } catch {}
+      if (ok) {
+        document.getElementById('fan-form-wrap').hidden = true;
+        document.getElementById('fan-done').classList.add('show');
+      } else {
+        error.textContent = 'That didn’t go through. Check your signal and try again.';
+        btn.disabled = false; btn.textContent = 'Sign me up';
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
