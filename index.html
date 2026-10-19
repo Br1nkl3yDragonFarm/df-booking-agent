@@ -19,7 +19,6 @@
       </div>
       <ul class="nav-links">
         <li><a href="#artists">Artists</a></li>
-        <li><a href="#venue-finder">Venues</a></li>
         <li><a href="#sync">Sync</a></li>
         <li><a href="#book" class="nav-cta">Book Now</a></li>
       </ul>
@@ -29,7 +28,6 @@
     </div>
     <div class="mobile-menu" id="mobile-menu">
       <a href="#artists">Artists</a>
-      <a href="#venue-finder">Venues</a>
       <a href="#sync">Sync</a>
       <a href="#book">Book Now</a>
     </div>
@@ -110,66 +108,6 @@
     </div>
   </section>
 
-  <!-- VENUE FINDER -->
-  <section id="venue-finder">
-    <div class="container">
-      <div class="section-header">
-        <p class="section-tag">AI Powered</p>
-        <h2>Venue Finder</h2>
-        <p class="section-sub">Search venues, get contacts, discover booking opportunities — powered by AI.</p>
-      </div>
-
-      <div class="finder-box">
-        <div class="finder-controls">
-          <div class="finder-row">
-            <div class="field-group">
-              <label for="vf-city">City / State</label>
-              <input type="text" id="vf-city" placeholder="e.g. Nashville, TN" />
-            </div>
-            <div class="field-group">
-              <label for="vf-genre">Genre / Vibe</label>
-              <select id="vf-genre">
-                <option value="">All Genres</option>
-                <option value="Country">Country</option>
-                <option value="Reggae">Reggae</option>
-                <option value="Hip-Hop">Hip-Hop</option>
-                <option value="Country-Reggae fusion">Country-Reggae Fusion</option>
-                <option value="Conscious Hip-Hop">Conscious Hip-Hop</option>
-                <option value="Multi-genre">Multi-Genre</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label for="vf-type">Venue Type</label>
-              <select id="vf-type">
-                <option value="">All Types</option>
-                <option value="bar or club">Bar / Club</option>
-                <option value="festival">Festival</option>
-                <option value="dispensary">Dispensary</option>
-                <option value="smoke shop">Smoke Shop</option>
-                <option value="college venue">College Venue</option>
-                <option value="outdoor amphitheater">Outdoor / Amphitheater</option>
-                <option value="private event space">Private Event Space</option>
-              </select>
-            </div>
-          </div>
-          <button class="btn btn-gold finder-btn" id="find-venues-btn">Find Venues →</button>
-        </div>
-
-        <div class="finder-results" id="finder-results">
-          <div class="finder-empty">
-            <span class="finder-empty-icon">🗺️</span>
-            <p>Enter a city and hit <strong>Find Venues</strong> to discover booking opportunities with AI.</p>
-          </div>
-        </div>
-
-        <div class="api-note">
-          <span>⚡</span>
-          <span>Powered by Claude AI · Configure your API key in <code>config.js</code></span>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- SYNC DEALS -->
   <section id="sync">
     <div class="container">
@@ -220,22 +158,6 @@
         <a href="#book" class="btn btn-gold">Start a Sync Deal</a>
       </div>
 
-      <!-- AI Sync Assistant -->
-      <div class="sync-ai-box">
-        <div class="sync-ai-header">
-          <span class="sync-ai-badge">AI Assistant</span>
-          <h4>Not sure what you need? Ask our sync advisor.</h4>
-        </div>
-        <div class="sync-chat" id="sync-chat">
-          <div class="chat-msg assistant">
-            Hey! I'm the Dragon Farm sync advisor. Tell me about your project and I'll let you know which tracks might work and what kind of license you'd need. 🎵
-          </div>
-        </div>
-        <div class="sync-input-row">
-          <input type="text" id="sync-input" placeholder="Describe your project (e.g. 30-sec YouTube ad for a cannabis brand...)" />
-          <button class="btn btn-gold" id="sync-send-btn">Ask →</button>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -393,7 +315,6 @@
         </div>
         <div class="footer-links">
           <a href="#artists">Roster</a>
-          <a href="#venue-finder">Venues</a>
           <a href="#sync">Sync</a>
           <a href="#book">Booking</a>
         </div>

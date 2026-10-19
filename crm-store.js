@@ -25,8 +25,27 @@
   const queue = {};      // key -> promise chain of pushes
   const pending = {};    // key -> a push is queued but not started
 
+  // Older versions of agent.html saved fields under short names (cname,
+  // cemail...). Rename them to the names every page now uses.
+  const RENAMES = {
+    df_leads: { cname: 'contactName', cemail: 'contactEmail', cphone: 'contactPhone', added: 'dateAdded' },
+    df_sync_leads: { cname: 'contact', cemail: 'email', cat: 'category', added: 'dateAdded' }
+  };
+  function normalize(key, items) {
+    return items.map(item => {
+      let out = item;
+      for (const [from, to] of Object.entries(RENAMES[key])) {
+        if (!(from in item)) continue;
+        if (out === item) out = { ...item };
+        if (!out[to]) out[to] = item[from];
+        delete out[from];
+      }
+      return out;
+    });
+  }
+
   function readLocal(key) {
-    try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+    try { return normalize(key, JSON.parse(localStorage.getItem(key) || '[]')); }
     catch { return []; }
   }
   function writeLocal(key, items) {
@@ -106,27 +125,34 @@
     }
     if (res.status !== 200) { setMode('local'); return; }
 
-    let items = res.data.items || [];
-    synced[key] = snapshot(items);
+    const onServer = snapshot(res.data.items || []);
+    let items = normalize(key, res.data.items || []);
+    synced[key] = onServer;
     setMode('cloud');
+
+    // Re-save online leads whose old field names were just renamed.
+    const upserts = new Map();
+    items.forEach(item => { if (onServer.get(item.id) !== JSON.stringify(item)) upserts.set(item.id, item); });
 
     // Upload leads that only this browser has: everything it saved before
     // cloud sync existed, plus anything changed while it was offline.
     let needsUpload = true;
     try { needsUpload = !localStorage.getItem(MERGED_PREFIX + key) || !!localStorage.getItem(DIRTY_PREFIX + key); } catch {}
     if (needsUpload) {
-      const onServer = snapshot(items);
-      const changed = readLocal(key)
+      readLocal(key)
         .map(item => item.id ? item : { ...item, id: Date.now().toString() + Math.random() })
-        .filter(item => onServer.get(item.id) !== JSON.stringify(item));
-      if (changed.length) {
-        try {
-          const up = await api('POST', '', { list, upserts: changed, deletes: [] });
-          if (up.status !== 200) { setMode('local'); return; }
-          items = up.data.items;
-        } catch { setMode('local'); return; }
-        synced[key] = snapshot(items);
-      }
+        .filter(item => onServer.get(item.id) !== JSON.stringify(item))
+        .forEach(item => upserts.set(item.id, item));
+    }
+    if (upserts.size) {
+      try {
+        const up = await api('POST', '', { list, upserts: [...upserts.values()], deletes: [] });
+        if (up.status !== 200) { setMode('local'); return; }
+        items = up.data.items;
+      } catch { setMode('local'); return; }
+      synced[key] = snapshot(items);
+    }
+    if (needsUpload) {
       try {
         localStorage.setItem(MERGED_PREFIX + key, new Date().toISOString());
         localStorage.removeItem(DIRTY_PREFIX + key);
@@ -174,6 +200,11 @@
 
   window.DFStore = {
     load(key) { return readLocal(key); },
+
+    // The AI tools use the same passcode; they send it with passcode() and
+    // call askPasscode() when the server turns them away.
+    passcode,
+    askPasscode() { return askPasscode(true); },
 
     connect(key, onChange) {
       if (!LISTS[key]) throw new Error('Unknown CRM list: ' + key);

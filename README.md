@@ -7,22 +7,18 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
 
 ## Features
 - **Artist Roster** — Timothy Chance and Rasta Country & Poetic Nocturnal Creatures
-- **AI Venue Finder** — Search venues by city, genre, and type (powered by Claude AI)
-- **Sync & Licensing** — Film, TV, ads, games licensing portal + AI sync advisor chat
+- **Sync & Licensing** — Film, TV, ads, games licensing info
 - **Booking Inquiry Form** — Direct booking requests with mailto fallback
+- **Private tools** (`hub.html`, `dashboard.html`, `sync.html`, `agent.html`) — AI venue and sync finders, email composer, and shared lead pipelines, all behind the team passcode
 
 ---
 
 ## Setup
 
 ### 1. Add Your Anthropic API Key
-Open `config.js` and replace `"YOUR_API_KEY_HERE"` with your key:
-```js
-ANTHROPIC_API_KEY: "sk-ant-..."
-```
-Get a key at https://console.anthropic.com
-
-> **Security Note:** For production, move the API call to a Netlify Function to keep your key server-side. Never commit a real API key to a public repo.
+In Netlify → **dragonfarmbookingagent** → Environment variables, set `ANTHROPIC_API_KEY` (get one at https://console.anthropic.com).
+The private tools call it through `netlify/functions/ai-proxy.js`, which only answers requests carrying the `DF_CRM_PASSCODE` from step 3.
+Never put a real API key in the code.
 
 ### 2. Update Booking Email
 In `app.js`, replace `booking@dragonfarmrecords.com` with your real booking email.
@@ -47,8 +43,8 @@ Connect this repo to Netlify:
 /
 ├── index.html       # Main page
 ├── styles.css       # All styles
-├── app.js           # AI + form logic
-├── config.js        # API key config (don't commit real keys)
+├── app.js           # Public page: nav and booking form
+├── config.js        # Label and roster details
 ├── crm-store.js     # Syncs pipeline leads with the crm function
 ├── netlify/functions/crm.mjs  # Shared lead storage (Netlify Blobs)
 ├── netlify.toml     # Netlify deploy config
