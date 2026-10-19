@@ -9,7 +9,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
 - **Artist Roster** — Timothy Chance and Rasta Country & Poetic Nocturnal Creatures
 - **Sync & Licensing** — Film, TV, ads, games licensing info
 - **Booking Inquiry Form** — Direct booking requests with mailto fallback
-- **Private tools** (`hub.html`, `dashboard.html`, `sync.html`, `agent.html`) — AI venue and sync finders, email composer, and shared lead pipelines, all behind the team passcode
+- **Private tools** (`hub.html`, `dashboard.html`, `sync.html`, `agent.html`) — Find Bookers (live web search for venues, talent buyers, booking agencies, festivals, colleges, breweries, private events and fairs, each result linked to its source), sync finder, email composer, and shared lead pipelines, all behind the team passcode
 
 ---
 
@@ -53,6 +53,10 @@ Connect this repo to Netlify:
 ├── calendar.js      # Show calendar: holds, confirmed shows, double-booking checks
 ├── deals.js         # Offers & contracts: deal terms, deposits, red-flag checks
 ├── showday.js       # Show-day details and settlement: what we were paid vs. the deal
+├── finder.js        # Find Bookers page: live web search for venues, buyers, agencies, festivals…
+├── netlify/functions/finder-background.mjs  # Runs the search (Claude + web search) in the background
+├── netlify/functions/finder-status.mjs      # Returns a finished search
+├── netlify/lib/passcode.mjs                 # Shared passcode check
 ├── netlify/functions/crm.mjs  # Shared lead storage (Netlify Blobs)
 ├── netlify.toml     # Netlify deploy config
 └── README.md
