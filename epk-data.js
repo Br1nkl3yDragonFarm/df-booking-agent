@@ -12,20 +12,20 @@ window.DFEpk = {
   DEFAULTS: {
     tcrc: {
       name: 'Timothy Chance and Rasta Country',
-      genre: 'Country · Reggae',
-      tagline: 'Fiddles meet riddims, boots meet the dance floor.',
+      genre: 'Country reggae',
+      tagline: 'Fiddles meet riddims and boots meet the dance floor.',
       hometown: '',
-      bio: 'A genre-defying fusion of Country soul and Reggae roots. Timothy Chance and Rasta Country bring an unforgettable live experience that crosses every line — fiddles meet riddims, boots meet the dance floor.\n\nDebut single: "Mr. Iron Man (Live)" (UPC 820200992949).',
+      bio: 'Country soul over reggae roots. Fiddles meet riddims and boots meet the dance floor, in a live show that crosses every line.\n\nPlays festivals, clubs, bars and private events.\nDebut single: "Mr. Iron Man (Live)" (UPC 820200992949).',
       photo: '', draw: '', shows: '', stage: '',
       contact: 'booking@dragonfarm.net',
       videos: [], music: [], socials: []
     },
     pnc: {
       name: 'Poetic Nocturnal Creatures',
-      genre: 'Hip-Hop · Conscious',
-      tagline: 'Spoken word artistry, hard beats, vivid storytelling.',
+      genre: 'Conscious hip-hop',
+      tagline: 'Spoken word over hard beats.',
       hometown: '',
-      bio: 'Conscious Hip-Hop with depth, intention, and cultural resonance. Poetic Nocturnal Creatures blend spoken word artistry with hard beats and vivid storytelling — built for listeners who think and move.\n\nDebut single: "Peace Pipe" (UPC 820200962904).',
+      bio: 'Spoken word over hard beats. Vivid storytelling with depth and intention, built for listeners who think and move.\n\nPlays colleges, dispensaries, smoke shops and festivals.\nDebut single: "Peace Pipe" (UPC 820200962904).',
       photo: '', draw: '', shows: '', stage: '',
       contact: 'booking@dragonfarm.net',
       videos: [], music: [], socials: []
