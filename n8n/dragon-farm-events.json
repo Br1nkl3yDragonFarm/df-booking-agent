@@ -8,7 +8,7 @@
         "responseMode": "onReceived",
         "options": {}
       },
-      "id": "1a5e0d1c-b875-45d9-b095-6c48580912a1",
+      "id": "be3fe3d1-738f-4407-8f03-1b8c89197975",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -16,27 +16,33 @@
         0,
         300
       ],
-      "webhookId": "6c9bce71-cd47-437a-99b4-d56b175b772a"
+      "webhookId": "a2ebc5bf-c8a0-4a47-94e6-0cc3ae6adfe7"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "a4cfb50b-0ea1-40ed-95a8-30665e0125ef",
+              "id": "a1bbf0cb-2aff-4d82-9e78-a0eddbab7d19",
               "name": "secret",
               "value": "",
               "type": "string"
             },
             {
-              "id": "52cb6902-01d5-4f72-80ab-a237d318f0dc",
+              "id": "373d059e-a2c1-4cb0-b98e-62095b65c9de",
               "name": "discordWebhook",
               "value": "",
               "type": "string"
             },
             {
-              "id": "75973bac-36e6-4689-ab2a-89095778cb0a",
+              "id": "6692b943-5684-44c8-a355-565db7016d17",
               "name": "sheetsWebhook",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "eadee14e-b505-4e5c-85f5-e512f031ca7d",
+              "name": "ntfyTopic",
               "value": "",
               "type": "string"
             }
@@ -44,7 +50,7 @@
         },
         "options": {}
       },
-      "id": "d8b2f9db-1cd7-4942-9ae5-96b33bec1317",
+      "id": "f2eec9ff-eee7-4af8-bafb-f51f59854ed3",
       "name": "Settings",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -52,7 +58,7 @@
         220,
         300
       ],
-      "notes": "secret: the same text as N8N_WEBHOOK_SECRET in Netlify.\ndiscordWebhook: a Discord channel webhook URL (empty = no Discord posts).\nsheetsWebhook: the Google Sheet's Apps Script web app URL (empty = no sheet log).",
+      "notes": "secret: the same text as N8N_WEBHOOK_SECRET in Netlify.\ndiscordWebhook: a Discord channel webhook URL (empty = no Discord posts).\nsheetsWebhook: the Google Sheet's Apps Script web app URL (empty = no sheet log).\nntfyTopic: your private ntfy topic for phone alerts on payments and replies (empty = no alerts).",
       "notesInFlow": true
     },
     {
@@ -64,7 +70,7 @@
         "secret": "={{ $json.secret || 'none' }}",
         "encoding": "hex"
       },
-      "id": "c087fca3-c181-4d7f-99c0-19aec472ff28",
+      "id": "cb4f800b-df31-49a9-9de1-c40719ba3379",
       "name": "Make signature",
       "type": "n8n-nodes-base.crypto",
       "typeVersion": 1,
@@ -84,7 +90,7 @@
           },
           "conditions": [
             {
-              "id": "552d6710-7f00-4525-86bd-be79c73045c1",
+              "id": "e0ad2a80-c5c1-4e83-8a8b-63c99508b45b",
               "leftValue": "={{ !$('Settings').item.json.secret || $('Webhook').item.json.headers['x-df-signature'] === 'sha256=' + $json.hmac }}",
               "rightValue": "",
               "operator": {
@@ -98,7 +104,7 @@
         },
         "options": {}
       },
-      "id": "bd7b7353-4e56-45b7-ba07-f7012c830b31",
+      "id": "431fa7c3-b720-41ad-8819-83f327ad8ad9",
       "name": "Signature OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -109,7 +115,7 @@
     },
     {
       "parameters": {},
-      "id": "de183a52-3e9b-4045-b496-db194caa8b52",
+      "id": "66f017bd-dbf5-4d3a-b3f9-924546448952",
       "name": "Ignore (bad signature)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -121,9 +127,9 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Turns each Dragon Farm event into a one-line message plus a sheet row.\nconst e = $('Webhook').item.json.body || {};\nconst d = e.data || {};\nconst lead = d.lead || d;\nconst money = n => n ? '$' + Number(n).toLocaleString('en-US') : '';\nconst when = lead.eventDate ? new Date(lead.eventDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';\nconst where = [lead.name, lead.city].filter(Boolean).join(', ');\nconst clock = t => { const [h, m] = String(t || '').split(':').map(Number); return isNaN(h) ? (t || '') : `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };\nconst pay = lead.dealType === 'door' ? (lead.doorPct ? lead.doorPct + '% of the door' : 'door deal') : money(lead.guarantee);\nconst text = {\n  'show.booked': `🎸 Booked: ${lead.artist || 'the band'} at ${where}${when ? ' on ' + when : ''}${lead.setTime ? ', ' + clock(lead.setTime) : ''}${pay ? ' · ' + pay : ''}`,\n  'sync.licensed': `🎬 Licensed: ${lead.name}${lead.project ? ' for ' + lead.project : ''}${lead.fee ? ' · ' + lead.fee : ''}`,\n  'brand.signed': `🤝 Signed: ${lead.name}${lead.offer ? ' · ' + lead.offer : ''}`,\n  'reply.received': `📬 Reply from ${d.from || 'someone'}: ${d.subject || ''}${d.snippet ? '\\n> ' + d.snippet : ''}`,\n  'payment.received': `💵 Paid: ${money(d.amount)} ${d.kind || ''} from ${where || 'a buyer'}${d.invoice ? ' (' + d.invoice + ')' : ''}`,\n  'agreement.signed': `✍️ Signed by ${d.signedBy || 'the buyer'}${d.role ? ' (' + d.role + ')' : ''}: ${d.title || 'agreement'}${d.pdf ? '\\n' + d.pdf : ''}`,\n  'inquiry.received': `📥 New inquiry: ${where}${lead.eventDate ? ' for ' + lead.eventDate : ''}${lead.contactName ? ' from ' + lead.contactName : ''}`,\n  'fan.signed_up': `🙌 New fan${d.city ? ' in ' + d.city : ''}${d.show ? ' at ' + d.show : ''} · ${d.fans || '?'} on the list`,\n  'digest.sent': `🗓️ Monday rundown sent: ${d.subject || ''}`,\n  test: `✅ Test from the Dragon Farm booking tool`\n}[e.type] || `Dragon Farm event: ${e.type}`;\n// A row for the Google Sheet log: Shows, Payments or Fans tab (column name → value).\nconst logged = new Date(e.at || Date.now()).toLocaleString('en-US', { timeZone: 'America/Chicago' });\nconst sheet = {\n  'show.booked': ['Shows', { 'Show date': lead.eventDate || '', Venue: lead.name || '', City: lead.city || '', Artist: lead.artist || '', 'Set time': clock(lead.setTime), Pay: pay || '', Contact: lead.contactName || '', Email: lead.contactEmail || '' }],\n  'payment.received': ['Payments', { Amount: d.amount || '', Kind: d.kind || '', Invoice: d.invoice || '', Venue: lead.name || '', City: lead.city || '', 'Show date': lead.eventDate || '' }],\n  'fan.signed_up': ['Fans', { Email: d.email || '', Name: d.name || '', Town: d.city || '', Show: d.show || '', 'Fans on list': d.fans || '' }]\n}[e.type];\nreturn { json: {\n  type: e.type,\n  sample: !!d.sample,\n  message: (d.sample ? '[sample] ' : '') + text,\n  sheet: sheet ? { tab: sheet[0], row: { Logged: logged, Sample: d.sample ? 'yes' : '', ...sheet[1] } } : null,\n  event: e\n} };"
+        "jsCode": "// Turns each Dragon Farm event into a one-line message plus a sheet row.\nconst e = $('Webhook').item.json.body || {};\nconst d = e.data || {};\nconst lead = d.lead || d;\nconst money = n => n ? '$' + Number(n).toLocaleString('en-US') : '';\nconst when = lead.eventDate ? new Date(lead.eventDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';\nconst where = [lead.name, lead.city].filter(Boolean).join(', ');\nconst clock = t => { const [h, m] = String(t || '').split(':').map(Number); return isNaN(h) ? (t || '') : `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };\nconst pay = lead.dealType === 'door' ? (lead.doorPct ? lead.doorPct + '% of the door' : 'door deal') : money(lead.guarantee);\nconst text = {\n  'show.booked': `🎸 Booked: ${lead.artist || 'the band'} at ${where}${when ? ' on ' + when : ''}${lead.setTime ? ', ' + clock(lead.setTime) : ''}${pay ? ' · ' + pay : ''}`,\n  'sync.licensed': `🎬 Licensed: ${lead.name}${lead.project ? ' for ' + lead.project : ''}${lead.fee ? ' · ' + lead.fee : ''}`,\n  'brand.signed': `🤝 Signed: ${lead.name}${lead.offer ? ' · ' + lead.offer : ''}`,\n  'reply.received': `📬 Reply from ${d.from || 'someone'}: ${d.subject || ''}${d.snippet ? '\\n> ' + d.snippet : ''}`,\n  'payment.received': `💵 Paid: ${money(d.amount)} ${d.kind || ''} from ${where || 'a buyer'}${d.invoice ? ' (' + d.invoice + ')' : ''}`,\n  'agreement.signed': `✍️ Signed by ${d.signedBy || 'the buyer'}${d.role ? ' (' + d.role + ')' : ''}: ${d.title || 'agreement'}${d.pdf ? '\\n' + d.pdf : ''}`,\n  'inquiry.received': `📥 New inquiry: ${where}${lead.eventDate ? ' for ' + lead.eventDate : ''}${lead.contactName ? ' from ' + lead.contactName : ''}`,\n  'fan.signed_up': `🙌 New fan${d.city ? ' in ' + d.city : ''}${d.show ? ' at ' + d.show : ''} · ${d.fans || '?'} on the list`,\n  'digest.sent': `🗓️ Monday rundown sent: ${d.subject || ''}`,\n  test: `✅ Test from the Dragon Farm booking tool`\n}[e.type] || `Dragon Farm event: ${e.type}`;\n// A row for the Google Sheet log: Shows, Payments or Fans tab (column name → value).\nconst logged = new Date(e.at || Date.now()).toLocaleString('en-US', { timeZone: 'America/Chicago' });\nconst sheet = {\n  'show.booked': ['Shows', { 'Show date': lead.eventDate || '', Venue: lead.name || '', City: lead.city || '', Artist: lead.artist || '', 'Set time': clock(lead.setTime), Pay: pay || '', Contact: lead.contactName || '', Email: lead.contactEmail || '' }],\n  'payment.received': ['Payments', { Amount: d.amount || '', Kind: d.kind || '', Invoice: d.invoice || '', Venue: lead.name || '', City: lead.city || '', 'Show date': lead.eventDate || '' }],\n  'fan.signed_up': ['Fans', { Email: d.email || '', Name: d.name || '', Town: d.city || '', Show: d.show || '', 'Fans on list': d.fans || '' }]\n}[e.type];\n// A phone alert (ntfy) for the events worth an interruption.\nconst dash = (e.site || '') + '/dashboard.html';\nconst alert = {\n  'payment.received': { title: `💵 ${money(d.amount)} ${d.kind || 'payment'} paid`, message: [where, lead.eventDate && 'show ' + lead.eventDate, d.invoice].filter(Boolean).join(' · ') || 'Card payment received', priority: 4, tags: ['moneybag'] },\n  'reply.received': { title: `📬 Reply from ${String(d.from || 'someone').replace(/\\s*<.*>$/, '')}`, message: [d.subject, d.snippet].filter(Boolean).join('\\n') || 'New reply to a pitch', priority: 4, tags: ['envelope'] }\n}[e.type];\nreturn { json: {\n  type: e.type,\n  sample: !!d.sample,\n  message: (d.sample ? '[sample] ' : '') + text,\n  alert: alert ? { ...alert, title: (d.sample ? '[sample] ' : '') + alert.title, click: dash } : null,\n  sheet: sheet ? { tab: sheet[0], row: { Logged: logged, Sample: d.sample ? 'yes' : '', ...sheet[1] } } : null,\n  event: e\n} };"
       },
-      "id": "3c9f7520-ad15-4eed-8dbe-c567b362e7fd",
+      "id": "20ee8941-8e73-4bdf-aaa7-ef3da2d22ebd",
       "name": "Write the message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -143,7 +149,7 @@
           },
           "conditions": [
             {
-              "id": "0ee02444-0f8f-47a8-93fb-9519c9562e8d",
+              "id": "53d489a7-6956-46fa-90f7-e008adc9c8ee",
               "leftValue": "={{ !!$('Settings').item.json.discordWebhook }}",
               "rightValue": "",
               "operator": {
@@ -157,7 +163,7 @@
         },
         "options": {}
       },
-      "id": "2067d7bc-44d5-4858-8168-68fc4e62c850",
+      "id": "16cad300-e11d-4e7f-ab87-c0e2bad5b56b",
       "name": "Discord set?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -177,7 +183,7 @@
           },
           "conditions": [
             {
-              "id": "f529c652-14bf-4389-a88d-2dcd6232fd29",
+              "id": "4886bd3d-26ed-491f-8641-b4811e8a750e",
               "leftValue": "={{ !!$json.sheet && !!$('Settings').item.json.sheetsWebhook }}",
               "rightValue": "",
               "operator": {
@@ -191,7 +197,7 @@
         },
         "options": {}
       },
-      "id": "35746525-91f4-4315-9eca-95a49dadefa3",
+      "id": "8e2487af-e5fc-4595-854d-8207fc23677f",
       "name": "Goes in the sheet?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -209,13 +215,65 @@
         "jsonBody": "={{ JSON.stringify($json.sheet) }}",
         "options": {}
       },
-      "id": "f7fe1f92-540c-46b1-9023-3808a65210d2",
+      "id": "e81a5ee6-5954-4a4f-a659-7fe59061183f",
       "name": "Add row to sheet",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         1360,
         200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a6dcb1b3-5338-41d6-a7f6-e9aaf626bfb4",
+              "leftValue": "={{ !!$json.alert && !!$('Settings').item.json.ntfyTopic }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "79fa4fb9-79cb-4e4a-a03b-570e7da79417",
+      "name": "Alert my phone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh/",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ topic: $('Settings').item.json.ntfyTopic, ...$json.alert }) }}",
+        "options": {}
+      },
+      "id": "584760c6-8a76-429a-8efa-81d57403a667",
+      "name": "Phone alert (ntfy)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        -200
       ]
     },
     {
@@ -227,7 +285,7 @@
         "jsonBody": "={{ JSON.stringify({ username: 'Dragon Farm', content: $json.message }) }}",
         "options": {}
       },
-      "id": "a7a35e06-2368-49e5-b2ff-7ad7b3b118d4",
+      "id": "e1770c64-fe77-46b5-bd1b-38677b046dca",
       "name": "Post to Discord",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -256,7 +314,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "5d4e843f-aff6-4656-984b-3bc5839887fe"
+                    "id": "5250116f-674e-4b97-a473-020d9ed861d9"
                   }
                 ],
                 "combinator": "and"
@@ -280,7 +338,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "ce16a4bb-c310-4a03-b843-ea3e6185c44c"
+                    "id": "6d9d517c-9f61-463e-819f-5143159f6ca7"
                   }
                 ],
                 "combinator": "and"
@@ -304,7 +362,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "b2420648-2b3f-44a8-81ae-57b23f374c38"
+                    "id": "25b12419-8f23-4da9-9ebf-8cd382a0aab0"
                   }
                 ],
                 "combinator": "and"
@@ -328,7 +386,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "0827656c-b2e8-4abb-83f8-4857116754ed"
+                    "id": "48835636-0470-4551-b940-b456ab93e37e"
                   }
                 ],
                 "combinator": "and"
@@ -352,7 +410,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "14cb5d29-7f14-45a3-90d3-6c538492d63d"
+                    "id": "86341f60-0cae-437d-8f38-8141eb2038fd"
                   }
                 ],
                 "combinator": "and"
@@ -376,7 +434,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "fac31b37-c065-48d6-b156-fc5eebfcaf7a"
+                    "id": "44fce8a1-55cd-48e8-9484-cb5cbd30929c"
                   }
                 ],
                 "combinator": "and"
@@ -400,7 +458,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "b662e682-b2af-41d1-952d-18e96ad120b6"
+                    "id": "ff51d068-a1ad-4dd5-a4bf-946789defea5"
                   }
                 ],
                 "combinator": "and"
@@ -424,7 +482,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "f58a0246-7fb0-4892-820e-bb8df2e10ffc"
+                    "id": "949d96c9-6783-4c54-9108-d765e6253020"
                   }
                 ],
                 "combinator": "and"
@@ -448,7 +506,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "c553a2f2-d701-42fa-823c-d3b33f691709"
+                    "id": "65fa2a83-3ca5-4b62-bd68-c52f504696ce"
                   }
                 ],
                 "combinator": "and"
@@ -472,7 +530,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "61b088cf-de1f-4ccc-a4ab-9db54deef609"
+                    "id": "986116c8-a1b4-4bcf-996a-031b18e81fdd"
                   }
                 ],
                 "combinator": "and"
@@ -486,7 +544,7 @@
           "fallbackOutput": "none"
         }
       },
-      "id": "318abac0-629c-4ed5-868f-0b95efae6d54",
+      "id": "82462433-b295-4ae8-86aa-fe7416feb50b",
       "name": "By event",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
@@ -497,7 +555,7 @@
     },
     {
       "parameters": {},
-      "id": "2e65a4ac-e492-4272-b7dd-9a472c8ce36d",
+      "id": "207bf287-d8f1-44bc-b9a6-7c42d4d917b1",
       "name": "Add your own steps here",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -565,6 +623,11 @@
       "main": [
         [
           {
+            "node": "Alert my phone?",
+            "type": "main",
+            "index": 0
+          },
+          {
             "node": "Discord set?",
             "type": "main",
             "index": 0
@@ -576,6 +639,17 @@
           },
           {
             "node": "By event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert my phone?": {
+      "main": [
+        [
+          {
+            "node": "Phone alert (ntfy)",
             "type": "main",
             "index": 0
           }
