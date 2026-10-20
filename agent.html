@@ -541,6 +541,7 @@
           <button class="btn btn-ghost" onclick="calMove(-1)" aria-label="Previous month">‹</button>
           <button class="btn btn-ghost" onclick="calMove(0)">Today</button>
           <button class="btn btn-ghost" onclick="calMove(1)" aria-label="Next month">›</button>
+          <button class="btn btn-ghost" onclick="DFShowCal.openSubscribe()">📲 Subscribe</button>
         </div>
       </div>
       <div class="cal-filters" id="cal-filters"></div>
@@ -682,6 +683,8 @@
 <script src="vendor/qrcode.js"></script>
 <script src="fans.js"></script>
 <script src="esign.js"></script>
+<script src="vendor/datebook.js"></script>
+<script src="showcal.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — UNIFIED APP
@@ -889,7 +892,8 @@ function calMove(step){calState.month=step?new Date(calState.month.getFullYear()
 function calFilter(a){calState.artist=a;renderCalendar()}
 function calSelect(date){calState.selected=calState.selected===date?'':date;renderCalendar()}
 function calAdd(date){openVModal();document.getElementById('vm-date').value=date}
-function renderShows(){DFShow.renderShows({totals:document.getElementById('shows-totals'),list:document.getElementById('shows-list')},vLeads,'editVLead',{gaps:'fillGaps',invoice:'openInvoice',remind:'remindDeposit',fans:'fanQr',sign:'signShow'})}
+function renderShows(){DFShow.renderShows({totals:document.getElementById('shows-totals'),list:document.getElementById('shows-list')},vLeads,'editVLead',{gaps:'fillGaps',invoice:'openInvoice',remind:'remindDeposit',fans:'fanQr',sign:'signShow',calendar:'addToCalendar'})}
+function addToCalendar(id){const l=vLeads.find(x=>x.id===id);if(l)DFShowCal.openAdd(l)}
 function signShow(id){const l=vLeads.find(x=>x.id===id);if(!l)return;const artist=l.artist&&l.artist!=='Both'?l.artist:'Timothy Chance and Rasta Country';DFSign.open({lead:l,list:'venue',title:`Performance agreement: ${artist} at ${l.name}${l.eventDate?`, ${l.eventDate}`:''}`,text:DFSign.venueText(l),onChange:()=>{renderShows();renderVenuePipe()}})}
 function fanQr(id){const l=vLeads.find(x=>x.id===id);if(l)DFFans.openForShow(l)}
 

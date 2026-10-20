@@ -21,6 +21,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Sync kit: a fee quote for each kind of placement (from the label's sync playbook, adjusted for use, term, territory and exclusivity), a printable one-stop sync + master license, links to the full mix, clean, instrumental and edits ready to tick into a pitch, and a pitch log of which song and versions went to which supervisor
   - Brand deals (`brands.html`): find sponsors and lifestyle brands that fit the band (drinks, outdoor, Western lifestyle, trucks, food, gear, events, cannabis where legal), an AI-drafted pitch that leads with fit and a content idea, and a deal check that flags exposure-only pay, rights grabs and forever exclusivity
   - Sign deals online: a performance agreement written from the deal (or the sync license, or a brand partnership agreement) goes out as a private link; they draw a signature on their phone, both sides get the signed PDF, and the deal is marked signed
+  - Shows in your calendar: “📅 Calendar” on a booked show adds it to Google, Outlook or Apple Calendar; “📲 Subscribe” on the Calendar page gives one secret link that puts every booked show and hold on the band's phones and keeps them up to date
   - Fan list: a QR code for the merch table (from any booked show) opens a sign-up page; fans land on a private list counted by town, with CSV export, removal on request, counts for the press kit's draw and a fans-by-town table in the report
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
@@ -110,6 +111,7 @@ Connect this repo to Netlify:
 ├── brands.html      # Brand deals: pipeline, brand finder, pitches, deal check (private)
 ├── sign.html        # Public page where the other side reads and signs an agreement
 ├── esign.js         # Writes agreements from the deal and sends them for signature
+├── showcal.js       # Add a show to a calendar (datebook) and the subscribe link
 ├── fans.html        # Public fan sign-up page the merch-table QR code opens (Netlify form "fan-signup")
 ├── fan-list.html    # Fan list by town, CSV export, QR maker (private)
 ├── fans.js          # Fan list helpers and the QR code / printable sign
@@ -127,6 +129,8 @@ Connect this repo to Netlify:
 ├── netlify/functions/stripe-webhook.mjs     # Stripe webhook: records payments
 ├── netlify/functions/epk.mjs                # Press kits: public read (counts tracked views), passcode save
 ├── netlify/functions/sign.mjs               # Signing links, signatures, signed PDFs (pdf-lib), emails both sides
+├── netlify/functions/calendar-feed.mjs      # Subscribable calendar of shows and holds (ical-generator), behind a secret link
+├── netlify/lib/showtime.mjs                 # Reads typed show times ("9 PM", "21:00")
 ├── netlify/functions/fans.mjs               # Fan list: read and remove (passcode)
 ├── netlify/lib/fans.mjs                     # Adds fan sign-ups (one entry per email)
 ├── netlify/functions/catalog.mjs            # Song versions (links) and metadata for sync pitches

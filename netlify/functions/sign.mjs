@@ -34,6 +34,7 @@ function latin1(s) {
   return String(s ?? '')
     .replace(/[‘’‛]/g, "'").replace(/[“”‟]/g, '"')
     .replace(/[–—−]/g, '-').replace(/…/g, '...').replace(/[•·]/g, '-')
+    .replace(/[\u{10000}-\u{10FFFF}\u{FE0F}\u{200D}]/gu, '')
     .replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '?');
 }
 
