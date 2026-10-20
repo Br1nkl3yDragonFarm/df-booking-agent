@@ -104,17 +104,20 @@ The tool can tell [n8n](https://n8n.io) (a drag-and-drop workflow tool) when som
 3. **Deploy → New deployment → Web app**, execute as *Me*, access *Anyone*, then authorize (Google warns the script is unverified because it's yours: **Advanced → Go to …**).
 4. Copy the web app URL into **Settings** as `sheetsWebhook` and publish the workflow.
 
-**Phone alerts** (card payments and replies to pitches): install the free **ntfy** app (iPhone or Android), tap **+** and subscribe to a topic name only you know (long and random, e.g. `dragonfarm-7kq2m9xv4t`), then put the same name in **Settings** as `ntfyTopic`. Tapping an alert opens the booking dashboard. Anyone who knows the topic name can read the alerts, so keep it hard to guess.
+**Phone alerts** (card payments, replies to pitches, and post drafts ready for a booked show): install the free **ntfy** app (iPhone or Android), tap **+** and subscribe to a topic name only you know (long and random, e.g. `dragonfarm-7kq2m9xv4t`), then put the same name in **Settings** as `ntfyTopic`. Tapping an alert opens the booking dashboard. Anyone who knows the topic name can read the alerts, so keep it hard to guess.
 
 Empty addresses just skip that step. If n8n is down, nothing in the tool breaks; that event just isn't sent.
 
 ### 12. Public Shows Page
 `shows.html` lists every booked show with a date, soonest first, with ticket buttons, add-to-calendar and directions, plus a "Recently played" list from the past year. The home page shows the next three under **Next up**. Edit a booked show and open **Public Shows page** to add the ticket link, price, doors time and ages. **Private Event** shows never appear, and a box keeps any other show off. Only the date, venue, city, address, times, tickets and ages are published, never money, contacts or notes. The page also carries Google's event data (schema.org MusicEvent), so shows can appear in Google search; check one with Google's Rich Results Test after the first real show is listed.
 
-### 13. Captions for Videos and Songs
+### 13. Social Posts for Booked Shows
+When a show is marked **Booked** with a date (and isn't a Private Event or kept off the Shows page), Claude drafts the posts announcing it: an Instagram caption, a Facebook post, story text, a short post for X / Threads / TikTok, a "tonight" post for the day of the show, and hashtags. Open them with **📣 Posts** on the show in **Booked shows**: edit, copy (Instagram and Facebook copy with the hashtags), and tick each one off once it's posted. Edits are shared with everyone. Nothing is ever posted automatically. Add the ticket link before booking if you can, or press **Rewrite all** after adding it. Claude only sees the show's public details (the same ones the Shows page shows). If automations are on (step 11), a `social.drafts` event pushes the Instagram caption to your phone and Discord, and tapping it opens the drafts. Uses `ANTHROPIC_API_KEY` (step 1).
+
+### 14. Captions for Videos and Songs
 Open **Captions** (`captions.html`), drop in a clip, and download an SRT for YouTube or CapCut (or copy the text). It runs OpenAI's Whisper speech model in the browser through Transformers.js (Apache-2.0, loaded from jsDelivr), so files never leave the computer and there's no key or cost. The model downloads once (40–250 MB depending on the speed setting) and the browser keeps it. English only. Sung lyrics come out rougher than speech; check every line against the lyric sheet.
 
-### 14. Deploy to Netlify
+### 15. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -155,6 +158,7 @@ Connect this repo to Netlify:
 ├── automations.html # n8n status and test events (private)
 ├── shows.html       # Public Shows page: upcoming dates, tickets, calendar, directions, event data for Google
 ├── shows.js         # Draws the public show list (Shows page and the home page's "Next up")
+├── posts.js         # The 📣 Posts window: social post drafts for a booked show
 ├── captions.html    # Captions for videos and songs (Whisper in the browser): edit, preview, SRT/VTT/text
 ├── captions.js      # Caption timing, line splitting and SRT/VTT/text output
 ├── captions-worker.js # Runs Whisper (Transformers.js) off the main thread
@@ -191,6 +195,10 @@ Connect this repo to Netlify:
 ├── netlify/lib/digest.mjs                   # Builds and sends the Monday digest (email and/or Discord)
 ├── netlify/lib/weekly.mjs                   # Where weekly searches and the last run are kept
 ├── netlify/functions/shows.mjs              # Public list of booked shows (only fan-facing details)
+├── netlify/lib/listing.mjs                  # Which shows are public, and their fan-facing details
+├── netlify/functions/social-background.mjs  # Drafts a booked show's social posts with Claude (background)
+├── netlify/functions/social.mjs             # Reads, edits and marks off the post drafts (passcode)
+├── netlify/lib/social.mjs                   # The post-drafting prompt and output shape
 ├── netlify/functions/automations.mjs        # Automations status and sample events (passcode)
 ├── netlify/lib/events.mjs                   # Sends events to n8n (signed, never blocks the thing that caused it)
 ├── netlify/lib/passcode.mjs                 # Shared passcode check

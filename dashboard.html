@@ -630,6 +630,7 @@
 <script src="importer.js"></script>
 <script src="vendor/geolib.js"></script>
 <script src="distance.js"></script>
+<script src="posts.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -876,7 +877,7 @@ function renderLeads() {
 
 function renderBooked() {
   DFShow.renderShows({ totals: document.getElementById('deal-totals'), list: document.getElementById('booked-list') }, leads, 'editLead',
-    { gaps: 'fillGaps', invoice: 'openInvoice', remind: 'remindDeposit', fans: 'fanQr', sign: 'signShow', calendar: 'addToCalendar' });
+    { gaps: 'fillGaps', invoice: 'openInvoice', remind: 'remindDeposit', fans: 'fanQr', sign: 'signShow', calendar: 'addToCalendar', posts: 'openPosts' });
 }
 
 // ---- LEAD CRUD ----
@@ -1084,6 +1085,22 @@ function signShow(id) {
   DFSign.open({ lead: l, list: 'venue', title: `Performance agreement: ${artist} at ${l.name}${l.eventDate ? `, ${l.eventDate}` : ''}`, text: DFSign.venueText(l), onChange: () => { renderBooked(); renderLeads(); } });
 }
 
+function openPosts(id) {
+  const lead = leads.find(l => l.id === id);
+  if (lead) DFPosts.open(lead);
+}
+
+// dashboard.html#posts=<id> (the link in the "posts ready" alert) opens that show's posts.
+function openPostsFromLink() {
+  const m = location.hash.match(/^#posts=(.+)$/);
+  const lead = m && leads.find(l => l.id === decodeURIComponent(m[1]));
+  if (!lead) return false;
+  history.replaceState(null, '', location.pathname + location.search);
+  showPage('booked');
+  DFPosts.open(lead);
+  return true;
+}
+
 function fanQr(id) {
   const lead = leads.find(l => l.id === id);
   if (lead) DFFans.openForShow(lead);
@@ -1198,9 +1215,11 @@ function onActivity() {
 updateStats();
 renderOverview();
 DFOut.init(onActivity);
+let postsLinkPending = !openPostsFromLink();
 DFStore.connect('df_leads', items => {
   leads = items;
   onActivity();
+  if (postsLinkPending) postsLinkPending = !openPostsFromLink();
 });
 // City coordinates load in the background; distances appear once they're in.
 DFDist.load().then(ok => { if (ok) { renderLeads(); renderBooked(); bookers.refresh(); } });

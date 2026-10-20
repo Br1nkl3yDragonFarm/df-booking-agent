@@ -9,7 +9,7 @@
 //
 //  Types: show.booked, sync.licensed, brand.signed, reply.received,
 //  payment.received, agreement.signed, inquiry.received, fan.signed_up,
-//  digest.sent, test.
+//  digest.sent, social.drafts, test.
 //
 //  Environment variables:
 //    N8N_WEBHOOK_URL     the n8n Webhook node's production URL; unset = off
@@ -22,7 +22,7 @@
 
 import { createHmac } from 'node:crypto';
 
-export const EVENT_TYPES = ['show.booked', 'sync.licensed', 'brand.signed', 'reply.received', 'payment.received', 'agreement.signed', 'inquiry.received', 'fan.signed_up', 'digest.sent', 'test'];
+export const EVENT_TYPES = ['show.booked', 'sync.licensed', 'brand.signed', 'reply.received', 'payment.received', 'agreement.signed', 'inquiry.received', 'fan.signed_up', 'digest.sent', 'social.drafts', 'test'];
 const TIMEOUT_MS = 4000;
 
 export const automationsOn = () => /^https:\/\//.test(process.env.N8N_WEBHOOK_URL || '');

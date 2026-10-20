@@ -178,6 +178,7 @@
       btn(actions.invoice, '🧾 Invoice', 'Make, print or email an invoice'),
       l.contract !== 'signed' && btn(actions.sign, '✍ Contract', 'Send the performance agreement to sign online'),
       depositOverdue(l) && btn(actions.remind, '⏰ Deposit reminder', 'Email a polite reminder about the overdue deposit'),
+      !isPlayed(l) && l.eventDate && l.type !== 'Private Event' && !l.unlisted && btn(actions.posts, '📣 Posts', 'Social posts announcing this show, ready to copy'),
       btn(actions.fans, '📱 Fan QR', 'QR code for the merch table: fans sign up for the email list')
     ].filter(Boolean);
     return buttons.length ? `<div class="dfo-show-actions">${buttons.join('')}</div>` : '';
