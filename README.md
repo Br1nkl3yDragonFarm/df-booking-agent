@@ -22,6 +22,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Brand deals (`brands.html`): find sponsors and lifestyle brands that fit the band (drinks, outdoor, Western lifestyle, trucks, food, gear, events, cannabis where legal), an AI-drafted pitch that leads with fit and a content idea, and a deal check that flags exposure-only pay, rights grabs and forever exclusivity
   - Sign deals online: a performance agreement written from the deal (or the sync license, or a brand partnership agreement) goes out as a private link; they draw a signature on their phone, both sides get the signed PDF, and the deal is marked signed
   - Shows in your calendar: “📅 Calendar” on a booked show adds it to Google, Outlook or Apple Calendar; “📲 Subscribe” on the Calendar page gives one secret link that puts every booked show and hold on the band's phones and keeps them up to date
+  - Import from a spreadsheet: “Import CSV” on the booking, sync and brand pipelines reads a CSV from Excel, Google Sheets or another CRM, matches its columns to the lead's fields, previews it and skips anyone already in the pipeline
   - Fan list: a QR code for the merch table (from any booked show) opens a sign-up page; fans land on a private list counted by town, with CSV export, removal on request, counts for the press kit's draw and a fans-by-town table in the report
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
@@ -112,6 +113,7 @@ Connect this repo to Netlify:
 ├── sign.html        # Public page where the other side reads and signs an agreement
 ├── esign.js         # Writes agreements from the deal and sends them for signature
 ├── showcal.js       # Add a show to a calendar (datebook) and the subscribe link
+├── importer.js      # Import leads from a CSV (Papa Parse): column matching, duplicates skipped
 ├── fans.html        # Public fan sign-up page the merch-table QR code opens (Netlify form "fan-signup")
 ├── fan-list.html    # Fan list by town, CSV export, QR maker (private)
 ├── fans.js          # Fan list helpers and the QR code / printable sign

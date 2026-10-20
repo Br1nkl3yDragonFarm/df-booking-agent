@@ -76,7 +76,7 @@
   <div class="section on" id="s-pipeline">
     <div class="bar">
       <div class="pills" id="pills"></div>
-      <button class="btn btn-gold" id="add">+ Add a brand</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="import">Import CSV</button><button class="btn btn-gold" id="add">+ Add a brand</button></div>
     </div>
     <div class="table-wrap">
       <table>
@@ -99,6 +99,8 @@
 <script src="finder.js"></script>
 <script src="outreach.js"></script>
 <script src="esign.js"></script>
+<script src="vendor/papaparse.js"></script>
+<script src="importer.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM — BRAND DEALS
@@ -275,6 +277,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   document.querySelectorAll('.section').forEach(s => s.classList.toggle('on', s.id === 's-' + t.dataset.s));
 }));
 $('add').addEventListener('click', () => edit(null));
+$('import').addEventListener('click', () => DFImport.open({ list: 'brand', existing: leads, onImport: fresh => { leads.push(...fresh); save(); }, onDone: toast }));
 
 DFFinder.mount($('finder'), {
   mode: 'brand',

@@ -467,7 +467,7 @@
     <div class="page" id="page-crm">
       <div class="section-hdr">
         <div><p>Every opportunity from pitch to placement. Select a row to edit it.</p></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="showPage('log')">Pitch log</button><button class="btn btn-ghost" onclick="exportLeads()">Export CSV</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="showPage('log')">Pitch log</button><button class="btn btn-ghost" onclick="importLeads()">Import CSV</button><button class="btn btn-ghost" onclick="exportLeads()">Export CSV</button></div>
       </div>
       <div class="crm-controls">
         <div class="crm-search"><input type="text" id="crm-search" placeholder="Search supervisors, studios, projects" aria-label="Search opportunities" oninput="renderLeads()" /></div>
@@ -584,6 +584,8 @@
 <script src="outreach.js"></script>
 <script src="sync-kit.js"></script>
 <script src="esign.js"></script>
+<script src="vendor/papaparse.js"></script>
+<script src="importer.js"></script>
 <script>
 // ---- STATE ----
 let leads = DFStore.load('df_sync_leads');
@@ -926,6 +928,10 @@ function licenseLead(id) {
 }
 
 function saveLeads() { DFStore.save('df_sync_leads', leads); }
+
+function importLeads() {
+  DFImport.open({ list: 'sync', existing: leads, onImport: fresh => { leads.push(...fresh); saveLeads(); renderLeads(); updateStats(); renderOverview(); }, onDone: msg => toast(msg, 'success') });
+}
 
 function exportLeads() {
   const headers = ['Name','Project','Category','Track','Contact','Email','Fee','Status','Follow Up','Notes','Date Added'];

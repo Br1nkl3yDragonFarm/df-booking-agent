@@ -463,7 +463,7 @@
     <div class="page" id="page-crm">
       <div class="section-hdr">
         <div><p>Every venue and booker in your pipeline. Select a row to edit it.</p></div>
-        <button class="btn btn-ghost" onclick="exportLeads()">Export CSV</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="importLeads()">Import CSV</button><button class="btn btn-ghost" onclick="exportLeads()">Export CSV</button></div>
       </div>
 
       <div class="crm-controls">
@@ -620,6 +620,8 @@
 <script src="esign.js"></script>
 <script src="vendor/datebook.js"></script>
 <script src="showcal.js"></script>
+<script src="vendor/papaparse.js"></script>
+<script src="importer.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -1101,6 +1103,10 @@ function pitchFromLead(id) {
 
 function saveLeads() {
   DFStore.save('df_leads', leads);
+}
+
+function importLeads() {
+  DFImport.open({ list: 'venue', existing: leads, onImport: fresh => { leads.push(...fresh); saveLeads(); renderLeads(); renderOverview(); renderCalendar(); }, onDone: msg => toast(msg, 'success') });
 }
 
 function exportLeads() {
