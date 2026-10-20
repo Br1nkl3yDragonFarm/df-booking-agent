@@ -8,7 +8,7 @@
         "responseMode": "onReceived",
         "options": {}
       },
-      "id": "0dd3af61-a6e8-4a39-94b1-1f7e26ea325b",
+      "id": "1a5e0d1c-b875-45d9-b095-6c48580912a1",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -16,21 +16,27 @@
         0,
         300
       ],
-      "webhookId": "180b65b1-7fa6-4f86-a6e3-4de740d8c17d"
+      "webhookId": "6c9bce71-cd47-437a-99b4-d56b175b772a"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "8982cc5c-24f7-452f-9186-73979ed3b86d",
+              "id": "a4cfb50b-0ea1-40ed-95a8-30665e0125ef",
               "name": "secret",
               "value": "",
               "type": "string"
             },
             {
-              "id": "bfdc7b51-74e0-4a68-b4f0-f52497e45cf2",
+              "id": "52cb6902-01d5-4f72-80ab-a237d318f0dc",
               "name": "discordWebhook",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "75973bac-36e6-4689-ab2a-89095778cb0a",
+              "name": "sheetsWebhook",
               "value": "",
               "type": "string"
             }
@@ -38,7 +44,7 @@
         },
         "options": {}
       },
-      "id": "2b559c5e-bf28-47b5-a699-d417e96b557b",
+      "id": "d8b2f9db-1cd7-4942-9ae5-96b33bec1317",
       "name": "Settings",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
@@ -46,7 +52,7 @@
         220,
         300
       ],
-      "notes": "secret: the same text as N8N_WEBHOOK_SECRET in Netlify (leave empty if you didn't set one).\ndiscordWebhook: a Discord channel webhook URL (Channel settings → Integrations → Webhooks).",
+      "notes": "secret: the same text as N8N_WEBHOOK_SECRET in Netlify.\ndiscordWebhook: a Discord channel webhook URL (empty = no Discord posts).\nsheetsWebhook: the Google Sheet's Apps Script web app URL (empty = no sheet log).",
       "notesInFlow": true
     },
     {
@@ -58,7 +64,7 @@
         "secret": "={{ $json.secret || 'none' }}",
         "encoding": "hex"
       },
-      "id": "06650bef-6282-4ff3-a766-a34e6eb998e5",
+      "id": "c087fca3-c181-4d7f-99c0-19aec472ff28",
       "name": "Make signature",
       "type": "n8n-nodes-base.crypto",
       "typeVersion": 1,
@@ -78,7 +84,7 @@
           },
           "conditions": [
             {
-              "id": "3bc24cc4-df29-4505-879e-0e2127027a56",
+              "id": "552d6710-7f00-4525-86bd-be79c73045c1",
               "leftValue": "={{ !$('Settings').item.json.secret || $('Webhook').item.json.headers['x-df-signature'] === 'sha256=' + $json.hmac }}",
               "rightValue": "",
               "operator": {
@@ -92,7 +98,7 @@
         },
         "options": {}
       },
-      "id": "6898680d-016d-4266-8378-1670d85a493b",
+      "id": "bd7b7353-4e56-45b7-ba07-f7012c830b31",
       "name": "Signature OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -103,7 +109,7 @@
     },
     {
       "parameters": {},
-      "id": "4f17634d-7c64-435a-96a3-ec9b2297f148",
+      "id": "de183a52-3e9b-4045-b496-db194caa8b52",
       "name": "Ignore (bad signature)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -115,14 +121,100 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Turns each Dragon Farm event into a one-line message plus a sheet row.\nconst e = $('Webhook').item.json.body || {};\nconst d = e.data || {};\nconst lead = d.lead || d;\nconst money = n => n ? '$' + Number(n).toLocaleString('en-US') : '';\nconst when = lead.eventDate ? new Date(lead.eventDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';\nconst where = [lead.name, lead.city].filter(Boolean).join(', ');\nconst clock = t => { const [h, m] = String(t || '').split(':').map(Number); return isNaN(h) ? (t || '') : `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };\nconst pay = lead.dealType === 'door' ? (lead.doorPct ? lead.doorPct + '% of the door' : 'door deal') : money(lead.guarantee);\nconst text = {\n  'show.booked': `🎸 Booked: ${lead.artist || 'the band'} at ${where}${when ? ' on ' + when : ''}${lead.setTime ? ', ' + clock(lead.setTime) : ''}${pay ? ' · ' + pay : ''}`,\n  'sync.licensed': `🎬 Licensed: ${lead.name}${lead.project ? ' for ' + lead.project : ''}${lead.fee ? ' · ' + lead.fee : ''}`,\n  'brand.signed': `🤝 Signed: ${lead.name}${lead.offer ? ' · ' + lead.offer : ''}`,\n  'reply.received': `📬 Reply from ${d.from || 'someone'}: ${d.subject || ''}${d.snippet ? '\\n> ' + d.snippet : ''}`,\n  'payment.received': `💵 Paid: ${money(d.amount)} ${d.kind || ''} from ${where || 'a buyer'}${d.invoice ? ' (' + d.invoice + ')' : ''}`,\n  'agreement.signed': `✍️ Signed by ${d.signedBy || 'the buyer'}${d.role ? ' (' + d.role + ')' : ''}: ${d.title || 'agreement'}${d.pdf ? '\\n' + d.pdf : ''}`,\n  'inquiry.received': `📥 New inquiry: ${where}${lead.eventDate ? ' for ' + lead.eventDate : ''}${lead.contactName ? ' from ' + lead.contactName : ''}`,\n  'fan.signed_up': `🙌 New fan${d.city ? ' in ' + d.city : ''}${d.show ? ' at ' + d.show : ''} · ${d.fans || '?'} on the list`,\n  'digest.sent': `🗓️ Monday rundown sent: ${d.subject || ''}`,\n  test: `✅ Test from the Dragon Farm booking tool`\n}[e.type] || `Dragon Farm event: ${e.type}`;\nreturn { json: {\n  type: e.type,\n  sample: !!d.sample,\n  message: (d.sample ? '[sample] ' : '') + text,\n  row: { When: e.at, Event: e.type, Who: where || d.from || d.email || '', Date: lead.eventDate || '', Amount: d.amount || lead.guarantee || lead.fee || '', Sample: d.sample ? 'yes' : '' },\n  event: e\n} };"
+        "jsCode": "// Turns each Dragon Farm event into a one-line message plus a sheet row.\nconst e = $('Webhook').item.json.body || {};\nconst d = e.data || {};\nconst lead = d.lead || d;\nconst money = n => n ? '$' + Number(n).toLocaleString('en-US') : '';\nconst when = lead.eventDate ? new Date(lead.eventDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';\nconst where = [lead.name, lead.city].filter(Boolean).join(', ');\nconst clock = t => { const [h, m] = String(t || '').split(':').map(Number); return isNaN(h) ? (t || '') : `${h % 12 || 12}:${String(m || 0).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`; };\nconst pay = lead.dealType === 'door' ? (lead.doorPct ? lead.doorPct + '% of the door' : 'door deal') : money(lead.guarantee);\nconst text = {\n  'show.booked': `🎸 Booked: ${lead.artist || 'the band'} at ${where}${when ? ' on ' + when : ''}${lead.setTime ? ', ' + clock(lead.setTime) : ''}${pay ? ' · ' + pay : ''}`,\n  'sync.licensed': `🎬 Licensed: ${lead.name}${lead.project ? ' for ' + lead.project : ''}${lead.fee ? ' · ' + lead.fee : ''}`,\n  'brand.signed': `🤝 Signed: ${lead.name}${lead.offer ? ' · ' + lead.offer : ''}`,\n  'reply.received': `📬 Reply from ${d.from || 'someone'}: ${d.subject || ''}${d.snippet ? '\\n> ' + d.snippet : ''}`,\n  'payment.received': `💵 Paid: ${money(d.amount)} ${d.kind || ''} from ${where || 'a buyer'}${d.invoice ? ' (' + d.invoice + ')' : ''}`,\n  'agreement.signed': `✍️ Signed by ${d.signedBy || 'the buyer'}${d.role ? ' (' + d.role + ')' : ''}: ${d.title || 'agreement'}${d.pdf ? '\\n' + d.pdf : ''}`,\n  'inquiry.received': `📥 New inquiry: ${where}${lead.eventDate ? ' for ' + lead.eventDate : ''}${lead.contactName ? ' from ' + lead.contactName : ''}`,\n  'fan.signed_up': `🙌 New fan${d.city ? ' in ' + d.city : ''}${d.show ? ' at ' + d.show : ''} · ${d.fans || '?'} on the list`,\n  'digest.sent': `🗓️ Monday rundown sent: ${d.subject || ''}`,\n  test: `✅ Test from the Dragon Farm booking tool`\n}[e.type] || `Dragon Farm event: ${e.type}`;\n// A row for the Google Sheet log: Shows, Payments or Fans tab (column name → value).\nconst logged = new Date(e.at || Date.now()).toLocaleString('en-US', { timeZone: 'America/Chicago' });\nconst sheet = {\n  'show.booked': ['Shows', { 'Show date': lead.eventDate || '', Venue: lead.name || '', City: lead.city || '', Artist: lead.artist || '', 'Set time': clock(lead.setTime), Pay: pay || '', Contact: lead.contactName || '', Email: lead.contactEmail || '' }],\n  'payment.received': ['Payments', { Amount: d.amount || '', Kind: d.kind || '', Invoice: d.invoice || '', Venue: lead.name || '', City: lead.city || '', 'Show date': lead.eventDate || '' }],\n  'fan.signed_up': ['Fans', { Email: d.email || '', Name: d.name || '', Town: d.city || '', Show: d.show || '', 'Fans on list': d.fans || '' }]\n}[e.type];\nreturn { json: {\n  type: e.type,\n  sample: !!d.sample,\n  message: (d.sample ? '[sample] ' : '') + text,\n  sheet: sheet ? { tab: sheet[0], row: { Logged: logged, Sample: d.sample ? 'yes' : '', ...sheet[1] } } : null,\n  event: e\n} };"
       },
-      "id": "61eba2ef-8705-4b17-b5e7-02dbaf48e243",
+      "id": "3c9f7520-ad15-4eed-8dbe-c567b362e7fd",
       "name": "Write the message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         880,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0ee02444-0f8f-47a8-93fb-9519c9562e8d",
+              "leftValue": "={{ !!$('Settings').item.json.discordWebhook }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2067d7bc-44d5-4858-8168-68fc4e62c850",
+      "name": "Discord set?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f529c652-14bf-4389-a88d-2dcd6232fd29",
+              "leftValue": "={{ !!$json.sheet && !!$('Settings').item.json.sheetsWebhook }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "35746525-91f4-4315-9eca-95a49dadefa3",
+      "name": "Goes in the sheet?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Settings').item.json.sheetsWebhook }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.sheet) }}",
+        "options": {}
+      },
+      "id": "f7fe1f92-540c-46b1-9023-3808a65210d2",
+      "name": "Add row to sheet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
         200
       ]
     },
@@ -135,17 +227,14 @@
         "jsonBody": "={{ JSON.stringify({ username: 'Dragon Farm', content: $json.message }) }}",
         "options": {}
       },
-      "id": "dccd5b14-032f-418d-b8b0-397856fa3cd8",
+      "id": "a7a35e06-2368-49e5-b2ff-7ad7b3b118d4",
       "name": "Post to Discord",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1120,
-        40
-      ],
-      "disabled": true,
-      "notes": "Put your Discord webhook URL in Settings, then enable this step.",
-      "notesInFlow": true
+        1360,
+        0
+      ]
     },
     {
       "parameters": {
@@ -167,7 +256,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "5698e6f3-59fd-49d5-9292-32ab613829a1"
+                    "id": "5d4e843f-aff6-4656-984b-3bc5839887fe"
                   }
                 ],
                 "combinator": "and"
@@ -191,7 +280,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "d7df72bf-cc04-48f1-a4c9-571fe65e4fe3"
+                    "id": "ce16a4bb-c310-4a03-b843-ea3e6185c44c"
                   }
                 ],
                 "combinator": "and"
@@ -215,7 +304,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "31835a61-85f4-4eb9-bec4-cc8e70b401db"
+                    "id": "b2420648-2b3f-44a8-81ae-57b23f374c38"
                   }
                 ],
                 "combinator": "and"
@@ -239,7 +328,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "8ef3b1b7-d301-4209-b368-c100a1ebdf5f"
+                    "id": "0827656c-b2e8-4abb-83f8-4857116754ed"
                   }
                 ],
                 "combinator": "and"
@@ -263,7 +352,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "3c556510-3c5c-4a87-9e89-a286518b1a33"
+                    "id": "14cb5d29-7f14-45a3-90d3-6c538492d63d"
                   }
                 ],
                 "combinator": "and"
@@ -287,7 +376,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "4cc06fc8-b1d3-4db9-a408-70881d3ac8ee"
+                    "id": "fac31b37-c065-48d6-b156-fc5eebfcaf7a"
                   }
                 ],
                 "combinator": "and"
@@ -311,7 +400,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "ed6221b4-3f22-4576-983e-7a7a65ae2098"
+                    "id": "b662e682-b2af-41d1-952d-18e96ad120b6"
                   }
                 ],
                 "combinator": "and"
@@ -335,7 +424,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "eb2e65d5-9d8a-457e-8b6e-f8ea9dbc10da"
+                    "id": "f58a0246-7fb0-4892-820e-bb8df2e10ffc"
                   }
                 ],
                 "combinator": "and"
@@ -359,7 +448,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "81019f24-0379-4035-9489-8946c69d6fd8"
+                    "id": "c553a2f2-d701-42fa-823c-d3b33f691709"
                   }
                 ],
                 "combinator": "and"
@@ -383,7 +472,7 @@
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "efa08240-634c-4171-ae99-b78b4fb1136b"
+                    "id": "61b088cf-de1f-4ccc-a4ab-9db54deef609"
                   }
                 ],
                 "combinator": "and"
@@ -397,170 +486,26 @@
           "fallbackOutput": "none"
         }
       },
-      "id": "da595ee3-fcf3-48c7-9495-ca160e0ce62a",
+      "id": "318abac0-629c-4ed5-868f-0b95efae6d54",
       "name": "By event",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
         1120,
-        360
+        420
       ]
-    },
-    {
-      "parameters": {
-        "mode": "raw",
-        "jsonOutput": "={{ JSON.stringify($json.row) }}",
-        "options": {}
-      },
-      "id": "24820be8-d256-4422-b3f6-f36578c76d8a",
-      "name": "Show row",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        1400,
-        120
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "",
-          "mode": "url"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Shows",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "autoMapInputData",
-          "value": {},
-          "matchingColumns": [],
-          "schema": []
-        },
-        "options": {}
-      },
-      "id": "dfb0c66c-5a5a-43ed-9b05-2a8baa4b2ab6",
-      "name": "Log shows",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [
-        1640,
-        120
-      ],
-      "disabled": true,
-      "notes": "Connect Google, paste your sheet's link, make a tab named “Shows” with columns When, Event, Who, Date, Amount, Sample.",
-      "notesInFlow": true
-    },
-    {
-      "parameters": {
-        "mode": "raw",
-        "jsonOutput": "={{ JSON.stringify($json.row) }}",
-        "options": {}
-      },
-      "id": "7e46d854-9478-47b7-996a-728fa2d2b941",
-      "name": "Payment row",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        1400,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "",
-          "mode": "url"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Payments",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "autoMapInputData",
-          "value": {},
-          "matchingColumns": [],
-          "schema": []
-        },
-        "options": {}
-      },
-      "id": "53ad3822-d703-49e2-8f50-cd89912ff9c7",
-      "name": "Log payments",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [
-        1640,
-        300
-      ],
-      "disabled": true,
-      "notes": "Connect Google, paste your sheet's link, make a tab named “Payments” with columns When, Event, Who, Date, Amount, Sample.",
-      "notesInFlow": true
-    },
-    {
-      "parameters": {
-        "mode": "raw",
-        "jsonOutput": "={{ JSON.stringify($json.row) }}",
-        "options": {}
-      },
-      "id": "55d6d4e2-3f3a-4139-abbc-b321236bb44d",
-      "name": "Fan row",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        1400,
-        480
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "",
-          "mode": "url"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Fans",
-          "mode": "name"
-        },
-        "columns": {
-          "mappingMode": "autoMapInputData",
-          "value": {},
-          "matchingColumns": [],
-          "schema": []
-        },
-        "options": {}
-      },
-      "id": "aa272b58-b9f4-4519-aeeb-5cecebe897b7",
-      "name": "Log fans",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [
-        1640,
-        480
-      ],
-      "disabled": true,
-      "notes": "Connect Google, paste your sheet's link, make a tab named “Fans” with columns When, Event, Who, Date, Amount, Sample.",
-      "notesInFlow": true
     },
     {
       "parameters": {},
-      "id": "de821132-d619-4426-b2eb-138a6561ee55",
+      "id": "2e65a4ac-e492-4272-b7dd-9a472c8ce36d",
       "name": "Add your own steps here",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
         1400,
-        660
+        560
       ],
-      "notes": "Every other event comes out of “By event” too: drag from its output to a new step (Instagram, Twilio SMS, Trello, email…).",
+      "notes": "Every event also comes out of “By event”: drag from its output to a new step (Instagram, Twilio SMS, Trello, email…).",
       "notesInFlow": true
     }
   ],
@@ -620,7 +565,12 @@
       "main": [
         [
           {
-            "node": "Post to Discord",
+            "node": "Discord set?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Goes in the sheet?",
             "type": "main",
             "index": 0
           },
@@ -632,71 +582,42 @@
         ]
       ]
     },
-    "By event": {
+    "Discord set?": {
       "main": [
         [
           {
-            "node": "Show row",
+            "node": "Post to Discord",
             "type": "main",
             "index": 0
           }
-        ],
-        [],
-        [],
-        [],
+        ]
+      ]
+    },
+    "Goes in the sheet?": {
+      "main": [
         [
           {
-            "node": "Payment row",
+            "node": "Add row to sheet",
             "type": "main",
             "index": 0
           }
-        ],
+        ]
+      ]
+    },
+    "By event": {
+      "main": [
         [],
         [],
-        [
-          {
-            "node": "Fan row",
-            "type": "main",
-            "index": 0
-          }
-        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
         [],
         [
           {
             "node": "Add your own steps here",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Show row": {
-      "main": [
-        [
-          {
-            "node": "Log shows",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Payment row": {
-      "main": [
-        [
-          {
-            "node": "Log payments",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Fan row": {
-      "main": [
-        [
-          {
-            "node": "Log fans",
             "type": "main",
             "index": 0
           }
