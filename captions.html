@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Captions — Dragon Farm Records</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c09; --surface: #0e1517; --card: #131c1e; --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --cream: #e8dfc8; --gray: #9aa39c; --gray-light: #c9c2ae; --gold: #c8922a; --gold-light: #f0c060; --green: #2ab464; --red: #e0645a;
+      --r: 8px; --r2: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--cream); font: 15px/1.55 'DM Sans', system-ui, sans-serif; overflow-x: hidden; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 96px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .top a { color: var(--gray); font-size: 0.85rem; text-decoration: none; margin-right: 12px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 2.2rem; margin: 0; }
+    h2 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 1.35rem; margin: 0 0 0.6rem; }
+    .intro { color: var(--gray); font-size: 0.9rem; margin: 0 0 1.25rem; max-width: 700px; }
+    .box { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.1rem; margin-bottom: 1rem; }
+    .drop { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; border: 1.5px dashed var(--border2); border-radius: var(--r2); padding: 1.6rem 1rem; text-align: center; cursor: pointer; color: var(--gray-light); }
+    .drop.over { border-color: var(--gold); background: rgba(200,146,42,0.06); }
+    .drop b { color: var(--cream); font-weight: 500; }
+    .drop small { color: var(--gray); }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem 0.8rem; margin-top: 0.9rem; }
+    .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 0.78rem; color: var(--gray); }
+    select, input[type=text] { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.5rem 0.65rem; color: var(--cream); font: inherit; font-size: 0.88rem; width: 100%; }
+    .check { display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; color: var(--gray-light); margin: 0.75rem 0 0; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 0.9rem; }
+    .btn { border: 1px solid var(--border2); background: transparent; color: var(--cream); border-radius: var(--r); padding: 0.5rem 0.9rem; font: inherit; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+    .btn:disabled { opacity: 0.45; cursor: default; }
+    .btn-gold { background: var(--gold); border-color: var(--gold); color: #120d03; font-weight: 500; }
+    .bar { height: 6px; background: var(--surface); border-radius: 999px; overflow: hidden; margin-top: 0.8rem; }
+    .bar i { display: block; height: 100%; width: 0; background: var(--gold); transition: width 0.3s; }
+    .status { font-size: 0.85rem; color: var(--gray-light); margin-top: 0.5rem; min-height: 1.3em; }
+    .status.err { color: var(--red); }
+    .media { width: 100%; max-height: 70vh; background: #000; border-radius: var(--r); display: block; }
+    audio.media { background: none; }
+    .segs { list-style: none; margin: 0; padding: 0; }
+    .segs li { display: grid; grid-template-columns: auto 1fr auto; gap: 0.6rem; align-items: start; padding: 0.5rem 0; border-top: 1px solid var(--border); }
+    .segs li:first-child { border-top: 0; }
+    .segs li.now textarea { border-color: var(--gold); }
+    .t { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--gold-light); background: none; border: 0; padding: 0.4rem 0; cursor: pointer; text-align: left; line-height: 1.5; }
+    .segs textarea { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.4rem 0.55rem; color: var(--cream); font: inherit; font-size: 0.9rem; width: 100%; resize: vertical; min-height: 2.4em; }
+    .x { background: none; border: 1px solid var(--border2); color: var(--gray); border-radius: 999px; width: 26px; height: 26px; cursor: pointer; margin-top: 0.3rem; }
+    .note { color: var(--gray); font-size: 0.82rem; margin: 0.6rem 0 0; }
+    .tips { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; color: var(--gray-light); }
+    .tips li { margin: 0.3rem 0; }
+    .head { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+    .head h2 { margin: 0; }
+    [hidden] { display: none !important; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } .grid .field:first-child { grid-column: 1 / -1; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>💬 Captions</h1>
+    <div><a href="hub.html">← Hub</a><a href="fan-list.html">Fans</a><a href="epk-edit.html">Press kits</a></div>
+  </div>
+  <p class="intro">Drop in a video or song and get captions for Instagram, TikTok, YouTube or CapCut. Most people watch with the sound off, so captioned clips get watched longer. It runs Whisper, a speech-recognition model, right in this browser: your file never leaves your computer and there's nothing to pay.</p>
+
+  <div class="box">
+    <label class="drop" id="drop">
+      <b id="drop-name">Choose a video or audio file</b>
+      <small>or drop it here · MP4, MOV, MP3, WAV, M4A</small>
+      <input type="file" id="file" accept="video/*,audio/*" hidden />
+    </label>
+    <div class="grid">
+      <label class="field">Speed vs. accuracy
+        <select id="model">
+          <option value="Xenova/whisper-tiny.en">Fast (40 MB download)</option>
+          <option value="Xenova/whisper-base.en" selected>Balanced (80 MB)</option>
+          <option value="Xenova/whisper-small.en">Most accurate (250 MB, slow on phones)</option>
+        </select>
+      </label>
+      <label class="field">Line length
+        <select id="maxline">
+          <option value="32">Short, for vertical video (32)</option>
+          <option value="42">Standard, for wide video (42)</option>
+        </select>
+      </label>
+      <label class="field">Lines per caption
+        <select id="lines"><option value="1">1</option><option value="2" selected>2</option></select>
+      </label>
+    </div>
+    <label class="check"><input type="checkbox" id="tags" checked /> Leave out [Music], (applause) and ♪ tags</label>
+    <div class="actions">
+      <button class="btn btn-gold" id="go" disabled>Make captions</button>
+      <button class="btn" id="stop" hidden>Stop</button>
+    </div>
+    <div class="bar" id="bar" hidden><i id="fill"></i></div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="box" id="result" hidden>
+    <div id="player"></div>
+    <div class="actions">
+      <button class="btn btn-gold" data-dl="srt">Download SRT</button>
+      <button class="btn" data-dl="vtt">Download VTT</button>
+      <button class="btn" data-dl="txt">Download text</button>
+      <button class="btn" id="copy">Copy text</button>
+    </div>
+    <p class="note">Click a time to jump there. Fix any words below; the preview and downloads update as you type.</p>
+  </div>
+
+  <div class="box" id="edit" hidden>
+    <div class="head"><h2>Words</h2><span class="note" id="count" style="margin:0"></span></div>
+    <ul class="segs" id="segs"></ul>
+  </div>
+
+  <div class="box">
+    <h2>Good to know</h2>
+    <ul class="tips">
+      <li><b>Sung lyrics</b> come out rougher than speech, especially with a loud band behind them. Read every line against the lyric sheet before posting. Interviews, show announcements and talking clips come out nearly word-perfect.</li>
+      <li><b>YouTube:</b> Subtitles → Add language → Upload file → the SRT. <b>CapCut:</b> Captions → Import captions → the SRT, then style them. <b>TikTok and Instagram</b> make their own captions; paste the text in to fix theirs, or burn ours in with CapCut.</li>
+      <li>The first run downloads the model (once; the browser keeps it). A computer is quicker than a phone, and a 3-minute song takes about a minute on Balanced.</li>
+      <li>English only for now.</li>
+    </ul>
+  </div>
+</div>
+
+<script src="captions.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const LIB = window.DF_TRANSFORMERS_URL || 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.5/dist/transformers.min.js';
+const MODEL_KEY = 'df_captions_model';
+let file = null, mediaURL = '', trackURL = '', segments = [], worker = null, running = false, saved = true;
+
+try { const m = localStorage.getItem(MODEL_KEY); if (m && [...$('model').options].some(o => o.value === m)) $('model').value = m; } catch {}
+$('model').addEventListener('change', () => { try { localStorage.setItem(MODEL_KEY, $('model').value); } catch {} });
+
+function status(msg, err) { $('status').className = 'status' + (err ? ' err' : ''); $('status').textContent = msg; }
+function progress(frac) { $('bar').hidden = frac == null; $('fill').style.width = Math.round((frac || 0) * 100) + '%'; }
+const mb = n => Math.round(n / 1e6);
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+function pick(f) {
+  if (!f) return;
+  if (!/^(audio|video)\//.test(f.type) && !/\.(mp4|mov|m4a|mp3|wav|aac|ogg|webm|flac)$/i.test(f.name)) return status('That isn’t an audio or video file.', true);
+  file = f;
+  $('drop-name').textContent = f.name;
+  $('go').disabled = running;
+  status(f.size > 500e6 ? 'That’s a big file. If the page runs out of memory, export just the audio or a shorter clip.' : '');
+}
+$('file').addEventListener('change', () => pick($('file').files[0]));
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => pick(e.dataTransfer.files[0]));
+
+// The file's sound as 16 kHz mono, which is what Whisper listens to.
+async function decode(f) {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = new Ctx({ sampleRate: DFCaptions.RATE });
+  try {
+    const buf = await ctx.decodeAudioData(await f.arrayBuffer());
+    if (buf.numberOfChannels === 1) return buf.getChannelData(0);
+    const out = new Float32Array(buf.length);
+    for (let c = 0; c < buf.numberOfChannels; c++) { const d = buf.getChannelData(c); for (let i = 0; i < d.length; i++) out[i] += d[i] / buf.numberOfChannels; }
+    return out;
+  } finally { ctx.close && ctx.close(); }
+}
+
+function ask(msg, transfer) {
+  return new Promise((resolve, reject) => {
+    const onMsg = ({ data }) => {
+      if (data.type === 'progress') {
+        progress(data.loaded / data.total);
+        status(`Downloading the speech model (first time only): ${mb(data.loaded)} of ${mb(data.total)} MB`);
+        return;
+      }
+      worker.removeEventListener('message', onMsg);
+      data.type === 'error' ? reject(new Error(data.message)) : resolve(data);
+    };
+    worker.addEventListener('message', onMsg);
+    worker.postMessage(msg, transfer || []);
+  });
+}
+
+$('go').addEventListener('click', async () => {
+  if (!file || running) return;
+  running = true;
+  $('go').disabled = true; $('stop').hidden = false;
+  segments = []; saved = true; render(); showMedia();
+  try {
+    status('Reading the sound…'); progress(0);
+    let audio;
+    try { audio = await decode(file); } catch { throw new Error('This browser couldn’t read the sound in that file. Try exporting it as MP4 or MP3.'); }
+    const seconds = audio.length / DFCaptions.RATE;
+    if (seconds < 1) throw new Error('There’s no sound in that file.');
+    worker = worker || new Worker('captions-worker.js', { type: 'module' });
+    status('Loading the speech model…');
+    await ask({ type: 'load', lib: LIB, model: $('model').value });
+    const parts = DFCaptions.blocks(audio);
+    for (let i = 0; i < parts.length && running; i++) {
+      const [a, b] = parts[i];
+      progress(a / audio.length);
+      status(`Listening… ${DFCaptions.showTime(a / DFCaptions.RATE)} of ${DFCaptions.showTime(seconds)}`);
+      const block = audio.slice(a, b);
+      const res = await ask({ type: 'block', id: i, audio: block }, [block.buffer]);
+      segments.push(...DFCaptions.segmentsFrom(res.chunks, a / DFCaptions.RATE, b / DFCaptions.RATE, { dropTags: $('tags').checked }));
+      render();
+    }
+    if (running) {
+      progress(null);
+      saved = false;
+      status(segments.length ? `Done: ${plural(segments.length, 'line')}. Check them, then download.` : 'Whisper didn’t hear any words. If it’s mostly music, that’s expected.');
+    }
+  } catch (err) {
+    progress(null);
+    if (running) status(/fetch|network|import/i.test(err.message) ? 'Couldn’t download the speech model. Check the connection and try again.' : err.message, true);
+  } finally {
+    running = false;
+    $('go').disabled = !file; $('stop').hidden = true;
+  }
+});
+
+$('stop').addEventListener('click', () => {
+  running = false;
+  if (worker) { worker.terminate(); worker = null; }
+  progress(null);
+  status(segments.length ? `Stopped. Kept the ${plural(segments.length, 'line')} made so far.` : 'Stopped.');
+  $('go').disabled = !file; $('stop').hidden = true;
+  saved = !segments.length;
+});
+
+function opts() { return { maxLine: Number($('maxline').value), lines: Number($('lines').value) }; }
+const cueList = () => DFCaptions.cues(segments, opts());
+
+function showMedia() {
+  if (mediaURL) URL.revokeObjectURL(mediaURL);
+  mediaURL = URL.createObjectURL(file);
+  const isVideo = /^video\//.test(file.type) || /\.(mp4|mov|webm)$/i.test(file.name);
+  $('player').innerHTML = isVideo ? '<video class="media" id="media" controls playsinline></video>' : '<audio class="media" id="media" controls></audio>';
+  $('media').src = mediaURL;
+  $('media').addEventListener('timeupdate', highlight);
+  $('result').hidden = false;
+  refreshTrack();
+}
+
+let trackTimer = 0;
+function refreshTrack() {
+  clearTimeout(trackTimer);
+  trackTimer = setTimeout(() => {
+    const media = $('media');
+    if (!media || media.tagName !== 'VIDEO') return;
+    if (trackURL) URL.revokeObjectURL(trackURL);
+    trackURL = URL.createObjectURL(new Blob([DFCaptions.toVTT(cueList())], { type: 'text/vtt' }));
+    media.querySelectorAll('track').forEach(t => t.remove());
+    const t = document.createElement('track');
+    Object.assign(t, { kind: 'captions', label: 'Captions', srclang: 'en', src: trackURL, default: true });
+    media.appendChild(t);
+    t.track.mode = 'showing';
+  }, 300);
+}
+
+function render() {
+  $('edit').hidden = !segments.length;
+  $('count').textContent = segments.length ? `${plural(segments.length, 'line')} · ${plural(cueList().length, 'caption')}` : '';
+  $('segs').innerHTML = segments.map((s, i) => `<li data-i="${i}">
+    <button class="t" data-seek="${i}" title="Play from here">${DFCaptions.showTime(s.start)}<br>${DFCaptions.showTime(s.end)}</button>
+    <textarea rows="${Math.min(4, Math.ceil(s.text.length / 60))}" aria-label="Words at ${DFCaptions.showTime(s.start)}">${esc(s.text)}</textarea>
+    <button class="x" data-del="${i}" title="Remove this line" aria-label="Remove">×</button></li>`).join('');
+  refreshTrack();
+}
+
+$('segs').addEventListener('input', e => {
+  const li = e.target.closest('li');
+  if (!li) return;
+  segments[li.dataset.i].text = e.target.value;
+  saved = false;
+  $('count').textContent = `${plural(segments.length, 'line')} · ${plural(cueList().length, 'caption')}`;
+  refreshTrack();
+});
+$('segs').addEventListener('click', e => {
+  const seek = e.target.closest('[data-seek]'), del = e.target.closest('[data-del]');
+  if (seek && $('media')) { $('media').currentTime = segments[seek.dataset.seek].start; $('media').play().catch(() => {}); }
+  if (del) { segments.splice(Number(del.dataset.del), 1); saved = false; render(); }
+});
+function highlight() {
+  const t = $('media').currentTime;
+  document.querySelectorAll('#segs li').forEach(li => { const s = segments[li.dataset.i]; li.classList.toggle('now', !!s && t >= s.start && t < s.end); });
+}
+['maxline', 'lines'].forEach(id => $(id).addEventListener('change', () => { if (segments.length) render(); }));
+
+function download(kind) {
+  const base = (file ? file.name.replace(/\.[^.]+$/, '') : 'captions') || 'captions';
+  const body = kind === 'srt' ? DFCaptions.toSRT(cueList()) : kind === 'vtt' ? DFCaptions.toVTT(cueList()) : DFCaptions.toTXT(segments);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([body], { type: kind === 'vtt' ? 'text/vtt' : 'text/plain' }));
+  a.download = `${base}.${kind}`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  saved = true;
+}
+document.querySelectorAll('[data-dl]').forEach(b => b.addEventListener('click', () => download(b.dataset.dl)));
+$('copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(DFCaptions.toTXT(segments)); $('copy').textContent = 'Copied ✓'; }
+  catch { $('copy').textContent = 'Couldn’t copy'; }
+  setTimeout(() => { $('copy').textContent = 'Copy text'; }, 1500);
+});
+addEventListener('beforeunload', e => { if (!saved && segments.length) { e.preventDefault(); e.returnValue = ''; } });
+</script>
+</body>
+</html>

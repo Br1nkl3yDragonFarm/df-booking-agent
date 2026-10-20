@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Sign the Agreement — Dragon Farm Records</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:ital,wdth,wght@0,62..125,300..800;1,62..125,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .sg-wrap { max-width: 44rem; margin: 0 auto; padding: 2rem 16px 4rem; }
+    .sg-brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; color: var(--bone-dim); font-weight: 600; }
+    .sg-brand img { width: 40px; height: auto; }
+    .sg-wrap h1 { font-size: clamp(1.6rem, 1.3rem + 1.6vw, 2.3rem); margin: 0 0 1rem; }
+    .sg-doc { background: var(--bone, #e8dfc8); color: #1d2321; border-radius: 6px; padding: 1.25rem 1.25rem; white-space: pre-wrap; font: 15px/1.6 Georgia, serif; max-height: 60vh; overflow-y: auto; }
+    .sg-label { margin: 1rem 0; color: var(--bone-dim); font-size: var(--step--1); }
+    .sg-pad { background: #fff; border-radius: 6px; position: relative; margin: 0.35rem 0 0.5rem; }
+    .sg-pad canvas { display: block; width: 100%; height: 180px; touch-action: none; border-radius: 6px; }
+    .sg-pad .sg-line { position: absolute; left: 6%; right: 6%; bottom: 36px; border-bottom: 1px solid #999; pointer-events: none; }
+    .sg-pad .sg-hint { position: absolute; left: 6%; bottom: 12px; font-size: 12px; color: #888; pointer-events: none; }
+    .sg-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .sg-clear { background: none; border: 0; color: var(--gold); cursor: pointer; font: inherit; font-size: var(--step--1); padding: 0; }
+    .sg-agree { display: flex; gap: 0.6rem; align-items: flex-start; margin: 1rem 0 0.5rem; }
+    .sg-agree input { margin-top: 0.3rem; }
+    .sg-error { color: #ff8a80; min-height: 1.2em; font-size: var(--step--1); }
+    .sg-wrap .btn { width: 100%; }
+    .sg-done { text-align: center; padding: 1rem 0; }
+    .sg-form .field-group input { width: 100%; }
+    .sg-small { font-size: var(--step--1); color: var(--bone-dim); }
+  </style>
+</head>
+<body>
+  <main class="sg-wrap">
+    <div class="sg-brand"><img src="logo-badge.webp" alt="" width="40" height="43" /> Dragon Farm Records</div>
+    <div id="sg-content"><p class="section-sub">Loading the agreement…</p></div>
+  </main>
+  <script src="vendor/signature_pad.js"></script>
+  <script>
+  (function () {
+    const token = new URLSearchParams(location.search).get('t') || '';
+    const API = `/.netlify/functions/sign?t=${encodeURIComponent(token)}`;
+    const el = document.getElementById('sg-content');
+    const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const when = iso => new Date(iso).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+
+    function done(doc) {
+      el.innerHTML = `<div class="sg-done"><h1>Signed ✓</h1>
+        <p class="section-sub">${esc(doc.title)} was signed by ${esc(doc.signed.name)}${doc.signed.role ? `, ${esc(doc.signed.role)}` : ''} on ${esc(when(doc.signed.at))}.</p>
+        <p><a class="btn btn-flame" href="${API}&pdf=1" target="_blank" rel="noopener">Download the signed PDF</a></p>
+        <p class="sg-small">A copy is emailed to both sides. Questions: <a href="mailto:booking@dragonfarm.net">booking@dragonfarm.net</a></p></div>`;
+    }
+
+    function form(doc) {
+      el.innerHTML = `<h1>${esc(doc.title)}</h1>
+        <p class="sg-label">Sent by Dragon Farm Records, already signed for the label by ${esc(doc.labelSigner)}. Read it through, then sign below.</p>
+        <div class="sg-doc" tabindex="0" aria-label="Agreement text">${esc(doc.text)}</div>
+        <form class="booking-form sg-form" id="sg-form" novalidate>
+          <div class="form-row" style="margin-top:1.25rem">
+            <div class="field-group"><label for="sg-name">Your full name</label><input type="text" id="sg-name" autocomplete="name" value="${esc(doc.signerName || '')}" /></div>
+            <div class="field-group"><label for="sg-role">Title <span class="optional">optional</span></label><input type="text" id="sg-role" autocomplete="organization-title" placeholder="Talent buyer" /></div>
+          </div>
+          <div class="sg-row"><label for="sg-canvas" style="font-weight:600;font-size:var(--step--1)">Sign here</label><button type="button" class="sg-clear" id="sg-clear">Clear</button></div>
+          <div class="sg-pad"><canvas id="sg-canvas" aria-label="Signature box: draw your signature"></canvas><div class="sg-line"></div><div class="sg-hint">Draw with your finger or mouse</div></div>
+          <label class="sg-agree"><input type="checkbox" id="sg-agree" /> <span>I have read and agree to this agreement, and I'm signing it electronically.</span></label>
+          <p class="sg-error" id="sg-error" role="alert"></p>
+          <button type="submit" class="btn btn-flame" id="sg-submit">Sign the agreement</button>
+        </form>`;
+      const canvas = document.getElementById('sg-canvas');
+      const pad = new SignaturePad(canvas, { penColor: '#111', backgroundColor: 'rgba(255,255,255,0)' });
+      function fit() {
+        const data = pad.toData();
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext('2d').scale(ratio, ratio);
+        pad.clear();
+        pad.fromData(data);
+      }
+      window.addEventListener('resize', fit);
+      fit();
+      document.getElementById('sg-clear').addEventListener('click', () => pad.clear());
+      const error = document.getElementById('sg-error');
+      document.getElementById('sg-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const name = document.getElementById('sg-name').value.trim();
+        if (!name) { error.textContent = 'Type your full name.'; return; }
+        if (pad.isEmpty()) { error.textContent = 'Draw your signature in the box.'; return; }
+        if (!document.getElementById('sg-agree').checked) { error.textContent = 'Tick the box to agree.'; return; }
+        error.textContent = '';
+        const btn = document.getElementById('sg-submit');
+        btn.disabled = true; btn.textContent = 'Signing…';
+        let res, data = {};
+        try {
+          res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, role: document.getElementById('sg-role').value.trim(), agree: true, signature: pad.toDataURL('image/png') }) });
+          data = await res.json().catch(() => ({}));
+        } catch { res = null; }
+        if (res && res.ok) return done(data);
+        if (res && res.status === 409 && data.signed) return done(data);
+        error.textContent = data.error || 'That didn’t go through. Check your connection and try again.';
+        btn.disabled = false; btn.textContent = 'Sign the agreement';
+      });
+    }
+
+    fetch(API).then(r => r.json().then(d => ({ ok: r.ok, d }))).then(({ ok, d }) => {
+      if (!ok) { el.innerHTML = `<h1>Link not found</h1><p class="section-sub">${esc(d.error || 'This signing link isn’t valid.')} Email <a href="mailto:booking@dragonfarm.net">booking@dragonfarm.net</a> for a new one.</p>`; return; }
+      if (d.status === 'signed') done(d); else form(d);
+    }).catch(() => { el.innerHTML = '<h1>Couldn’t load the agreement</h1><p class="section-sub">Check your connection and reload the page.</p>'; });
+  })();
+  </script>
+</body>
+</html>

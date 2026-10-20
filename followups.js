@@ -12,7 +12,7 @@
 // ============================================================
 
 (function () {
-  const CLOSED = ['booked', 'licensed', 'passed'];
+  const CLOSED = ['booked', 'licensed', 'signed', 'passed'];
   const GAPS = [7, 14];   // days to the next touch after touch 1 and touch 2
   const MAX_TOUCHES = 3;
   const SNOOZE_DAYS = 3;

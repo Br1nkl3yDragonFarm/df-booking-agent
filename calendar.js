@@ -6,14 +6,14 @@
 //    any other open status    → hold (date pencilled in, not confirmed)
 //    status "passed"          → left off
 //
-//  A lead for "Both" artists ties up both acts that night. A confirmed
-//  show plus anything else on the same night for the same act is a
-//  double booking; two holds on one night are competing holds.
+//  A lead for "Both" artists (or an act no longer on the roster) counts
+//  as the roster's act that night. A confirmed show plus anything else
+//  on the same night for the same act is a double booking; two holds on one night are competing holds.
 // ============================================================
 
 (function () {
-  const ARTISTS = ['Timothy Chance and Rasta Country', 'Poetic Nocturnal Creatures'];
-  const SHORT = { 'Timothy Chance and Rasta Country': 'TCRC', 'Poetic Nocturnal Creatures': 'PNC' };
+  const ARTISTS = ['Timothy Chance and Rasta Country'];
+  const SHORT = { 'Timothy Chance and Rasta Country': 'TCRC' };
   const MAX_CHIPS = 3;
   const AGENDA_DAYS = 90;
 

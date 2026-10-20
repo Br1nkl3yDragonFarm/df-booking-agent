@@ -203,6 +203,8 @@
     .placement:hover .placement-name { color: var(--gold); }
     .placement-name { font-weight: 600; font-size: 1rem; }
     .placement-sub { font-size: 0.88rem; color: var(--bone-dim); }
+    .placement-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 0.5rem; }
+    .placement-actions .btn { padding: 4px 10px; font-size: 0.8rem; }
     .placement-fee { font-family: var(--font-display); font-size: 1.25rem; color: var(--flame); margin-top: 0.25rem; }
     .placement-contact { text-align: right; font-size: 0.88rem; }
 
@@ -304,6 +306,7 @@
         <div class="nav-label">Manage</div>
         <button class="nav-item" data-page="crm">Sync pipeline <span class="nav-badge" id="crm-badge">0</span></button>
         <button class="nav-item" data-page="licensed">Licensed <span class="nav-badge" id="licensed-badge">0</span></button>
+        <button class="nav-item" data-page="log">Pitch log</button>
       </div>
     </nav>
 
@@ -311,6 +314,9 @@
       <a href="hub.html">Command Center</a>
       <a href="dashboard.html">Booking agent</a>
       <a href="epk-edit.html">Press kits</a>
+      <a href="brands.html">Brand deals</a>
+      <a href="report.html">What's working</a>
+      <a href="automations.html">Automations</a>
       <a href="index.html" target="_blank" rel="noopener">Public page ↗</a>
     </div>
   </aside>
@@ -360,11 +366,6 @@
                 <div class="roster-sub">Timothy Chance &amp; Rasta Country, country reggae. ISRC QM6N22632890</div>
                 <div class="roster-sub">Best for westerns, road films, lifestyle brands, outdoor campaigns</div>
               </div>
-              <div class="roster-row">
-                <div class="roster-name">Peace Pipe</div>
-                <div class="roster-sub">Poetic Nocturnal Creatures, conscious hip-hop. ISRC QM6N22632979</div>
-                <div class="roster-sub">Best for cannabis brands, social docs, indie films, conscious lifestyle ads</div>
-              </div>
             </div>
           </div>
         </section>
@@ -405,9 +406,7 @@
               <div class="field">
                 <label for="pm-track">Track to pitch</label>
                 <select id="pm-track">
-                  <option value="both">Both tracks</option>
                   <option value="Mr. Iron Man (Live) by Timothy Chance and Rasta Country">Mr. Iron Man (Live), Timothy Chance &amp; Rasta Country</option>
-                  <option value="Peace Pipe by Poetic Nocturnal Creatures">Peace Pipe, Poetic Nocturnal Creatures</option>
                 </select>
               </div>
               <div class="field">
@@ -457,12 +456,9 @@
           </div>
 
           <div class="composer-box">
-            <h3>Catalog reference</h3>
-            <dl class="facts">
-              <div><dt>Mr. Iron Man (Live)</dt><dd>ISRC QM6N22632890, UPC 820200992949. Country reggae; energetic, rootsy, authentic.</dd></div>
-              <div><dt>Peace Pipe</dt><dd>ISRC QM6N22632979, UPC 820200962904. Conscious hip-hop; thoughtful, cultural, smooth.</dd></div>
-              <div><dt>Rights</dt><dd>Master and sync available through Dragon Farm Records.</dd></div>
-            </dl>
+            <h3>Versions ready to send</h3>
+            <p>Links to each version of the song. Ticked versions go into the pitch, and the pitch log records which ones each supervisor got. Country reggae; energetic, rootsy, authentic. Master and sync through Dragon Farm Records.</p>
+            <div id="versions-box"><p>Loading…</p></div>
           </div>
         </div>
       </div>
@@ -472,7 +468,7 @@
     <div class="page" id="page-crm">
       <div class="section-hdr">
         <div><p>Every opportunity from pitch to placement. Select a row to edit it.</p></div>
-        <button class="btn btn-ghost" onclick="exportLeads()">Export CSV</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="showPage('log')">Pitch log</button><button class="btn btn-ghost" onclick="importLeads()">Import CSV</button><button class="btn btn-ghost" onclick="exportLeads()">Export CSV</button></div>
       </div>
       <div class="crm-controls">
         <div class="crm-search"><input type="text" id="crm-search" placeholder="Search supervisors, studios, projects" aria-label="Search opportunities" oninput="renderLeads()" /></div>
@@ -492,6 +488,14 @@
           <tbody id="leads-tbody"><tr><td colspan="8"><div class="empty-state"><p>No sync leads yet.</p></div></td></tr></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- PITCH LOG -->
+    <div class="page" id="page-log">
+      <div class="section-hdr">
+        <div><p>Every sync email sent from the tool: which song and versions went to whom, and whether they answered.</p></div>
+      </div>
+      <div id="pitch-log"></div>
     </div>
 
     <!-- LICENSED -->
@@ -533,9 +537,7 @@
         <div class="field">
           <label for="lead-track">Track</label>
           <select id="lead-track">
-            <option value="Both">Both tracks</option>
             <option value="Mr. Iron Man (Live)">Mr. Iron Man (Live)</option>
-            <option value="Peace Pipe">Peace Pipe</option>
           </select>
         </div>
       </div>
@@ -581,6 +583,12 @@
 <script src="followups.js"></script>
 <script src="finder.js"></script>
 <script src="outreach.js"></script>
+<script src="vendor/mailcheck.js"></script>
+<script src="emailcheck.js"></script>
+<script src="sync-kit.js"></script>
+<script src="esign.js"></script>
+<script src="vendor/papaparse.js"></script>
+<script src="importer.js"></script>
 <script>
 // ---- STATE ----
 let leads = DFStore.load('df_sync_leads');
@@ -596,12 +604,17 @@ function showPage(id) {
   document.getElementById('page-' + id).classList.add('active');
   document.querySelector(`[data-page="${id}"]`)?.classList.add('active');
   document.querySelectorAll('.mtab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
-  const titles = { overview:'Overview', finder:'Find sync contacts', composer:'Pitch composer', crm:'Sync pipeline', licensed:'Licensed placements' };
+  const titles = { overview:'Overview', finder:'Find sync contacts', composer:'Pitch composer', crm:'Sync pipeline', licensed:'Licensed placements', log:'Pitch log' };
   document.getElementById('page-title').textContent = titles[id] || id;
   if (id === 'crm') renderLeads();
   if (id === 'licensed') renderLicensed();
   if (id === 'overview') renderOverview();
-  if (id === 'composer') populateLeadSelect();
+  if (id === 'composer') { populateLeadSelect(); DFSyncKit.renderVersions(document.getElementById('versions-box')); }
+  if (id === 'log') renderLog();
+}
+
+function renderLog() {
+  document.getElementById('pitch-log').innerHTML = DFSyncKit.pitchLog(leads);
 }
 document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => showPage(item.dataset.page)));
 
@@ -672,8 +685,7 @@ async function generatePitch() {
   const system = `You are a professional music sync licensing agent for Dragon Farm Records, Nashville, TN.
 Catalog:
 - "Mr. Iron Man (Live)" by Timothy Chance and Rasta Country (Country-Reggae, ISRC: QM6N22632890, UPC: 820200992949) — energetic, rootsy, authentic
-- "Peace Pipe" by Poetic Nocturnal Creatures (Conscious Hip-Hop, ISRC: QM6N22632979, UPC: 820200962904) — thoughtful, smooth, cannabis-cultural
-Both tracks: master + sync rights available through Dragon Farm Records.
+Master + sync rights available through Dragon Farm Records.
 Return ONLY a JSON object: { "subject": string, "body": string }. No markdown.`;
 
   const prompt = `Write a ${tone} sync licensing pitch to ${contact || 'Music Supervisor'} at ${company || 'the studio'} for their ${type}${project ? ` "${project}"` : ''}.
@@ -708,7 +720,12 @@ function composerLead() {
 
 function sendPitch() {
   const lead = composerLead();
-  DFOut.send({ subject: currentPitch.subject, body: currentPitch.body, kind: 'pitch', lead, kit: !!lead, onSent: () => lead && followDone(lead.id) });
+  const track = document.getElementById('pm-track').value;
+  DFOut.send({
+    subject: currentPitch.subject, body: currentPitch.body, kind: 'pitch', lead, kit: !!lead,
+    extras: DFSyncKit.extrasFor({ track }), log: { track: track.split(' by ')[0] },
+    onSent: () => lead && followDone(lead.id)
+  });
 }
 
 function draftFollowUp(id) {
@@ -739,7 +756,6 @@ function loadLeadIntoComposer() {
   document.getElementById('pm-company').value = lead.name || '';
   document.getElementById('pm-project').value = lead.project || '';
   if (lead.category) document.getElementById('pm-type').value = lead.category;
-  if (lead.track && lead.track !== 'Both') document.getElementById('pm-track').value = lead.track.includes('Iron') ? 'Mr. Iron Man (Live) by Timothy Chance and Rasta Country' : 'Peace Pipe by Poetic Nocturnal Creatures';
   toast(`Loaded ${lead.name} ✓`, 'success');
 }
 
@@ -772,6 +788,7 @@ function renderLeads() {
       <td style="font-size:0.85rem;color:var(--bone-dim);white-space:nowrap">${formatDate(l.dateAdded)}</td>
       <td onclick="event.stopPropagation()"><div style="display:flex;gap:4px">
         <button class="btn btn-ghost" onclick="pitchFromLead('${l.id}')" title="Write a pitch" aria-label="Write a pitch to ${esc(l.name)}">✉</button>
+        <button class="btn btn-ghost" onclick="quoteLead('${l.id}')" title="Quote a fee and make the license" aria-label="Quote ${esc(l.name)}">$</button>
         <button class="btn btn-danger" onclick="deleteLead('${l.id}')" title="Remove opportunity" aria-label="Remove ${esc(l.name)}">✕</button>
       </div></td>
     </tr>`).join('');
@@ -787,6 +804,7 @@ function renderLicensed() {
         <div class="placement-name">${esc(l.name)}${l.project?`, ${esc(l.project)}`:''}</div>
         <div class="placement-sub">${esc([l.category, trackLabel(l.track)].filter(Boolean).join(', '))}</div>
         ${l.fee?`<div class="placement-fee">${esc(l.fee)}</div>`:''}
+        <div class="placement-actions" onclick="event.stopPropagation()"><button class="btn btn-ghost" onclick="quoteLead('${l.id}')">$ Quote</button> <button class="btn btn-ghost" onclick="licenseLead('${l.id}')">📄 License</button></div>
       </div>
       ${l.contact||l.email?`<div class="placement-contact">${l.contact?`<div>${esc(l.contact)}</div>`:''}${l.email?`<a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a>`:''}</div>`:''}
     </div>`).join('');
@@ -799,7 +817,7 @@ function openAddLead() {
   ['lead-name','lead-project','lead-contact','lead-email','lead-fee','lead-followup','lead-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('lead-status').value = 'new';
   document.getElementById('lead-category').value = 'Film';
-  document.getElementById('lead-track').value = 'Both';
+  document.getElementById('lead-track').value = 'Mr. Iron Man (Live)';
   document.getElementById('add-lead-modal').classList.add('open');
 }
 
@@ -808,7 +826,6 @@ function openAddLeadPrefilled(data) {
   if (data.name) document.getElementById('lead-name').value = data.name;
   if (data.project) document.getElementById('lead-project').value = data.project;
   if (data.category) document.getElementById('lead-category').value = data.category;
-  if (data.track) document.getElementById('lead-track').value = data.track.includes('Iron') ? 'Mr. Iron Man (Live)' : data.track.includes('Peace') ? 'Peace Pipe' : 'Both';
   if (data.contact) document.getElementById('lead-contact').value = data.contact;
   if (data.status) document.getElementById('lead-status').value = data.status;
   if (data.notes) document.getElementById('lead-notes').value = data.notes;
@@ -823,7 +840,7 @@ function editLead(id) {
   document.getElementById('lead-name').value = l.name || '';
   document.getElementById('lead-project').value = l.project || '';
   document.getElementById('lead-category').value = l.category || 'Film';
-  document.getElementById('lead-track').value = l.track || 'Both';
+  document.getElementById('lead-track').value = 'Mr. Iron Man (Live)';
   document.getElementById('lead-contact').value = l.contact || '';
   document.getElementById('lead-email').value = l.email || '';
   document.getElementById('lead-fee').value = l.fee || '';
@@ -903,7 +920,21 @@ function pitchFromLead(id) {
   showPage('composer');
 }
 
+function quoteLead(id) {
+  const l = leads.find(x => x.id === id);
+  if (l) DFSyncKit.openQuote(l, updated => { leads = leads.map(x => x.id === id ? updated : x); saveLeads(); renderLeads(); renderLicensed(); });
+}
+
+function licenseLead(id) {
+  const l = leads.find(x => x.id === id);
+  if (l) DFSyncKit.openLicense(l);
+}
+
 function saveLeads() { DFStore.save('df_sync_leads', leads); }
+
+function importLeads() {
+  DFImport.open({ list: 'sync', existing: leads, onImport: fresh => { leads.push(...fresh); saveLeads(); renderLeads(); updateStats(); renderOverview(); }, onDone: msg => toast(msg, 'success') });
+}
 
 function exportLeads() {
   const headers = ['Name','Project','Category','Track','Contact','Email','Fee','Status','Follow Up','Notes','Date Added'];
@@ -963,7 +994,7 @@ function formatDate(iso) { if (!iso) return '—'; return new Date(iso).toLocale
 
 // ---- INIT ----
 updateStats(); renderOverview();
-DFOut.init(() => { renderOverview(); renderLeads(); });
+DFOut.init(() => { if (DFOut.reconcile(leads, 'sync').length) saveLeads(); renderOverview(); renderLeads(); if (document.getElementById('page-log').classList.contains('active')) renderLog(); });
 DFStore.connect('df_sync_leads', items => {
   leads = items;
   updateStats(); renderOverview(); renderLeads(); renderLicensed();

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Book Dragon Farm Records</title>
-  <meta name="description" content="Book Timothy Chance and Rasta Country or Poetic Nocturnal Creatures, or license their music. Dragon Farm Records, Nashville." />
+  <meta name="description" content="Book Timothy Chance and Rasta Country, or license their music. Dragon Farm Records, Nashville." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:ital,wdth,wght@0,62..125,300..800;1,62..125,400&display=swap" rel="stylesheet" />
@@ -23,7 +23,7 @@
       </a>
       <nav aria-label="Main">
         <ul class="nav-links">
-          <li><a href="#artists">The acts</a></li>
+          <li><a href="#artists">The band</a></li>
           <li><a href="#sync">Licensing</a></li>
           <li><a href="#book" class="nav-cta">Book a show</a></li>
         </ul>
@@ -33,7 +33,7 @@
       </button>
     </div>
     <div class="mobile-menu" id="mobile-menu">
-      <a href="#artists">The acts</a>
+      <a href="#artists">The band</a>
       <a href="#sync">Licensing</a>
       <a href="#book">Book a show</a>
     </div>
@@ -45,11 +45,11 @@
     <section id="hero">
       <div class="hero-inner">
         <div class="hero-copy">
-          <h1>Put a Dragon Farm act on your bill.</h1>
-          <p class="hero-sub">Country reggae and conscious hip-hop out of Nashville, for clubs, festivals, campuses, dispensaries and private events. Tell us about your show and we'll reply within 48 hours.</p>
+          <h1>Put Timothy Chance &amp; Rasta Country on your bill.</h1>
+          <p class="hero-sub">Country reggae out of Nashville, for festivals, clubs, bars and private events. Tell us about your show and we'll reply within 48 hours.</p>
           <div class="hero-actions">
             <a href="#book" class="btn btn-flame">Fill in the blanks</a>
-            <a href="#artists" class="btn-text">Meet the acts</a>
+            <a href="#artists" class="btn-text">Meet the band</a>
           </div>
         </div>
 
@@ -57,8 +57,6 @@
           <img class="poster-badge" src="logo-badge.webp" alt="Dragon Farm Records badge: a green dragon holding a flaming microphone" width="480" height="512" />
           <p class="poster-presents">Dragon Farm Records presents</p>
           <p class="poster-act">Timothy Chance &amp; Rasta Country</p>
-          <p class="poster-with">with</p>
-          <p class="poster-act poster-act-small">Poetic Nocturnal Creatures</p>
           <div class="poster-slots">
             <p class="slot slot-venue"><span>Your venue</span></p>
             <p class="slot"><span>Your city</span></p>
@@ -71,10 +69,9 @@
     <!-- ARTISTS -->
     <section id="artists">
       <div class="container">
-        <h2>Two acts, one bill</h2>
-        <p class="section-sub">Book either one, or both for a full night.</p>
+        <h2>The band</h2>
 
-        <div class="bill">
+        <div class="bill bill-solo">
           <article class="act">
             <h3>Timothy Chance &amp; Rasta Country</h3>
             <p class="act-genre">Country reggae</p>
@@ -86,18 +83,6 @@
             </dl>
             <a href="#book" class="btn btn-line" data-artist="Timothy Chance and Rasta Country">Book Timothy Chance</a>
           </article>
-
-          <article class="act">
-            <h3>Poetic Nocturnal Creatures</h3>
-            <p class="act-genre">Conscious hip-hop</p>
-            <p class="act-bio">Spoken word over hard beats. Vivid storytelling with depth and intention, built for listeners who think and move.</p>
-            <dl class="act-facts">
-              <div><dt>Debut single</dt><dd>Peace Pipe</dd></div>
-              <div><dt>Plays</dt><dd>Colleges, dispensaries, smoke shops and festivals</dd></div>
-              <div><dt>UPC</dt><dd>820200962904</dd></div>
-            </dl>
-            <a href="#book" class="btn btn-line" data-artist="Poetic Nocturnal Creatures">Book Poetic Nocturnal Creatures</a>
-          </article>
         </div>
       </div>
     </section>
@@ -107,7 +92,7 @@
       <div class="container sync-layout">
         <div class="sync-intro">
           <h2>License the music</h2>
-          <p class="section-sub">Both catalogs are open for film, TV, ads and games, with master and sync rights from one place, custom edits on request and fast clearance.</p>
+          <p class="section-sub">The catalog is open for film, TV, ads and games, with master and sync rights from one place, custom edits on request and fast clearance.</p>
           <a href="#book" class="btn btn-flame" data-event-type="Sync / Licensing">Ask about licensing</a>
         </div>
         <dl class="sync-list">
@@ -168,11 +153,7 @@
                 <div class="field-group">
                   <label for="bf-artist">Artist</label>
                   <select id="bf-artist" name="artist" required>
-                    <option value="">Choose an artist</option>
-                    <option value="Timothy Chance and Rasta Country">Timothy Chance and Rasta Country</option>
-                    <option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option>
-                    <option value="Both">Both artists</option>
-                    <option value="Open">Not sure, recommend one</option>
+                    <option value="Timothy Chance and Rasta Country" selected>Timothy Chance and Rasta Country</option>
                   </select>
                 </div>
                 <div class="field-group">
@@ -227,8 +208,6 @@
             <figure class="poster poster-live" id="poster-live" aria-hidden="true">
               <p class="poster-presents">Dragon Farm Records presents</p>
               <p class="poster-act" data-poster="act-1">Timothy Chance &amp; Rasta Country</p>
-              <p class="poster-with" data-poster="with">with</p>
-              <p class="poster-act poster-act-small" data-poster="act-2">Poetic Nocturnal Creatures</p>
               <div class="poster-slots">
                 <p class="slot slot-venue" data-poster="venue"><span>Your venue</span></p>
                 <p class="slot" data-poster="city"><span>Your city</span></p>

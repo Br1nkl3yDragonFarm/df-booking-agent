@@ -16,7 +16,7 @@
 
 (function () {
   const SOON_DAYS = 7;
-  const SHORT = { 'Timothy Chance and Rasta Country': 'TCRC', 'Poetic Nocturnal Creatures': 'PNC', 'Both artists': 'Both' };
+  const SHORT = { 'Timothy Chance and Rasta Country': 'TCRC' };
 
   function esc(s) {
     return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -82,7 +82,7 @@
     if (l.setTime) bits.push(`Set ${time12(l.setTime)}${num(l.setLength) ? ` (${num(l.setLength)} min)` : ''}`);
     let html = bits.length ? `<div class="sd-line">🕐 ${esc(bits.join(' · '))}</div>` : '';
     if (l.dayContact || l.dayPhone) {
-      html += `<div class="sd-line">👤 ${esc(l.dayContact || 'Day-of contact')}${l.dayPhone ? ` · <a href="tel:${esc(l.dayPhone.replace(/[^\d+]/g, ''))}" onclick="event.stopPropagation()">${esc(l.dayPhone)}</a>` : ''}</div>`;
+      html += `<div class="sd-line">👤 ${esc(l.dayContact || 'Day-of contact')}${l.dayPhone ? ` · ${window.DFPhone ? DFPhone.links(l.dayPhone) : `<a href="tel:${esc(l.dayPhone.replace(/[^\d+]/g, ''))}" onclick="event.stopPropagation()">${esc(l.dayPhone)}</a>`}` : ''}</div>`;
     }
     html += `<div class="sd-line">📍 <a href="${mapLink(l)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(l.address || 'Find on map')}</a></div>`;
     return html;
@@ -128,7 +128,7 @@
 
   // Booked Shows: totals, then Upcoming and Played lists. `open` is the
   // page's global function name that opens a lead for editing; `actions`
-  // optionally names the page's functions for { gaps, invoice, remind }.
+  // optionally names the page's functions for { gaps, invoice, remind, fans, sign, calendar }.
   function renderShows(els, leads, open, actions) {
     const booked = leads.filter(l => l.status === 'booked')
       .sort((a, b) => (a.eventDate || '9999').localeCompare(b.eventDate || '9999'));
@@ -148,9 +148,18 @@
       return;
     }
     const box = list => `<div class="sd-box">${list.map(l => showCard(l, open, actions)).join('')}</div>`;
+    // Between upcoming shows: the drive to the next one (distance.js, when loaded).
+    const legs = window.DFDist && DFDist.ready() ? DFDist.legs(leads) : [];
+    const legLine = l => {
+      const leg = legs.find(x => x.to.id === l.id);
+      if (!leg) return '';
+      const when = leg.days === 0 ? 'the same day' : leg.days === 1 ? 'the next day' : `${leg.days} days later`;
+      return `<div class="dfd-leg${leg.long ? ' dfd-leg-long' : ''}">${leg.long ? '⚠' : '🚐'} ~${leg.miles} mi from ${esc(leg.from.name)} to ${esc(l.name)}, ${when}${leg.long ? ': a long drive between shows' : ''}</div>`;
+    };
+    const upcomingBox = list => `<div class="sd-box">${list.map(l => legLine(l) + showCard(l, open, actions)).join('')}</div>`;
     els.list.innerHTML =
       '<div class="sd-section-title">Upcoming</div>' +
-      (upcoming.length ? box(upcoming) : '<div class="sd-empty">No upcoming shows.</div>') +
+      (upcoming.length ? upcomingBox(upcoming) : '<div class="sd-empty">No upcoming shows.</div>') +
       (played.length ? `<div class="sd-section-title">Played</div>${artistTable(leads)}${box(played)}` : '');
   }
 
@@ -163,8 +172,11 @@
     const btn = (fn, label, title) => fn ? `<button class="btn btn-ghost" title="${title}" onclick="event.stopPropagation();${fn}('${l.id}')">${label}</button>` : '';
     const buttons = [
       !isPlayed(l) && l.eventDate && btn(actions.gaps, '🗺 Fill nearby dates', 'Find shows within a few hours’ drive on the open days around this one'),
+      l.eventDate && !isPlayed(l) && btn(actions.calendar, '📅 Calendar', 'Add this show to Google, Outlook or Apple Calendar'),
       btn(actions.invoice, '🧾 Invoice', 'Make, print or email an invoice'),
-      depositOverdue(l) && btn(actions.remind, '⏰ Deposit reminder', 'Email a polite reminder about the overdue deposit')
+      l.contract !== 'signed' && btn(actions.sign, '✍ Contract', 'Send the performance agreement to sign online'),
+      depositOverdue(l) && btn(actions.remind, '⏰ Deposit reminder', 'Email a polite reminder about the overdue deposit'),
+      btn(actions.fans, '📱 Fan QR', 'QR code for the merch table: fans sign up for the email list')
     ].filter(Boolean);
     return buttons.length ? `<div class="dfo-show-actions">${buttons.join('')}</div>` : '';
   }
@@ -187,6 +199,7 @@
         <div class="sd-card-contact">
           ${l.contactName ? `<div>${esc(l.contactName)}</div>` : ''}
           ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>` : ''}
+          ${l.contactPhone && window.DFPhone ? `<div>${DFPhone.links(l.contactPhone)}</div>` : ''}
         </div>
       </div>`;
   }

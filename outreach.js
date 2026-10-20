@@ -91,15 +91,22 @@
     return handled(DFFollow.logTouch(lead, contactedStatus));
   }
 
-  // Online payments mark the deposit received. Returns the leads that changed.
-  function reconcile(leads) {
+  // An agreement signed online marks the deal signed: contract for shows,
+  // inWriting for brand deals, licenseSigned for sync.
+  const SIGNED_FIELD = { venue: ['contract', 'signed'], brand: ['inWriting', true], sync: ['licenseSigned', true] };
+
+  // Online payments mark the deposit received, and online signatures the deal
+  // signed, so a page saving an older copy of a lead can't undo them.
+  // Returns the leads that changed.
+  function reconcile(leads, list = 'venue') {
     const changed = [];
+    const [field, value] = SIGNED_FIELD[list] || SIGNED_FIELD.venue;
     leads.forEach((l, i) => {
+      let next = l;
       const paidDeposit = (activity(l).payments || []).some(p => p.kind === 'deposit');
-      if (paidDeposit && Number(l.deposit) && !l.depositPaid) {
-        leads[i] = { ...l, depositPaid: true };
-        changed.push(leads[i]);
-      }
+      if (paidDeposit && Number(l.deposit) && !l.depositPaid) next = { ...next, depositPaid: true };
+      if ((activity(l).signs || []).some(s => s.status === 'signed') && next[field] !== value) next = { ...next, [field]: value };
+      if (next !== l) { leads[i] = next; changed.push(next); }
     });
     return changed;
   }
@@ -117,19 +124,17 @@
     }
     if (a.views && a.views.count) out.push(`<span class="dfo-badge dfo-b-view" title="First opened ${shortStamp(a.views.first)}">👀 Kit opened ${a.views.count}×</span>`);
     (a.payments || []).forEach(p => out.push(`<span class="dfo-badge dfo-b-paid">💳 ${money(p.amount)} paid online</span>`));
+    // Agreements sent for signature (sign.mjs): the latest one that wasn't withdrawn.
+    const sign = [...(a.signs || [])].reverse().find(s => s.status !== 'cancelled');
+    if (sign && sign.status === 'signed') out.push(`<a class="dfo-badge dfo-b-paid" href="/.netlify/functions/sign?t=${encodeURIComponent(sign.token)}&pdf=1" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${esc(sign.title)}, signed by ${esc(sign.signedBy || '')}">✅ Signed ${shortStamp(sign.signedAt)}</a>`);
+    else if (sign) out.push(`<span class="dfo-badge dfo-b-in" title="${esc(sign.title)}">✍ Out for signature</span>`);
     return out.length ? `<div class="dfo-badges">${out.join('')}</div>` : '';
   }
 
   // ---- press kit links ----
-  function artistKey(lead) {
-    const a = `${lead?.artist || ''} ${lead?.track || ''}`;
-    if (/Timothy|Iron Man/i.test(a)) return 'tcrc';
-    if (/Poetic|Peace Pipe/i.test(a)) return 'pnc';
-    return 'tcrc,pnc';
-  }
   function kitUrl(lead) {
     const ref = lead && lead.id ? `&r=${encodeURIComponent(lead.id)}` : '';
-    return `${location.origin}/epk.html?a=${artistKey(lead)}${ref}`;
+    return `${location.origin}/epk.html?a=tcrc${ref}`;
   }
 
   // ---- send modal ----
@@ -151,7 +156,9 @@
     return m.querySelector('.dfo-modal');
   }
 
-  // opts: { to, subject, body, kind, lead, kit (offer the press kit link), onSent(sentInfo) }
+  // opts: { to, subject, body, kind, lead, kit (offer the press kit link), onSent(sentInfo),
+  //         extras: [{ key, label, text, checked }] (optional lines to tick on; the ticked keys are
+  //         logged as `versions`), log: { track } (logged with the send) }
   function send(opts) {
     const ready = setupInfo.email;
     const box = show(`
@@ -160,6 +167,7 @@
         <label class="dfo-field"><span>To</span><input type="email" data-k="to" value="${esc(opts.to || emailOf(opts.lead))}" placeholder="name@venue.com" /></label>
         <label class="dfo-field"><span>Subject</span><input type="text" data-k="subject" value="${esc(opts.subject)}" /></label>
         <label class="dfo-field"><span>Message</span><textarea data-k="body" rows="12">${esc(opts.body)}</textarea></label>
+        ${(opts.extras || []).map((x, i) => `<label class="dfo-check"><input type="checkbox" data-x="${i}"${x.checked ? ' checked' : ''} /> ${esc(x.label)}</label>`).join('')}
         ${opts.kit && opts.lead ? `<label class="dfo-check"><input type="checkbox" data-k="kit" /> Add a tracked press kit link (you'll see when they open it)</label>` : ''}
         <div class="dfo-note">${ready
           ? `Sends from <b>${esc(setupInfo.from)}</b>. Replies come back to your booking inbox${setupInfo.replies ? ' and flag this lead' : ''}.`
@@ -174,6 +182,17 @@
     const $ = k => box.querySelector(`[data-k="${k}"]`);
     const status = (msg, kind) => { $('status').className = 'dfo-status' + (kind ? ' dfo-' + kind : ''); $('status').textContent = msg; };
     const kitLine = () => KIT_LINE + kitUrl(opts.lead);
+    const ticked = () => (opts.extras || []).filter((x, i) => box.querySelector(`[data-x="${i}"]`).checked);
+    let extraBlock = '';
+    const syncExtras = () => {
+      const body = extraBlock ? $('body').value.replace('\n\n' + extraBlock, '').replace(extraBlock, '') : $('body').value;
+      extraBlock = ticked().map(x => x.text).join('\n');
+      $('body').value = extraBlock ? body.replace(/\s+$/, '') + '\n\n' + extraBlock : body;
+    };
+    if (opts.extras?.length) {
+      box.querySelectorAll('[data-x]').forEach(c => c.addEventListener('change', syncExtras));
+      syncExtras();
+    }
     if ($('kit')) {
       $('kit').checked = opts.kind === 'pitch' || opts.kind === 'followup';
       const sync = () => {
@@ -183,6 +202,7 @@
       $('kit').addEventListener('change', sync);
       sync();
     }
+    const logged = () => ({ ...(opts.log || {}), ...(opts.extras?.length ? { versions: ticked().map(x => x.key) } : {}) });
     const msg = () => ({ to: $('to').value.trim(), subject: $('subject').value.trim(), text: $('body').value });
     const finish = sent => { close(); if (opts.onSent) opts.onSent(sent); };
 
@@ -198,7 +218,7 @@
     });
     box.querySelector('[data-a="manual"]')?.addEventListener('click', () => {
       const m = msg();
-      finish({ at: new Date().toISOString(), to: m.to, subject: m.subject, kind: opts.kind, manual: true });
+      finish({ at: new Date().toISOString(), to: m.to, subject: m.subject, kind: opts.kind, manual: true, ...logged() });
     });
     const sendBtn = box.querySelector('[data-a="send"]');
     if (sendBtn) {
@@ -211,7 +231,7 @@
         sendBtn.textContent = 'Sending…';
         let res, data = {};
         try {
-          res = await call(SEND, { method: 'POST', body: JSON.stringify({ ...m, kind: opts.kind || 'other', leadId: opts.lead?.id || '', sendId }) });
+          res = await call(SEND, { method: 'POST', body: JSON.stringify({ ...m, ...logged(), kind: opts.kind || 'other', leadId: opts.lead?.id || '', sendId }) });
           data = await res.json().catch(() => ({}));
         } catch { res = null; }
         if (!res || !res.ok) {
@@ -247,13 +267,14 @@
     const sent = latest(a.sent);
     const sync = kind === 'sync';
     notify && notify(reply ? 'Drafting an answer…' : 'Drafting the follow-up…');
-    const system = `You write short emails for Dragon Farm Records, an independent label in Nashville, TN (${LABEL.email}). Artists: Timothy Chance and Rasta Country (country-reggae, single "Mr. Iron Man (Live)") and Poetic Nocturnal Creatures (conscious hip-hop, single "Peace Pipe").
+    const system = `You write short emails for Dragon Farm Records, an independent label in Nashville, TN (${LABEL.email}). Artist: Timothy Chance and Rasta Country (country-reggae, single "Mr. Iron Man (Live)").
 Rules: under 130 words, warm and direct, one clear ask. Use only the facts given; never invent dates, numbers, venues, past conversations or promises. Sign off as "Dragon Farm Records".
 Reply with only JSON: {"subject": "...", "body": "..."}`;
     const facts = [
       `${sync ? 'Company' : 'Venue'}: ${lead.name}${lead.city ? ` (${lead.city})` : ''}`,
       contactOf(lead) && `Contact: ${contactOf(lead)}`,
-      sync ? `Track: ${lead.track || 'both tracks'}${lead.project ? `; their project: ${lead.project}` : ''}` : `Artist: ${lead.artist || 'both artists'}`,
+      // One act for now, so older leads saved for another act or "Both" get this act's facts.
+      sync ? `Track: Mr. Iron Man (Live)${lead.project ? `; their project: ${lead.project}` : ''}` : 'Artist: Timothy Chance and Rasta Country',
       lead.eventDate && `Date discussed: ${niceDate(lead.eventDate)}`,
       sent && `Our last email (${shortStamp(sent.at)}): "${sent.subject}"`,
       `Times we've reached out: ${lead.touches || (sent ? 1 : 0)}`,
@@ -472,6 +493,8 @@ ${inv.notes ? `<p class="muted">${esc(inv.notes)}</p>` : ''}
 
   window.DFOut = {
     init, setup: () => setupInfo, activity, lastReply, needsReply, handled, markSent, reconcile, badges,
-    kitUrl, send, followUp, invoice, reminder, gaps, close
+    kitUrl, send, followUp, invoice, reminder, gaps, show, close,
+    // Record something the server just stored for a lead, without waiting for a reload.
+    remember(leadId, change) { acts[leadId] = change({ ...(acts[leadId] || {}) }); }
   };
 })();

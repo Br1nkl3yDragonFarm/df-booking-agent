@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Automations — Dragon Farm Records</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c09; --surface: #0e1517; --card: #131c1e; --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --cream: #e8dfc8; --gray: #9aa39c; --gray-light: #c9c2ae; --gold: #c8922a; --gold-light: #f0c060; --green: #2ab464; --red: #e0645a;
+      --r: 8px; --r2: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--cream); font: 15px/1.55 'DM Sans', system-ui, sans-serif; overflow-x: hidden; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 96px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .top a { color: var(--gray); font-size: 0.85rem; text-decoration: none; margin-right: 12px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 2.2rem; margin: 0; }
+    h2 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 1.35rem; margin: 0 0 0.6rem; }
+    .intro { color: var(--gray); font-size: 0.9rem; margin: 0 0 1.25rem; max-width: 700px; }
+    .box { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.1rem; margin-bottom: 1rem; }
+    .status { display: flex; gap: 0.6rem; align-items: center; font-size: 0.92rem; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray); flex: none; }
+    .dot.on { background: var(--green); } .dot.off { background: var(--gold); }
+    .events { list-style: none; margin: 0; padding: 0; }
+    .events li { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.55rem 0; border-top: 1px solid var(--border); }
+    .events li:first-child { border-top: 0; }
+    .events code { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--gold-light); }
+    .events small { display: block; color: var(--gray); font-size: 0.8rem; }
+    .events .res { font-size: 0.78rem; color: var(--gray); margin-right: 0.5rem; }
+    .events .res.ok { color: var(--green); } .events .res.err { color: var(--red); }
+    .btn { border: 1px solid var(--border2); background: transparent; color: var(--cream); border-radius: var(--r); padding: 0.45rem 0.85rem; font: inherit; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
+    .btn:disabled { opacity: 0.45; cursor: default; }
+    ol { margin: 0; padding-left: 1.2rem; } ol li { margin: 0.35rem 0; font-size: 0.9rem; }
+    .note { color: var(--gray); font-size: 0.82rem; margin: 0.6rem 0 0; }
+    a { color: var(--gold-light); }
+    pre { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 0.75rem; font: 0.76rem/1.5 'DM Mono', monospace; color: var(--gray-light); overflow-x: auto; margin: 0.6rem 0 0; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>⚡ Automations</h1>
+    <div><a href="hub.html">← Hub</a><a href="dashboard.html">Booking</a><a href="sync.html">Sync</a><a href="brands.html">Brands</a></div>
+  </div>
+  <p class="intro">When a show is booked, a deposit is paid or a fan signs up, the tool can tell <a href="https://n8n.io" target="_blank" rel="noopener">n8n</a>, a workflow tool, which then does the follow-on chores for you: post the show to Discord or social media, add a row to a Google Sheet, text you, start a release checklist. You build those steps in n8n by dragging blocks together; nothing here changes how the tool works on its own.</p>
+
+  <div class="box">
+    <h2>Status</h2>
+    <div class="status"><span class="dot" id="dot"></span><span id="status">Checking…</span></div>
+  </div>
+
+  <div class="box">
+    <h2>What gets sent</h2>
+    <p class="note" style="margin:0 0 0.6rem">Each button sends a made-up example of that event, marked <code>"sample": true</code>, so you can build and try a workflow without waiting for a real one.</p>
+    <ul class="events" id="events"></ul>
+  </div>
+
+  <div class="box">
+    <h2>Set it up</h2>
+    <ol>
+      <li>Get n8n: <a href="https://n8n.io/cloud/" target="_blank" rel="noopener">n8n Cloud</a> (paid, nothing to run) or the free self-hosted version on a small server (<a href="https://docs.n8n.io/hosting/" target="_blank" rel="noopener">hosting guide</a>).</li>
+      <li>In n8n: <b>Workflows → Import from file</b> and pick <code>n8n/dragon-farm-events.json</code> from this project. It starts with a Webhook block and splits each kind of event to its own path.</li>
+      <li>Open the Webhook block, copy its <b>Production URL</b>, then turn the workflow on (<b>Publish</b>, or the Active switch in older n8n).</li>
+      <li>In Netlify: <b>Site configuration → Environment variables</b>, add <code>N8N_WEBHOOK_URL</code> with that URL. Optionally add <code>N8N_WEBHOOK_SECRET</code> (any long random text) and the same text as <code>secret</code> in the workflow's <b>Settings</b> step, so n8n ignores anything that didn't come from you. Redeploy.</li>
+      <li>Come back here and press <b>Send test</b> on an event. It shows up under <b>Executions</b> in n8n.</li>
+    </ol>
+    <p class="note">The workflow comes with Discord and Google Sheets steps switched off. For Discord, paste a channel webhook URL as <code>discordWebhook</code> in <b>Settings</b>; for Sheets, connect Google and paste the sheet's link. Then switch the step on. The other steps are yours to add: Instagram or Facebook posts, a text message through Twilio, a Trello card, anything n8n connects to.</p>
+    <details class="note"><summary>What an event looks like</summary>
+<pre>{
+  "type": "show.booked",
+  "at": "2026-10-20T15:04:05.000Z",
+  "site": "https://your-site.netlify.app",
+  "data": { "name": "Exit/In", "city": "Nashville, TN", "eventDate": "2026-11-19",
+            "setTime": "21:00", "artist": "Timothy Chance and Rasta Country", … }
+}</pre></details>
+  </div>
+</div>
+
+<script src="crm-store.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const API = '/.netlify/functions/automations';
+const ABOUT = {
+  'show.booked': 'A venue lead moves to Booked',
+  'sync.licensed': 'A sync lead moves to Licensed',
+  'brand.signed': 'A brand deal moves to Signed',
+  'reply.received': 'Someone answers a pitch',
+  'payment.received': 'A deposit or invoice is paid by card',
+  'agreement.signed': 'A buyer e-signs an agreement',
+  'inquiry.received': 'A new inquiry comes in from the public page',
+  'fan.signed_up': 'A fan signs up from the merch-table QR',
+  'digest.sent': 'The Monday rundown goes out',
+  test: 'Just checking the connection'
+};
+
+async function call(method, body) {
+  const go = () => fetch(API, { method, headers: { 'Content-Type': 'application/json', 'x-df-passcode': DFStore.passcode() }, body: body ? JSON.stringify(body) : undefined });
+  let res = await go();
+  if (res.status === 401 && DFStore.askPasscode()) res = await go();
+  return { status: res.status, data: await res.json().catch(() => ({})) };
+}
+
+async function load() {
+  let r;
+  try { r = await call('GET'); } catch { r = { status: 0, data: {} }; }
+  if (r.status !== 200) {
+    $('status').textContent = r.status === 401 ? 'Enter the passcode to see the status.' : 'Couldn’t check. Automations work on the live site only.';
+    return render(Object.keys(ABOUT), false);
+  }
+  $('dot').className = 'dot ' + (r.data.on ? 'on' : 'off');
+  $('status').textContent = r.data.on
+    ? `On: events go to your n8n workflow${r.data.signed ? ', signed' : ''}.`
+    : 'Off: add N8N_WEBHOOK_URL in Netlify to turn it on (steps below).';
+  render(r.data.types || Object.keys(ABOUT), r.data.on);
+}
+
+function render(types, on) {
+  $('events').innerHTML = types.map(t => `<li><div><code>${esc(t)}</code><small>${esc(ABOUT[t] || '')}</small></div><div><span class="res" data-res="${esc(t)}"></span><button class="btn" data-type="${esc(t)}"${on ? '' : ' disabled'}>Send test</button></div></li>`).join('');
+}
+
+$('events').addEventListener('click', async e => {
+  const b = e.target.closest('[data-type]');
+  if (!b) return;
+  const out = document.querySelector(`[data-res="${b.dataset.type}"]`);
+  b.disabled = true; out.className = 'res'; out.textContent = 'Sending…';
+  let r;
+  try { r = await call('POST', { type: b.dataset.type }); } catch { r = { status: 0, data: { error: 'Couldn’t reach the site.' } }; }
+  out.className = 'res ' + (r.status === 200 ? 'ok' : 'err');
+  out.textContent = r.status === 200 ? 'Sent ✓' : (r.data.error || 'Didn’t send');
+  b.disabled = false;
+});
+
+load();
+</script>
+</body>
+</html>

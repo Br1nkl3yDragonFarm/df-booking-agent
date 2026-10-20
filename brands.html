@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Brand Deals — Dragon Farm Records</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c09; --surface: #0e1517; --card: #131c1e; --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --cream: #e8dfc8; --gray: #9aa39c; --gray-light: #c9c2ae; --gold: #c8922a; --gold-light: #f0c060; --green: #2ab464; --blue: #4a9eff; --red: #e05a4f;
+      --r: 8px; --r2: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--cream); font: 15px/1.55 'DM Sans', system-ui, sans-serif; overflow-x: hidden; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 96px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .top a { color: var(--gray); font-size: 0.85rem; text-decoration: none; margin-right: 12px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 2.2rem; margin: 0; }
+    h2 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.04em; font-size: 1.5rem; margin: 0; }
+    .intro { color: var(--gray); font-size: 0.9rem; margin: 0 0 1rem; max-width: 720px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tab { background: transparent; border: 1px solid var(--border2); color: var(--gray-light); border-radius: 999px; padding: 6px 14px; cursor: pointer; font: inherit; font-size: 0.85rem; }
+    .tab.on { border-color: var(--gold); color: var(--cream); background: rgba(200,146,42,0.12); }
+    .section { display: none; } .section.on { display: block; }
+    .btn { border: 1px solid var(--border2); background: transparent; color: var(--cream); border-radius: var(--r); padding: 0.5rem 0.9rem; font: inherit; font-size: 0.85rem; cursor: pointer; }
+    .btn-gold { background: var(--gold); border-color: var(--gold); color: #120d03; font-weight: 500; }
+    .btn-ghost { background: transparent; }
+    .btn:disabled { opacity: 0.6; cursor: default; }
+    .bar { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+    .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill { background: transparent; border: 1px solid var(--border2); color: var(--gray-light); border-radius: 999px; padding: 4px 12px; cursor: pointer; font: inherit; font-size: 0.8rem; }
+    .pill.on { border-color: var(--green); color: var(--cream); background: rgba(42,180,100,0.12); }
+    .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.87rem; min-width: 760px; }
+    th { text-align: left; font-family: 'DM Mono', monospace; font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray); font-weight: 400; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--border2); }
+    td { padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tbody tr { cursor: pointer; } tbody tr:hover td { background: rgba(255,255,255,0.02); }
+    td small { color: var(--gray); display: block; }
+    td a { color: var(--blue); text-decoration: none; }
+    .row-actions { display: flex; gap: 4px; }
+    .row-actions .btn { padding: 4px 9px; }
+    .status { display: inline-block; font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border2); color: var(--gray-light); }
+    .status-signed { color: var(--gold-light); border-color: rgba(200,146,42,0.5); }
+    .status-talking { color: #9ec9ff; border-color: rgba(74,158,255,0.4); }
+    .status-passed { color: var(--gray); }
+    .flag { font-size: 0.78rem; margin-top: 3px; }
+    .flag-red { color: #ff8a80; } .flag-amber { color: var(--gold-light); }
+    .empty { padding: 2rem 1rem; text-align: center; color: var(--gray); }
+    .note { color: var(--gray); font-size: 0.82rem; margin-top: 0.75rem; }
+    .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.25); border-top-color: var(--cream); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -2px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .field label { font-size: 0.78rem; color: var(--gray); }
+    input, select, textarea { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.5rem 0.65rem; color: var(--cream); font: inherit; font-size: 0.88rem; width: 100%; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.6rem 1rem; font-size: 0.88rem; z-index: 1000; max-width: calc(100vw - 32px); }
+    .dfo-modal h4 { margin: 0.9rem 0 0.2rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray); font-weight: 500; }
+    .bd-flags:empty { display: none; }
+    .bd-flags { margin-top: 0.4rem; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>🤝 Brand Deals</h1>
+    <div><a href="hub.html">← Hub</a><a href="dashboard.html">Booking</a><a href="sync.html">Sync</a><a href="report.html">What's working</a><a href="automations.html">Automations</a></div>
+  </div>
+  <p class="intro">Sponsors and lifestyle brands for Timothy Chance &amp; Rasta Country. Brands rent the band's culture and the fans' trust, so pitch the fit, the audience and a content idea, not a price. Start local and regional; a good first partnership becomes the case study for the next.</p>
+  <div class="tabs">
+    <button class="tab on" data-s="pipeline">Pipeline <span id="count"></span></button>
+    <button class="tab" data-s="find">Find brands</button>
+  </div>
+
+  <div class="section on" id="s-pipeline">
+    <div class="bar">
+      <div class="pills" id="pills"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="import">Import CSV</button><button class="btn btn-gold" id="add">+ Add a brand</button></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Brand</th><th>Kind</th><th>Contact</th><th>Status</th><th>Deal</th><th><span style="position:absolute;left:-9999px">Actions</span></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="note">Red flags from the label's playbook: “exposure” instead of pay, broad or forever rights to the name, image or music, category-wide exclusivity with no end date, and scripted content fans can see through. Get every deal in writing; a lawyer checks anything big.</p>
+  </div>
+
+  <div class="section" id="s-find">
+    <div id="finder"></div>
+  </div>
+</div>
+
+<script src="crm-store.js"></script>
+<script src="followups.js"></script>
+<script src="deals.js"></script>
+<script src="calendar.js"></script>
+<script src="finder.js"></script>
+<script src="outreach.js"></script>
+<script src="vendor/mailcheck.js"></script>
+<script src="emailcheck.js"></script>
+<script src="vendor/libphonenumber.js"></script>
+<script src="phone.js"></script>
+<script src="esign.js"></script>
+<script src="vendor/papaparse.js"></script>
+<script src="importer.js"></script>
+<script>
+// ============================================================
+//  DRAGON FARM — BRAND DEALS
+//  Pipeline for sponsors and brand partners (list "brand"), the brand
+//  finder, AI-drafted pitches and a deal check against the playbook.
+// ============================================================
+
+const ACT = 'Timothy Chance and Rasta Country';
+const STATUSES = [['new', 'New'], ['pitched', 'Pitched'], ['talking', 'Talking'], ['signed', 'Signed'], ['passed', 'Passed']];
+const KINDS = ['Beverage', 'Outdoor & Adventure', 'Western Lifestyle', 'Auto & Powersports', 'Food', 'Cannabis / Hemp', 'Audio & Gear', 'Apparel', 'Events & Festivals', 'Local Business', 'Other'];
+const PAYS = [['', 'Not set'], ['cash', 'Fee'], ['both', 'Fee + product'], ['product', 'Product only'], ['exposure', '“Exposure” only']];
+const EXCL = [['', 'Not set'], ['none', 'None'], ['limited', 'Their category, for a set time'], ['forever', 'Their whole category, no end date']];
+const RIGHTS = [['', 'Not set'], ['campaign', 'Limited to this campaign and term'], ['broad', 'Broad or forever (name, image, music)']];
+const CONTROL = [['', 'Not set'], ['ours', 'We keep our voice'], ['scripted', 'They script it']];
+// Shown in pitches; from the label's brand-partnerships playbook.
+const CREDITS = 'Timothy has worked with Wyclef Jean and KRS-One, has a connection to the Wailers, and has been featured on CMT, MTV, ESPN and NASCAR.';
+
+let leads = [];
+let filter = 'all';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const label = (list, v) => (list.find(x => x[0] === v) || [, ''])[1];
+const options = (list, v) => list.map(([k, l]) => `<option value="${esc(k)}"${k === v ? ' selected' : ''}>${esc(l)}</option>`).join('');
+function toast(msg) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+// ---- deal check ----
+function flags(l) {
+  const out = [];
+  if (l.payType === 'exposure') out.push(['red', '“Exposure” only. Exposure doesn’t pay rent: ask for a fee, or product plus a fee.']);
+  if (l.rights === 'broad') out.push(['red', 'Broad or forever rights. Limit use of the name, image and music to this campaign and term.']);
+  if (l.exclusivity === 'forever') out.push(['red', 'Whole-category exclusivity with no end date. Limit it to a set time.']);
+  if (l.control === 'scripted') out.push(['amber', 'They script the content. Fans can tell; keep the band’s voice.']);
+  if (['talking', 'signed'].includes(l.status) && !l.inWriting) out.push(['amber', 'Not in writing yet.']);
+  if (l.status === 'signed' && !l.term) out.push(['amber', 'No end date on the deal.']);
+  return out;
+}
+const flagHtml = l => flags(l).map(([k, t]) => `<div class="flag flag-${k}">${k === 'red' ? '🚩' : '⚠'} ${esc(t)}</div>`).join('');
+
+// ---- pipeline ----
+function save() { DFStore.save('df_brand_leads', leads); render(); }
+
+function render() {
+  $('count').textContent = leads.length ? `(${leads.length})` : '';
+  $('pills').innerHTML = [['all', 'All'], ...STATUSES].map(([k, l]) => `<button class="pill${filter === k ? ' on' : ''}" data-f="${k}">${l}</button>`).join('');
+  $('pills').querySelectorAll('.pill').forEach(b => b.addEventListener('click', () => { filter = b.dataset.f; render(); }));
+  const shown = leads.filter(l => filter === 'all' || l.status === filter)
+    .sort((a, b) => (DFOut.needsReply(b) - DFOut.needsReply(a)) || String(a.followUp || '9').localeCompare(String(b.followUp || '9')));
+  $('rows').innerHTML = shown.length ? shown.map(l => `
+    <tr data-id="${esc(l.id)}">
+      <td><b>${esc(l.name)}</b>${l.city ? `<small>${esc(l.city)}</small>` : ''}${l.website && /^https?:\/\//.test(l.website) ? `<small><a href="${esc(l.website)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Website</a></small>` : ''}</td>
+      <td>${esc(l.category || '')}</td>
+      <td>${esc(l.contact || '')}${l.email ? `<small><a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a></small>` : ''}${l.phone ? `<small>${DFPhone.links(l.phone)}</small>` : ''}</td>
+      <td><span class="status status-${esc(l.status)}">${esc(label(STATUSES, l.status) || l.status)}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}</td>
+      <td>${esc([l.offer, label(PAYS, l.payType)].filter(Boolean).join(' · '))}${flagHtml(l)}</td>
+      <td onclick="event.stopPropagation()"><div class="row-actions">
+        <button class="btn" data-a="pitch" title="Write and send a pitch" aria-label="Pitch ${esc(l.name)}">✉</button>
+        <button class="btn" data-a="sign" title="Send the partnership agreement to sign" aria-label="Agreement for ${esc(l.name)}">✍</button>
+        <button class="btn" data-a="del" title="Remove" aria-label="Remove ${esc(l.name)}">✕</button>
+      </div></td>
+    </tr>`).join('') : `<tr><td colspan="6"><div class="empty">${leads.length ? 'Nothing with that status.' : 'No brands yet. Use Find brands, or add one you already know.'}</div></td></tr>`;
+  $('rows').querySelectorAll('tr[data-id]').forEach(tr => {
+    tr.addEventListener('click', () => edit(tr.dataset.id));
+    tr.querySelector('[data-a="pitch"]').addEventListener('click', () => pitch(tr.dataset.id));
+    tr.querySelector('[data-a="sign"]').addEventListener('click', () => {
+      const l = leads.find(x => x.id === tr.dataset.id);
+      DFSign.open({ lead: l, list: 'brand', title: `Partnership agreement: Timothy Chance and Rasta Country x ${l.name}`, text: DFSign.brandText(l), onChange: render });
+    });
+    tr.querySelector('[data-a="del"]').addEventListener('click', () => {
+      if (!confirm('Remove this brand?')) return;
+      leads = leads.filter(l => l.id !== tr.dataset.id); save();
+    });
+  });
+}
+
+function edit(id) {
+  const l = leads.find(x => x.id === id) || { status: 'new', category: 'Beverage' };
+  const box = DFOut.show(`
+    <div class="dfo-head"><h3>${id ? 'Edit brand' : 'Add a brand'}</h3><button class="dfo-x" data-a="close" aria-label="Close">×</button></div>
+    <div class="dfo-body">
+      <div class="dfo-row">
+        <label class="dfo-field"><span>Brand</span><input type="text" data-k="name" value="${esc(l.name)}" /></label>
+        <label class="dfo-field"><span>Kind</span><select data-k="category">${options(KINDS.map(k => [k, k]), l.category)}</select></label>
+      </div>
+      <div class="dfo-row">
+        <label class="dfo-field"><span>Contact</span><input type="text" data-k="contact" value="${esc(l.contact)}" placeholder="Marketing or partnerships person" /></label>
+        <label class="dfo-field"><span>Email</span><input type="email" data-k="email" value="${esc(l.email)}" /></label>
+      </div>
+      <div class="dfo-row">
+        <label class="dfo-field"><span>Where</span><input type="text" data-k="city" value="${esc(l.city)}" /></label>
+        <label class="dfo-field"><span>Website</span><input type="url" data-k="website" value="${esc(l.website)}" /></label>
+      </div>
+      <label class="dfo-field"><span>Phone</span><input type="tel" data-k="phone" value="${esc(l.phone)}" /></label>
+      <div class="dfo-row">
+        <label class="dfo-field"><span>Status</span><select data-k="status">${options(STATUSES, l.status)}</select></label>
+        <label class="dfo-field"><span>Next follow-up</span><input type="date" data-k="followUp" value="${esc(l.followUp)}" /></label>
+      </div>
+      <h4>Deal</h4>
+      <div class="dfo-row">
+        <label class="dfo-field"><span>Offer</span><input type="text" data-k="offer" value="${esc(l.offer)}" placeholder="$1,500 + product, 2 posts and a show" /></label>
+        <label class="dfo-field"><span>Pays in</span><select data-k="payType">${options(PAYS, l.payType)}</select></label>
+      </div>
+      <div class="dfo-row">
+        <label class="dfo-field"><span>Term</span><input type="text" data-k="term" value="${esc(l.term)}" placeholder="Summer 2027 campaign, ends Sep 30" /></label>
+        <label class="dfo-field"><span>Exclusivity</span><select data-k="exclusivity">${options(EXCL, l.exclusivity)}</select></label>
+      </div>
+      <div class="dfo-row">
+        <label class="dfo-field"><span>Use of name, image, music</span><select data-k="rights">${options(RIGHTS, l.rights)}</select></label>
+        <label class="dfo-field"><span>Creative control</span><select data-k="control">${options(CONTROL, l.control)}</select></label>
+      </div>
+      <label class="dfo-check"><input type="checkbox" data-k="inWriting"${l.inWriting ? ' checked' : ''} /> It's in writing</label>
+      <div class="bd-flags" data-k="flags"></div>
+      <label class="dfo-field"><span>Notes</span><textarea rows="4" data-k="notes">${esc(l.notes)}</textarea></label>
+      <div class="dfo-status" data-k="status-msg"></div>
+    </div>
+    <div class="dfo-actions"><button class="btn btn-gold" data-a="save">Save</button></div>`);
+  const f = k => box.querySelector(`[data-k="${k}"]`);
+  const read = () => {
+    const out = {};
+    ['name', 'category', 'contact', 'email', 'phone', 'city', 'website', 'status', 'followUp', 'offer', 'payType', 'term', 'exclusivity', 'rights', 'control', 'notes'].forEach(k => { out[k] = f(k).value.trim(); });
+    out.inWriting = f('inWriting').checked;
+    return out;
+  };
+  const showFlags = () => { f('flags').innerHTML = flagHtml(read()); };
+  box.querySelectorAll('select, input[type="checkbox"]').forEach(el => el.addEventListener('change', showFlags));
+  f('status').addEventListener('change', () => DFFollow.suggest(f('status'), f('followUp')));
+  showFlags();
+  box.querySelector('[data-a="close"]').addEventListener('click', DFOut.close);
+  box.querySelector('[data-a="save"]').addEventListener('click', () => {
+    const data = read();
+    if (!data.name) { f('status-msg').textContent = 'Add the brand’s name.'; f('status-msg').className = 'dfo-status dfo-err'; return; }
+    if (data.website && !/^https?:\/\//i.test(data.website)) data.website = 'https://' + data.website;
+    if (id) leads = leads.map(x => x.id === id ? DFFollow.schedule(x, { ...x, ...data }) : x);
+    else leads.push(DFFollow.schedule(null, { id: 'br-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), dateAdded: new Date().toISOString(), ...data }));
+    DFOut.close(); save(); toast(`${data.name} saved`);
+  });
+}
+
+// ---- pitch ----
+async function pitch(id) {
+  const l = leads.find(x => x.id === id);
+  if (!l) return;
+  const btn = document.querySelector(`tr[data-id="${CSS.escape(id)}"] [data-a="pitch"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>'; }
+  const system = `You write short brand-partnership pitches for Dragon Farm Records, an independent label in Nashville, TN (booking@dragonfarm.net), for its act ${ACT}: country soul over reggae roots, fiddles and riddims, a feel-good live show for festivals, clubs, bars and outdoor events. Debut single "Mr. Iron Man (Live)".
+${CREDITS}
+Rules: under 160 words. Lead with why the band fits this brand and its customers, then one concrete content or event idea (a sponsored show, a short video, a festival activation). Do not name a price. Never invent audience numbers, followers, past sponsors, dates or anything not given. Ask for a short call. Sign off as "Dragon Farm Records".
+Reply with only JSON: {"subject": "...", "body": "..."}`;
+  const facts = [`Brand: ${l.name}${l.category ? ` (${l.category})` : ''}${l.city ? `, ${l.city}` : ''}`, l.contact && `Contact: ${l.contact}`, l.notes && `What we know about them:\n${l.notes}`].filter(Boolean).join('\n');
+  let draft = null, error = '';
+  try {
+    const res = await fetch('/.netlify/functions/ai-proxy', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-df-passcode': DFStore.passcode() }, body: JSON.stringify({ system, messages: [{ role: 'user', content: facts }] }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) error = data.error?.message || `The writing assistant returned ${res.status}.`;
+    else {
+      const text = data.content?.[0]?.text || '';
+      const m = text.match(/\{[\s\S]*\}/);
+      draft = m ? JSON.parse(m[0]) : null;
+      if (!draft) error = 'The draft came back in an odd shape. Try again.';
+    }
+  } catch { error = 'Couldn’t reach the writing assistant. Try again.'; }
+  if (btn) { btn.disabled = false; btn.textContent = '✉'; }
+  if (!draft) return toast(error);
+  DFOut.send({
+    subject: draft.subject, body: draft.body, kind: 'pitch', lead: l, kit: true,
+    onSent: () => { leads = leads.map(x => x.id === id ? DFOut.markSent(x, 'pitched') : x); save(); }
+  });
+}
+
+// ---- tabs, finder, data ----
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('on', s.id === 's-' + t.dataset.s));
+}));
+$('add').addEventListener('click', () => edit(null));
+$('import').addEventListener('click', () => DFImport.open({ list: 'brand', existing: leads, onImport: fresh => { leads.push(...fresh); save(); }, onDone: toast }));
+
+DFFinder.mount($('finder'), {
+  mode: 'brand',
+  onAdd(lead) {
+    const dup = leads.find(l => l.name.toLowerCase() === lead.name.toLowerCase());
+    if (dup) { toast(`${lead.name} is already in the pipeline`); return false; }
+    leads.push({ id: 'br-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), dateAdded: new Date().toISOString(), followUp: DFFollow.today(), ...lead });
+    save(); toast(`${lead.name} added`);
+    return true;
+  }
+});
+
+DFOut.init(() => { if (DFOut.reconcile(leads, 'brand').length) DFStore.save('df_brand_leads', leads); render(); });
+DFStore.connect('df_brand_leads', items => { leads = items; render(); });
+leads = DFStore.load('df_brand_leads');
+render();
+</script>
+</body>
+</html>

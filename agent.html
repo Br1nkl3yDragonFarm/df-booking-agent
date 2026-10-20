@@ -310,6 +310,21 @@
     <a href="epk-edit.html" style="text-decoration:none">
       <div class="nav-icon-btn" style="font-size:1rem">📰<span class="nav-tooltip">Press Kits</span></div>
     </a>
+    <a href="brands.html" style="text-decoration:none">
+      <div class="nav-icon-btn" style="font-size:1rem">🤝<span class="nav-tooltip">Brand Deals</span></div>
+    </a>
+    <a href="fan-list.html" style="text-decoration:none">
+      <div class="nav-icon-btn" style="font-size:1rem">📋<span class="nav-tooltip">Fan List</span></div>
+    </a>
+    <a href="report.html" style="text-decoration:none">
+      <div class="nav-icon-btn" style="font-size:1rem">📈<span class="nav-tooltip">What's Working</span></div>
+    </a>
+    <a href="captions.html" style="text-decoration:none">
+      <div class="nav-icon-btn" style="font-size:1rem">💬<span class="nav-tooltip">Captions</span></div>
+    </a>
+    <a href="automations.html" style="text-decoration:none">
+      <div class="nav-icon-btn" style="font-size:1rem">⚡<span class="nav-tooltip">Automations</span></div>
+    </a>
     <a href="index.html" style="text-decoration:none">
       <div class="nav-icon-btn" style="font-size:1rem">🌐<span class="nav-tooltip">Public Site</span></div>
     </a>
@@ -387,11 +402,6 @@
               <div style="font-size:0.72rem;color:var(--gray)">Timothy Chance and Rasta Country · Country-Reggae</div>
               <div style="font-family:var(--font-m);font-size:0.62rem;color:var(--gray);margin-top:4px">ISRC: QM6N22632890 · UPC: 820200992949</div>
             </div>
-            <div class="catalog-item">
-              <div style="font-weight:500;color:var(--green);font-size:0.88rem">Peace Pipe</div>
-              <div style="font-size:0.72rem;color:var(--gray)">Poetic Nocturnal Creatures · Conscious Hip-Hop</div>
-              <div style="font-family:var(--font-m);font-size:0.62rem;color:var(--gray);margin-top:4px">ISRC: QM6N22632979 · UPC: 820200962904</div>
-            </div>
           </div>
           <div class="mini-card">
             <div class="mini-card-title">Recent Sync Leads</div>
@@ -434,7 +444,7 @@
                   <div class="field"><label>City</label><input type="text" id="bv-city" placeholder="Nashville, TN" /></div>
                   <div class="field"><label>Venue Type</label><select id="bv-vtype"><option>Bar / Club</option><option>Festival</option><option>Dispensary</option><option>Smoke Shop</option><option>College Venue</option><option>Outdoor / Amphitheater</option><option>Restaurant</option><option>Private Event</option></select></div>
                 </div>
-                <div class="field"><label>Artist</label><select id="bv-artist"><option value="both">Both Artists</option><option value="Timothy Chance and Rasta Country">Timothy Chance and Rasta Country</option><option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option></select></div>
+                <div class="field"><label>Artist</label><select id="bv-artist"><option value="Timothy Chance and Rasta Country">Timothy Chance and Rasta Country</option></select></div>
                 <div class="field"><label>Tone</label><select id="bv-tone"><option>Professional & Warm</option><option>Casual & Friendly</option><option>Direct & Confident</option><option>Cannabis-Culture Friendly</option></select></div>
                 <div class="field"><label>Notes (optional)</label><textarea id="bv-notes" placeholder="Proposed dates, special context..."></textarea></div>
                 <button class="btn btn-gold" id="bv-btn" onclick="genBookingEmail()" style="width:100%">✨ Generate Email</button>
@@ -475,7 +485,7 @@
                   <div class="field"><label>Project Type</label><select id="sv-ptype"><option>Film</option><option>TV Series</option><option>Streaming Show</option><option>Video Game</option><option>Advertisement</option><option>Brand Campaign</option><option>Documentary</option><option>Other</option></select></div>
                   <div class="field"><label>Project Name</label><input type="text" id="sv-project" placeholder="Untitled Western Drama" /></div>
                 </div>
-                <div class="field"><label>Track to Pitch</label><select id="sv-track"><option value="both">Both Tracks</option><option value="Mr. Iron Man (Live) by Timothy Chance and Rasta Country">Mr. Iron Man (Live)</option><option value="Peace Pipe by Poetic Nocturnal Creatures">Peace Pipe</option></select></div>
+                <div class="field"><label>Track to Pitch</label><select id="sv-track"><option value="Mr. Iron Man (Live) by Timothy Chance and Rasta Country">Mr. Iron Man (Live)</option></select></div>
                 <div class="field"><label>Tone</label><select id="sv-tone"><option>Professional & Concise</option><option>Enthusiastic & Creative</option><option>Cannabis-Culture Friendly</option><option>Indie & Authentic</option></select></div>
                 <div class="field"><label>Notes (optional)</label><textarea id="sv-notes" placeholder="Why this track fits, genre overlap, mood..."></textarea></div>
                 <button class="btn btn-purple" id="sv-btn" onclick="genSyncEmail()" style="width:100%">✨ Generate Pitch</button>
@@ -537,6 +547,7 @@
           <button class="btn btn-ghost" onclick="calMove(-1)" aria-label="Previous month">‹</button>
           <button class="btn btn-ghost" onclick="calMove(0)">Today</button>
           <button class="btn btn-ghost" onclick="calMove(1)" aria-label="Next month">›</button>
+          <button class="btn btn-ghost" onclick="DFShowCal.openSubscribe()">📲 Subscribe</button>
         </div>
       </div>
       <div class="cal-filters" id="cal-filters"></div>
@@ -599,7 +610,7 @@
       </div>
       <div class="form-row">
         <div class="field"><label>Type</label><select id="vm-type"><option>Bar / Club</option><option>Festival</option><option>Dispensary</option><option>Smoke Shop</option><option>College</option><option>Outdoor / Amph.</option><option>Restaurant</option><option>Private Event</option><option>Promoter / Talent Buyer</option><option>Booking Agency</option><option>Brewery / Winery</option><option>Fair / City Event</option><option>Other</option></select></div>
-        <div class="field"><label>Artist</label><select id="vm-artist"><option value="Both">Both Artists</option><option value="Timothy Chance and Rasta Country">TC & Rasta Country</option><option value="Poetic Nocturnal Creatures">Poetic Nocturnal Creatures</option></select></div>
+        <div class="field"><label>Artist</label><select id="vm-artist"><option value="Timothy Chance and Rasta Country">TC & Rasta Country</option></select></div>
       </div>
       <div class="form-row">
         <div class="field"><label>Contact Name</label><input type="text" id="vm-cname" /></div>
@@ -635,7 +646,7 @@
       </div>
       <div class="form-row">
         <div class="field"><label>Category</label><select id="sm-cat"><option>Film</option><option>TV Series</option><option>Streaming Show</option><option>Video Game</option><option>Advertisement</option><option>Brand Campaign</option><option>Documentary</option><option>Trailer</option><option>Sync Agency / Library</option><option>Creator / Podcast</option><option>Other</option></select></div>
-        <div class="field"><label>Track</label><select id="sm-track"><option value="Both">Both Tracks</option><option value="Mr. Iron Man (Live)">Mr. Iron Man (Live)</option><option value="Peace Pipe">Peace Pipe</option></select></div>
+        <div class="field"><label>Track</label><select id="sm-track"><option value="Mr. Iron Man (Live)">Mr. Iron Man (Live)</option></select></div>
       </div>
       <div class="form-row">
         <div class="field"><label>Contact Name</label><input type="text" id="sm-cname" /></div>
@@ -675,6 +686,17 @@
 <script src="showday.js"></script>
 <script src="finder.js"></script>
 <script src="outreach.js"></script>
+<script src="vendor/mailcheck.js"></script>
+<script src="emailcheck.js"></script>
+<script src="vendor/libphonenumber.js"></script>
+<script src="phone.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script src="fans.js"></script>
+<script src="esign.js"></script>
+<script src="vendor/datebook.js"></script>
+<script src="showcal.js"></script>
+<script src="vendor/geolib.js"></script>
+<script src="distance.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — UNIFIED APP
@@ -684,6 +706,8 @@
 document.getElementById('vm-forms-slot').outerHTML=DFDeals.formHtml('vm')+DFShow.formHtml('vm');
 
 // ---- STATE ----
+// The label's one act for now; older leads saved for another act or "Both" are treated as this act.
+const ACT = 'Timothy Chance and Rasta Country';
 let vLeads = DFStore.load('df_leads');
 let sLeads = DFStore.load('df_sync_leads');
 let vFilter='all', sFilter='all';
@@ -761,7 +785,7 @@ async function genBookingEmail(){
   if(!venue){toast('Enter a venue name','err');return}
   const btn=document.getElementById('bv-btn');btn.innerHTML='<span class="spinner"></span> Generating...';btn.disabled=true;
   document.getElementById('bv-preview').textContent='Writing your pitch...';document.getElementById('bv-preview').classList.remove('ph');
-  const sys=`You are a booking agent for Dragon Farm Records, Nashville TN. Artists: Timothy Chance and Rasta Country (Country-Reggae, "Mr. Iron Man (Live)") and Poetic Nocturnal Creatures (Conscious Hip-Hop, "Peace Pipe"). Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.`;
+  const sys=`You are a booking agent for Dragon Farm Records, Nashville TN. Artist: Timothy Chance and Rasta Country (Country-Reggae, "Mr. Iron Man (Live)"). Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.`;
   const prompt=`Write a ${document.getElementById('bv-tone').value} booking pitch to ${document.getElementById('bv-contact').value||'Booking Manager'} at ${venue}, a ${document.getElementById('bv-vtype').value} in ${document.getElementById('bv-city').value||'their city'}. Artist: ${document.getElementById('bv-artist').value}. ${document.getElementById('bv-notes').value?`Context: ${document.getElementById('bv-notes').value}`:''}`;
   const raw=await ai(sys,prompt,1500);
   btn.innerHTML='✨ Generate Email';btn.disabled=false;
@@ -778,7 +802,7 @@ async function genSyncEmail(){
   if(!contact&&!company){toast('Enter a supervisor or company','err');return}
   const btn=document.getElementById('sv-btn');btn.innerHTML='<span class="spinner"></span> Generating...';btn.disabled=true;
   document.getElementById('sv-preview').textContent='Writing your pitch...';document.getElementById('sv-preview').classList.remove('ph');
-  const sys=`You are a sync licensing agent for Dragon Farm Records. Tracks: "Mr. Iron Man (Live)" (Country-Reggae, ISRC:QM6N22632890, UPC:820200992949) and "Peace Pipe" (Conscious Hip-Hop, ISRC:QM6N22632979, UPC:820200962904). Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.`;
+  const sys=`You are a sync licensing agent for Dragon Farm Records. Track: "Mr. Iron Man (Live)" by Timothy Chance and Rasta Country (Country-Reggae, ISRC:QM6N22632890, UPC:820200992949). Return ONLY JSON: {"subject":"...","body":"..."}. No markdown.`;
   const prompt=`Write a ${document.getElementById('sv-tone').value} sync pitch to ${contact} at ${company} for their ${document.getElementById('sv-ptype').value}${document.getElementById('sv-project').value?` "${document.getElementById('sv-project').value}"`:''}.Track: ${document.getElementById('sv-track').value}. ${document.getElementById('sv-notes').value?`Context: ${document.getElementById('sv-notes').value}`:''}`;
   const raw=await ai(sys,prompt,1500);
   btn.innerHTML='✨ Generate Pitch';btn.disabled=false;
@@ -800,7 +824,7 @@ function populateLeadSelect(id,leads,type){
   const sel=document.getElementById(id);if(!sel)return;
   sel.innerHTML='<option value="">Select a lead...</option>'+leads.map(l=>`<option value="${l.id}">${esc(l.name)}${l.city?' — '+esc(l.city):''}</option>`).join('');
 }
-function loadVenueLead(){const id=document.getElementById('bv-load').value;if(!id)return;const l=vLeads.find(x=>x.id===id);if(!l)return;bvLeadId=id;document.getElementById('bv-venue').value=l.name||'';document.getElementById('bv-contact').value=l.contactName||'';document.getElementById('bv-city').value=l.city||'';document.getElementById('bv-artist').value=l.artist==='Both'?'both':l.artist||'both';toast(`Loaded ${l.name} ✓`,'ok')}
+function loadVenueLead(){const id=document.getElementById('bv-load').value;if(!id)return;const l=vLeads.find(x=>x.id===id);if(!l)return;bvLeadId=id;document.getElementById('bv-venue').value=l.name||'';document.getElementById('bv-contact').value=l.contactName||'';document.getElementById('bv-city').value=l.city||'';document.getElementById('bv-artist').value=ACT;toast(`Loaded ${l.name} ✓`,'ok')}
 function loadSyncLead(){const id=document.getElementById('sv-load').value;if(!id)return;const l=sLeads.find(x=>x.id===id);if(!l)return;svLeadId=id;document.getElementById('sv-contact').value=l.contact||'';document.getElementById('sv-company').value=l.name||'';document.getElementById('sv-project').value=l.project||'';if(l.category)document.getElementById('sv-ptype').value=l.category;toast(`Loaded ${l.name} ✓`,'ok')}
 
 // ---- VENUE PIPELINE ----
@@ -809,7 +833,7 @@ function renderVenuePipe(){
   const q=document.getElementById('vp-search').value.toLowerCase();
   const filtered=vLeads.filter(l=>(vFilter==='all'||l.status===vFilter)&&(!q||[l.name,l.city,l.type,l.contactName,l.contactEmail].join(' ').toLowerCase().includes(q)));
   const tb=document.getElementById('vp-tbody');
-  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editVLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.city)}</td><td><span class="type-badge tb-green">${esc(l.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(l.artist)}</td><td class="cell-contact">${l.contactName?`<div>${esc(l.contactName)}</div>`:''} ${l.contactEmail?`<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}${[...DFDeals.issues(l),...DFShow.issues(l)].some(i=>i.level==='red')?'<div class="deal-flag deal-flag-red">🚩 Needs attention</div>':''}</td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromVLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delVLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div>No leads found.</div></td></tr>`;
+  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editVLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.city)}${window.DFDist?DFDist.badge(l,vLeads):''}</td><td><span class="type-badge tb-green">${esc(l.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(l.artist)}</td><td class="cell-contact">${l.contactName?`<div>${esc(l.contactName)}</div>`:''} ${l.contactEmail?`<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>`:''}${l.contactPhone&&window.DFPhone?`<div>${DFPhone.links(l.contactPhone)}</div>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}${[...DFDeals.issues(l),...DFShow.issues(l)].some(i=>i.level==='red')?'<div class="deal-flag deal-flag-red">🚩 Needs attention</div>':''}</td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromVLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delVLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div>No leads found.</div></td></tr>`;
 }
 
 // ---- SYNC PIPELINE ----
@@ -827,12 +851,12 @@ function openModal(type){type==='venue'?openVModal():openSModal()}
 function openVModal(data){
   editingVId=null;document.getElementById('vm-title').textContent='Add Booking Lead';
   ['vm-id','vm-name','vm-city','vm-cname','vm-cemail','vm-cphone','vm-date','vm-followup','vm-notes'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('vm-status').value='new';document.getElementById('vm-type').value='Bar / Club';document.getElementById('vm-artist').value='Both';
+  document.getElementById('vm-status').value='new';document.getElementById('vm-type').value='Bar / Club';document.getElementById('vm-artist').value=ACT;
   DFDeals.fill('vm',{});DFShow.fill('vm',{});
   if(data){if(data.name)document.getElementById('vm-name').value=data.name;if(data.city)document.getElementById('vm-city').value=data.city;if(data.type)document.getElementById('vm-type').value=data.type;if(data.artist)document.getElementById('vm-artist').value=data.artist;if(data.contactName)document.getElementById('vm-cname').value=data.contactName;if(data.status)document.getElementById('vm-status').value=data.status;if(data.notes)document.getElementById('vm-notes').value=data.notes;DFFollow.suggest(document.getElementById('vm-status'),document.getElementById('vm-followup'))}
   document.getElementById('modal-venue').classList.add('open');
 }
-function editVLead(id){const l=vLeads.find(x=>x.id===id);if(!l)return;editingVId=id;document.getElementById('vm-title').textContent='Edit Lead';document.getElementById('vm-id').value=id;document.getElementById('vm-name').value=l.name||'';document.getElementById('vm-city').value=l.city||'';document.getElementById('vm-type').value=l.type||'Bar / Club';document.getElementById('vm-artist').value=l.artist||'Both';document.getElementById('vm-cname').value=l.contactName||'';document.getElementById('vm-cemail').value=l.contactEmail||'';document.getElementById('vm-cphone').value=l.contactPhone||'';document.getElementById('vm-status').value=l.status||'new';document.getElementById('vm-date').value=l.eventDate||'';document.getElementById('vm-followup').value=l.followUp||'';document.getElementById('vm-notes').value=l.notes||'';DFDeals.fill('vm',l);DFShow.fill('vm',l);document.getElementById('modal-venue').classList.add('open')}
+function editVLead(id){const l=vLeads.find(x=>x.id===id);if(!l)return;editingVId=id;document.getElementById('vm-title').textContent='Edit Lead';document.getElementById('vm-id').value=id;document.getElementById('vm-name').value=l.name||'';document.getElementById('vm-city').value=l.city||'';document.getElementById('vm-type').value=l.type||'Bar / Club';document.getElementById('vm-artist').value=ACT;document.getElementById('vm-cname').value=l.contactName||'';document.getElementById('vm-cemail').value=l.contactEmail||'';document.getElementById('vm-cphone').value=l.contactPhone||'';document.getElementById('vm-status').value=l.status||'new';document.getElementById('vm-date').value=l.eventDate||'';document.getElementById('vm-followup').value=l.followUp||'';document.getElementById('vm-notes').value=l.notes||'';DFDeals.fill('vm',l);DFShow.fill('vm',l);document.getElementById('modal-venue').classList.add('open')}
 function saveVenueLead(){
   const name=document.getElementById('vm-name').value.trim();if(!name){toast('Name required','err');return}
   const d={name,city:document.getElementById('vm-city').value.trim(),type:document.getElementById('vm-type').value,artist:document.getElementById('vm-artist').value,contactName:document.getElementById('vm-cname').value.trim(),contactEmail:document.getElementById('vm-cemail').value.trim(),contactPhone:document.getElementById('vm-cphone').value.trim(),status:document.getElementById('vm-status').value,followUp:document.getElementById('vm-followup').value,eventDate:document.getElementById('vm-date').value,notes:document.getElementById('vm-notes').value.trim(),...DFDeals.read('vm'),...DFShow.read('vm')};
@@ -851,11 +875,11 @@ function saveVLeads(){DFStore.save('df_leads',vLeads)}
 function openSModal(data){
   editingSId=null;document.getElementById('sm-title').textContent='Add Sync Opportunity';
   ['sm-id','sm-name','sm-project','sm-cname','sm-cemail','sm-fee','sm-followup','sm-notes'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('sm-status').value='new';document.getElementById('sm-cat').value='Film';document.getElementById('sm-track').value='Both';
-  if(data){if(data.name)document.getElementById('sm-name').value=data.name;if(data.project)document.getElementById('sm-project').value=data.project;if(data.category)document.getElementById('sm-cat').value=data.category;if(data.track)document.getElementById('sm-track').value=data.track.includes('Iron')?'Mr. Iron Man (Live)':data.track.includes('Peace')?'Peace Pipe':'Both';if(data.contact)document.getElementById('sm-cname').value=data.contact;if(data.status)document.getElementById('sm-status').value=data.status;if(data.notes)document.getElementById('sm-notes').value=data.notes;DFFollow.suggest(document.getElementById('sm-status'),document.getElementById('sm-followup'))}
+  document.getElementById('sm-status').value='new';document.getElementById('sm-cat').value='Film';document.getElementById('sm-track').value='Mr. Iron Man (Live)';
+  if(data){if(data.name)document.getElementById('sm-name').value=data.name;if(data.project)document.getElementById('sm-project').value=data.project;if(data.category)document.getElementById('sm-cat').value=data.category;if(data.contact)document.getElementById('sm-cname').value=data.contact;if(data.status)document.getElementById('sm-status').value=data.status;if(data.notes)document.getElementById('sm-notes').value=data.notes;DFFollow.suggest(document.getElementById('sm-status'),document.getElementById('sm-followup'))}
   document.getElementById('modal-sync').classList.add('open');
 }
-function editSLead(id){const l=sLeads.find(x=>x.id===id);if(!l)return;editingSId=id;document.getElementById('sm-title').textContent='Edit Opportunity';document.getElementById('sm-id').value=id;document.getElementById('sm-name').value=l.name||'';document.getElementById('sm-project').value=l.project||'';document.getElementById('sm-cat').value=l.category||'Film';document.getElementById('sm-track').value=l.track||'Both';document.getElementById('sm-cname').value=l.contact||'';document.getElementById('sm-cemail').value=l.email||'';document.getElementById('sm-fee').value=l.fee||'';document.getElementById('sm-status').value=l.status||'new';document.getElementById('sm-followup').value=l.followUp||'';document.getElementById('sm-notes').value=l.notes||'';document.getElementById('modal-sync').classList.add('open')}
+function editSLead(id){const l=sLeads.find(x=>x.id===id);if(!l)return;editingSId=id;document.getElementById('sm-title').textContent='Edit Opportunity';document.getElementById('sm-id').value=id;document.getElementById('sm-name').value=l.name||'';document.getElementById('sm-project').value=l.project||'';document.getElementById('sm-cat').value=l.category||'Film';document.getElementById('sm-track').value='Mr. Iron Man (Live)';document.getElementById('sm-cname').value=l.contact||'';document.getElementById('sm-cemail').value=l.email||'';document.getElementById('sm-fee').value=l.fee||'';document.getElementById('sm-status').value=l.status||'new';document.getElementById('sm-followup').value=l.followUp||'';document.getElementById('sm-notes').value=l.notes||'';document.getElementById('modal-sync').classList.add('open')}
 function saveSyncLead(){
   const name=document.getElementById('sm-name').value.trim();if(!name){toast('Name required','err');return}
   const d={name,project:document.getElementById('sm-project').value.trim(),category:document.getElementById('sm-cat').value,track:document.getElementById('sm-track').value,contact:document.getElementById('sm-cname').value.trim(),email:document.getElementById('sm-cemail').value.trim(),fee:document.getElementById('sm-fee').value.trim(),status:document.getElementById('sm-status').value,followUp:document.getElementById('sm-followup').value,notes:document.getElementById('sm-notes').value.trim()};
@@ -870,7 +894,7 @@ function saveSLeads(){DFStore.save('df_sync_leads',sLeads)}
 
 // ---- DEALS, SHOW DAY, CALENDAR ----
 DFDeals.wire('vm');DFShow.wire('vm');
-const CAL_ARTISTS=[['all','All artists'],['Timothy Chance and Rasta Country','Timothy Chance & Rasta Country'],['Poetic Nocturnal Creatures','Poetic Nocturnal Creatures']];
+const CAL_ARTISTS=[['all','All artists'],['Timothy Chance and Rasta Country','Timothy Chance & Rasta Country']];
 const calState={month:new Date(),artist:'all',selected:''};
 function renderCalendar(){
   document.getElementById('cal-filters').innerHTML=CAL_ARTISTS.map(([v,label])=>`<button class="cal-filter${calState.artist===v?' on':''}" onclick="calFilter('${v}')">${label}</button>`).join('');
@@ -880,7 +904,10 @@ function calMove(step){calState.month=step?new Date(calState.month.getFullYear()
 function calFilter(a){calState.artist=a;renderCalendar()}
 function calSelect(date){calState.selected=calState.selected===date?'':date;renderCalendar()}
 function calAdd(date){openVModal();document.getElementById('vm-date').value=date}
-function renderShows(){DFShow.renderShows({totals:document.getElementById('shows-totals'),list:document.getElementById('shows-list')},vLeads,'editVLead',{gaps:'fillGaps',invoice:'openInvoice',remind:'remindDeposit'})}
+function renderShows(){DFShow.renderShows({totals:document.getElementById('shows-totals'),list:document.getElementById('shows-list')},vLeads,'editVLead',{gaps:'fillGaps',invoice:'openInvoice',remind:'remindDeposit',fans:'fanQr',sign:'signShow',calendar:'addToCalendar'})}
+function addToCalendar(id){const l=vLeads.find(x=>x.id===id);if(l)DFShowCal.openAdd(l)}
+function signShow(id){const l=vLeads.find(x=>x.id===id);if(!l)return;const artist=l.artist&&l.artist!=='Both'?l.artist:'Timothy Chance and Rasta Country';DFSign.open({lead:l,list:'venue',title:`Performance agreement: ${artist} at ${l.name}${l.eventDate?`, ${l.eventDate}`:''}`,text:DFSign.venueText(l),onChange:()=>{renderShows();renderVenuePipe()}})}
+function fanQr(id){const l=vLeads.find(x=>x.id===id);if(l)DFFans.openForShow(l)}
 
 // ---- FOLLOW-UPS ----
 ['vm','sm'].forEach(p=>document.getElementById(p+'-status').addEventListener('change',()=>DFFollow.suggest(document.getElementById(p+'-status'),document.getElementById(p+'-followup'))));
@@ -903,7 +930,7 @@ function fillGaps(id){
   const gap=DFOut.gaps(vLeads,l);
   if(!gap.dates.length){toast('No open dates within 3 days of this show','err');return}
   goTab('venues','green');
-  bookers.run({location:`Within about a 3-hour drive of ${l.city||l.name}`,artist:l.artist||'Both',dates:gap.text,categories:['venues','buyers','breweries','community']});
+  bookers.run({location:`Within about a 3-hour drive of ${l.city||l.name}`,artist:ACT,dates:gap.text,categories:['venues','buyers','breweries','community'],near:l.city?{city:l.city,label:`${l.name}, ${l.city}`}:null});
 }
 function setVLead(id,lead){const i=vLeads.findIndex(x=>x.id===id);if(i===-1)return;vLeads[i]=lead;saveVLeads();renderShows();renderVenuePipe()}
 function openInvoice(id){const l=vLeads.find(x=>x.id===id);if(l)DFOut.invoice(l,saved=>setVLead(id,saved))}
@@ -953,11 +980,12 @@ function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateStrin
 
 // ---- INIT ----
 // Mark deposits paid online as received, then redraw with the latest activity.
-function onActivity(){if(DFOut.reconcile(vLeads).length)saveVLeads();renderOverview();renderVenuePipe();renderSyncPipe();renderCalendar();renderShows()}
+function onActivity(){if(DFOut.reconcile(vLeads).length)saveVLeads();if(DFOut.reconcile(sLeads,'sync').length)saveSLeads();renderOverview();renderVenuePipe();renderSyncPipe();renderCalendar();renderShows()}
 renderOverview();
 renderVenuePipe();
 renderSyncPipe();
 DFOut.init(onActivity);
+DFDist.load().then(ok=>{if(ok){renderShows();renderVenuePipe();bookers.refresh()}});
 DFStore.connect('df_leads',items=>{vLeads=items;onActivity()});
 DFStore.connect('df_sync_leads',items=>{sLeads=items;renderOverview();renderSyncPipe()});
 </script>

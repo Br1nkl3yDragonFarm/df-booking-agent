@@ -10,8 +10,9 @@
 //  checkout.session.async_payment_succeeded to this function's URL.
 // ============================================================
 
+import { emit, leadSummary } from '../lib/events.mjs';
 import { verifyStripe } from '../lib/mail.mjs';
-import { clean, json, pushCapped, recordActivity } from '../lib/store.mjs';
+import { clean, findLeadById, json, pushCapped, recordActivity } from '../lib/store.mjs';
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, {});
@@ -34,8 +35,14 @@ export default async (req) => {
     invoice: clean(session.metadata?.invoice, 40),
     id: clean(session.id, 100)
   };
-  await recordActivity(leadId, a => (a.payments || []).some(p => p.id === payment.id)
-    ? a
-    : { ...a, payments: pushCapped(a.payments, payment) });
+  let isNew = false;
+  await recordActivity(leadId, a => {
+    isNew = !(a.payments || []).some(p => p.id === payment.id);
+    return isNew ? { ...a, payments: pushCapped(a.payments, payment) } : a;
+  });
+  if (isNew) {
+    const found = await findLeadById(leadId);
+    await emit('payment.received', { ...payment, lead: found ? leadSummary(found.lead) : { id: leadId } });
+  }
   return json(200, { recorded: true });
 };

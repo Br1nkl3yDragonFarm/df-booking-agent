@@ -1,13 +1,13 @@
 // Shared Netlify Blobs helpers for the server functions.
 //
-//  df-crm       the booking ('venue') and sync pipelines, as the pages save them
+//  df-crm       the booking ('venue'), sync and brand pipelines, as the pages save them
 //  df-activity  things that happen to a lead outside the pages: emails sent,
 //               replies received, press kit views, online payments. Kept apart
 //               from the lead itself so a page saving an older copy of a lead
 //               can never wipe them out.
 import { getStore } from '@netlify/blobs';
 
-export const LISTS = ['venue', 'sync'];
+export const LISTS = ['venue', 'sync', 'brand'];
 const MAX_ATTEMPTS = 8;
 const MAX_PER_KIND = 25;
 

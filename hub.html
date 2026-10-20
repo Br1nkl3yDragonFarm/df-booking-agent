@@ -210,6 +210,11 @@
         <a href="dashboard.html">Booking</a>
         <a href="sync.html">Sync</a>
         <a href="epk-edit.html">Press kits</a>
+        <a href="brands.html">Brands</a>
+        <a href="fan-list.html">Fans</a>
+        <a href="report.html">What's working</a>
+        <a href="captions.html">Captions</a>
+        <a href="automations.html">Automations</a>
         <a href="index.html" target="_blank" rel="noopener">Public page ↗</a>
       </nav>
     </div>
@@ -266,8 +271,33 @@
         </a>
         <a href="epk-edit.html" class="tool">
           <span class="tool-name">Press kits</span>
-          <p class="tool-desc">One public page per artist with bio, music, live video, past shows and draw. Pitches link to it, and you see when a buyer opens it.</p>
+          <p class="tool-desc">A public page with the band's bio, music, live video, past shows and draw. Pitches link to it, and you see when a buyer opens it.</p>
           <span class="tool-open">Edit press kits</span>
+        </a>
+        <a href="brands.html" class="tool">
+          <span class="tool-name">Brand deals</span>
+          <p class="tool-desc">Find sponsors and lifestyle brands that fit the band, pitch the fit and the audience, and check every offer against the red flags.</p>
+          <span class="tool-open">Open brand deals</span>
+        </a>
+        <a href="fan-list.html" class="tool">
+          <span class="tool-name">Fan list</span>
+          <p class="tool-desc">Fans who signed up at shows from the QR code at the merch table, counted by town: the proof of draw that gets bigger guarantees.</p>
+          <span class="tool-open">Open the fan list</span>
+        </a>
+        <a href="report.html" class="tool">
+          <span class="tool-name">What's working</span>
+          <p class="tool-desc">Which kinds of leads and towns turn into shows, what they pay on average, and which pitches get replies.</p>
+          <span class="tool-open">Open the report</span>
+        </a>
+        <a href="captions.html" class="tool">
+          <span class="tool-name">Captions</span>
+          <p class="tool-desc">Drop in a video or song and get captions for Instagram, TikTok, YouTube or CapCut. Runs in the browser, free and private.</p>
+          <span class="tool-open">Make captions</span>
+        </a>
+        <a href="automations.html" class="tool">
+          <span class="tool-name">Automations</span>
+          <p class="tool-desc">Send bookings, payments, replies and fan sign-ups to n8n, which posts to Discord or social media, fills a sheet or texts you.</p>
+          <span class="tool-open">Set up automations</span>
         </a>
       </div>
       <p class="public-link">The public booking page is where promoters see the acts and send inquiries. <a href="index.html" target="_blank" rel="noopener">View it ↗</a></p>
@@ -287,16 +317,6 @@
             <div><dt>ISRC</dt><dd>QM6N22632890</dd></div>
             <div><dt>UPC</dt><dd>820200992949</dd></div>
             <div><dt>Best for</dt><dd>Westerns, road films, outdoor brands, lifestyle</dd></div>
-            <div><dt>Rights</dt><dd>Master and sync available from Dragon Farm Records</dd></div>
-          </dl>
-        </article>
-        <article>
-          <h3 class="track-title">Peace Pipe</h3>
-          <p class="track-artist">Poetic Nocturnal Creatures, conscious hip-hop</p>
-          <dl class="track-facts">
-            <div><dt>ISRC</dt><dd>QM6N22632979</dd></div>
-            <div><dt>UPC</dt><dd>820200962904</dd></div>
-            <div><dt>Best for</dt><dd>Cannabis brands, social docs, indie film, conscious lifestyle</dd></div>
             <div><dt>Rights</dt><dd>Master and sync available from Dragon Farm Records</dd></div>
           </dl>
         </article>
@@ -391,10 +411,12 @@ function longDate(date) {
 function renderToday() {
   const venue = DFStore.load('df_leads');
   const sync = DFStore.load('df_sync_leads');
+  const brand = DFStore.load('df_brand_leads');
 
-  // Follow-ups due across both pipelines
+  // Follow-ups due across the pipelines
   const due = [...DFFollow.due(venue).map(l => ({ l, page: 'dashboard.html', kind: 'Booking' })),
-               ...DFFollow.due(sync).map(l => ({ l, page: 'sync.html', kind: 'Sync' }))]
+               ...DFFollow.due(sync).map(l => ({ l, page: 'sync.html', kind: 'Sync' })),
+               ...DFFollow.due(brand).map(l => ({ l, page: 'brands.html', kind: 'Brand' }))]
     .sort((a, b) => (DFOut.needsReply(b.l) - DFOut.needsReply(a.l)) || (a.l.followUp || '').localeCompare(b.l.followUp || ''));
   document.getElementById('today-followups').innerHTML = due.length
     ? `<div class="today-big">${due.length}</div>` + due.slice(0, 4).map(({ l, page, kind }) =>
@@ -436,6 +458,7 @@ loadStats();
 DFOut.init(renderToday);
 DFStore.connect('df_leads', loadStats);
 DFStore.connect('df_sync_leads', loadStats);
+DFStore.connect('df_brand_leads', renderToday);
 </script>
 </body>
 </html>
