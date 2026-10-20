@@ -60,6 +60,8 @@
       <p class="section-sub">Thanks for coming out. We'll let you know when we're back in town.</p>
     </div>
   </main>
+  <script src="vendor/mailcheck.js"></script>
+  <script src="emailcheck.js"></script>
   <script>
   // ?show=Exit/In, Nashville · Sat, Oct 31 & city=Nashville, TN come from the QR code at the merch table.
   (function () {
@@ -80,6 +82,10 @@
       if (!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(email)) { error.textContent = 'Check your email address.'; return; }
       if (!document.getElementById('fan-city').value.trim()) { error.textContent = 'Add your town so we know where to tell you about shows.'; return; }
       if (!document.getElementById('fan-ok').checked) { error.textContent = 'Tick the box so we can email you.'; return; }
+      // A likely typo (emailcheck.js): point at it once; a second tap keeps the address as typed.
+      DFMailcheck.check(document.getElementById('fan-email'));
+      const hint = document.querySelector('#fan-email + .dfm-hint');
+      if (hint && form.dataset.warned !== email) { form.dataset.warned = email; error.textContent = 'Check your email above. Tap “Sign me up” again to keep it as typed.'; return; }
       error.textContent = '';
       const btn = document.getElementById('fan-submit');
       btn.disabled = true; btn.textContent = 'Signing you up…';
