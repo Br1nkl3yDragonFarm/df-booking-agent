@@ -14,11 +14,13 @@ export function addFan(input) {
   if (!EMAIL.test(email)) return Promise.resolve(null);
   const at = clean(input.at, 40) || new Date().toISOString();
   const show = clean(input.show, 160);
+  let isNew = false;
   return updateJSON(fansStore(), 'list', saved => {
     const fans = saved?.fans || [];
     const i = fans.findIndex(f => f.email === email);
+    isNew = i === -1;
     if (i === -1) {
-      if (fans.length >= MAX_FANS) return undefined;
+      if (fans.length >= MAX_FANS) { isNew = false; return undefined; }
       return { fans: [...fans, { email, name: clean(input.name, 120), city: clean(input.city, 120), shows: show ? [show] : [], first: at, last: at }] };
     }
     const f = fans[i];
@@ -30,7 +32,7 @@ export function addFan(input) {
       last: at > f.last ? at : f.last
     };
     return { fans: fans.map((x, j) => j === i ? next : x) };
-  });
+  }).then(list => list && { ...list, isNew });
 }
 
 // "nashville, tn" and "Nashville, TN" are one town (same rule as report.js and fans.js).

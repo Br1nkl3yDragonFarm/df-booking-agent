@@ -89,7 +89,16 @@ On the **Fan list** page, **Email your fans** sends a branded email to everyone 
 Open **Press Kits** (`epk-edit.html`) and fill in the artist's photo link, music and video links, past shows, draw and stage info.
 It starts from the bio on the public site. Add only facts you can stand behind: buyers check.
 
-### 11. Deploy to Netlify
+### 11. Automations with n8n (optional)
+The tool can tell [n8n](https://n8n.io) (a drag-and-drop workflow tool) when something happens: a show is booked, a sync is licensed, a brand deal is signed, someone replies, a deposit is paid, an agreement is signed, an inquiry or a fan sign-up comes in, the Monday rundown goes out. n8n then does the follow-on chores: post to Discord or social media, add a row to a Google Sheet, text you.
+1. Get n8n: n8n Cloud, or self-host the free version.
+2. In n8n, **Import from file** → `n8n/dragon-farm-events.json`. Open its **Webhook** step, copy the **Production URL**, and turn the workflow on.
+3. In Netlify, add `N8N_WEBHOOK_URL` (that URL). Optionally add `N8N_WEBHOOK_SECRET` (any long random text) and put the same text in the workflow's **Settings** step, so n8n ignores events that didn't come from you.
+4. Open **Automations** (`automations.html`) and send a test event.
+
+The workflow's Discord and Google Sheets steps start switched off: paste a Discord channel webhook in **Settings**, or connect Google and pick a sheet, then switch the step on. If n8n is down, nothing in the tool breaks; that event just isn't sent.
+
+### 12. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -127,6 +136,8 @@ Connect this repo to Netlify:
 ├── fans.html        # Public fan sign-up page the merch-table QR code opens (Netlify form "fan-signup")
 ├── fan-list.html    # Fan list by town, CSV export, QR maker (private)
 ├── fans.js          # Fan list helpers and the QR code / printable sign
+├── automations.html # n8n status and test events (private)
+├── n8n/dragon-farm-events.json              # Ready-to-import n8n workflow: checks the signature, writes a message, routes by event
 ├── vendor/          # Third-party browser libraries, all MIT, each with its license header:
 │                    #   qrcode.js, signature_pad.js, datebook.js, papaparse.js, geolib.js, mailcheck.js, libphonenumber.js, chart.js,
 │                    #   us-cities.json (US-Cities-Database by Kelvin S. do Prado, MIT)
@@ -157,6 +168,8 @@ Connect this repo to Netlify:
 ├── netlify/lib/finder.mjs                   # The finder search itself, shared by the page searches and the weekly run
 ├── netlify/lib/digest.mjs                   # Builds and sends the Monday digest (email and/or Discord)
 ├── netlify/lib/weekly.mjs                   # Where weekly searches and the last run are kept
+├── netlify/functions/automations.mjs        # Automations status and sample events (passcode)
+├── netlify/lib/events.mjs                   # Sends events to n8n (signed, never blocks the thing that caused it)
 ├── netlify/lib/passcode.mjs                 # Shared passcode check
 ├── netlify/lib/store.mjs                    # Shared Blobs helpers (pipelines, activity)
 ├── netlify/lib/mail.mjs                     # Sending through Resend, addresses and webhook signature checks

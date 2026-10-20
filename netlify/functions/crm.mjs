@@ -9,6 +9,10 @@
 
 import { getStore } from '@netlify/blobs';
 import { timingSafeEqual } from 'node:crypto';
+import { emit, leadSummary } from '../lib/events.mjs';
+
+// A lead reaching this status is news for the automations (lib/events.mjs).
+const WON = { venue: ['booked', 'show.booked'], sync: ['licensed', 'sync.licensed'], brand: ['signed', 'brand.signed'] };
 
 const LISTS = ['venue', 'sync', 'brand'];
 const MAX_ITEMS = 5000;
@@ -67,6 +71,7 @@ export default async (req) => {
   for (let attempt = 0; attempt < MAX_WRITE_ATTEMPTS; attempt++) {
     const saved = await store.getWithMetadata(list, { type: 'json' });
     const removed = new Set(deletes);
+    const before = new Map((saved?.data?.items || []).map(item => [item.id, item.status]));
     const items = (saved?.data?.items || []).filter(item => !removed.has(item.id));
     for (const item of upserts) {
       const i = items.findIndex(existing => existing.id === item.id);
@@ -79,7 +84,12 @@ export default async (req) => {
     const result = saved
       ? await store.setJSON(list, value, { onlyIfMatch: saved.etag })
       : await store.setJSON(list, value, { onlyIfNew: true });
-    if (result.modified) return json(200, { items });
+    if (result.modified) {
+      const [status, type] = WON[list] || [];
+      const won = upserts.filter(item => status && item.status === status && before.get(item.id) !== status);
+      if (won.length) await Promise.all(won.map(item => emit(type, leadSummary(item), url.origin)));
+      return json(200, { items });
+    }
   }
   return json(409, { error: 'busy_try_again' });
 };

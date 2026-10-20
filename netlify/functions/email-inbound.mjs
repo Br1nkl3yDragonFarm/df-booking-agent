@@ -12,6 +12,7 @@
 //    RESEND_API_KEY         used to read the reply's text
 // ============================================================
 
+import { emit, leadSummary } from '../lib/events.mjs';
 import { bareAddress, fromAddress, replyTo, verifyResend } from '../lib/mail.mjs';
 import { LISTS, clean, json, pushCapped, readList, recordActivity } from '../lib/store.mjs';
 
@@ -81,8 +82,11 @@ export default async (req) => {
     snippet: snippet(await replyText(data.email_id)),
     id: clean(data.email_id, 100)
   };
-  await recordActivity(match.lead.id, a => (a.replies || []).some(r => r.id && r.id === reply.id)
-    ? a
-    : { ...a, replies: pushCapped(a.replies, reply) });
+  let isNew = false;
+  await recordActivity(match.lead.id, a => {
+    isNew = !(a.replies || []).some(r => r.id && r.id === reply.id);
+    return isNew ? { ...a, replies: pushCapped(a.replies, reply) } : a;
+  });
+  if (isNew) await emit('reply.received', { from: reply.from, subject: reply.subject, snippet: reply.snippet, list: match.list, lead: leadSummary(match.lead) });
   return json(200, { matched: true, lead: match.lead.id });
 };

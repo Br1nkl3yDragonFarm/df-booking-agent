@@ -11,8 +11,9 @@
 //  private fan list instead.
 // ============================================================
 
+import { emit, leadSummary } from '../lib/events.mjs';
 import { addFan } from '../lib/fans.mjs';
-import { addLeadIfNew, clean, labelToday } from '../lib/store.mjs';
+import { addLeadIfNew, clean, labelToday, readList } from '../lib/store.mjs';
 
 // The label's one act for now.
 const ACT = 'Timothy Chance and Rasta Country';
@@ -72,13 +73,16 @@ export default async (req) => {
   catch { return new Response('', { status: 400 }); }
   if (submission.form_name === 'fan-signup') {
     const d = submission.data || {};
-    await addFan({ email: d.email, name: d.name, city: d.city, show: d.show, at: submission.created_at });
+    const added = await addFan({ email: d.email, name: d.name, city: d.city, show: d.show, at: submission.created_at });
+    if (added?.isNew) await emit('fan.signed_up', { email: String(d.email || '').toLowerCase(), name: clean(d.name, 120), city: clean(d.city, 120), show: clean(d.show, 160), fans: added.fans.length });
     return new Response('');
   }
   if (submission.form_name !== 'booking-inquiry') return new Response('');
 
   const { list, lead } = inquiryLead(submission, labelToday());
   // Netlify can retry an event; the lead may have been edited by then.
+  const existed = (await readList(list)).some(l => l.id === lead.id);
   await addLeadIfNew(list, lead);
+  if (!existed) await emit('inquiry.received', { list, lead: leadSummary(lead), notes: lead.notes });
   return new Response('');
 };

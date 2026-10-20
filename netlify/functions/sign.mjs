@@ -19,6 +19,7 @@
 import { randomBytes } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { emit } from '../lib/events.mjs';
 import { replyTo, sendMail } from '../lib/mail.mjs';
 import { passcodeMatches } from '../lib/passcode.mjs';
 import { LISTS, clean, crmStore, json, pushCapped, recordActivity, updateJSON } from '../lib/store.mjs';
@@ -159,6 +160,7 @@ export default async (req) => {
       const to = [replyTo(), EMAIL.test(doc.signerEmail || '') ? doc.signerEmail : ''].filter(Boolean);
       await sendMail({ to, subject: `Signed: ${doc.title}`, text, attachments }).catch(() => {});
     }
+    await emit('agreement.signed', { title: doc.title, list: doc.list, leadId: doc.leadId, signedBy: name, role, at: signed.at, pdf: `${url.origin}/.netlify/functions/sign?t=${token}&pdf=1` }, url.origin);
     return json(200, publicView({ ...doc, status: 'signed', signed }));
   }
 

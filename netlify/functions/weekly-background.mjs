@@ -9,6 +9,7 @@
 // ============================================================
 
 import { buildDigest, sendDigest } from '../lib/digest.mjs';
+import { emit } from '../lib/events.mjs';
 import { MODES, alreadyListed, readQuery, runSearch, toLead } from '../lib/finder.mjs';
 import { passcodeMatches } from '../lib/passcode.mjs';
 import { activityStore, crmStore, labelToday, readList, updateJSON } from '../lib/store.mjs';
@@ -69,6 +70,7 @@ export default async (req) => {
     const [venue, sync, brand, activity] = await Promise.all([readList('venue'), readList('sync'), readList('brand'), activityStore().get('leads', { type: 'json' })]);
     const digest = buildDigest({ venue, sync, brand, activity: activity || {}, today, added: outcomes, siteUrl: process.env.URL || new URL(req.url).origin });
     sent = await sendDigest(digest);
+    await emit('digest.sent', { subject: digest.subject, text: digest.text, counts: digest.counts });
   } catch (err) {
     sent = { email: String(err.message || 'failed'), discord: 'off' };
   }
