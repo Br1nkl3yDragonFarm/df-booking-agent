@@ -7,7 +7,8 @@
 //  week's shows. Sent by email (Resend) and/or to a Discord channel.
 //
 //  Environment variables:
-//    DF_DIGEST_TO         who gets the email (default: DF_REPLY_TO, the booking inbox)
+//    DF_DIGEST_TO         who gets the email, comma-separated for several
+//                         (default: DF_REPLY_TO, the booking inbox)
 //    DISCORD_WEBHOOK_URL  a Discord channel webhook; leave unset for email only
 // ============================================================
 
@@ -39,7 +40,13 @@ function unanswered(lead, act) {
   return !s || s.at < r.at ? r : null;
 }
 
-export const digestTo = () => process.env.DF_DIGEST_TO || replyTo();
+const EMAIL = /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/;
+
+// Everyone on DF_DIGEST_TO that looks like an email address (up to 10).
+export function digestTo() {
+  const list = String(process.env.DF_DIGEST_TO || '').split(/[,;\s]+/).map(s => s.trim()).filter(s => EMAIL.test(s));
+  return list.length ? list.slice(0, 10) : [replyTo()];
+}
 
 export function buildDigest({ venue = [], sync = [], brand = [], activity = {}, today, added = [], siteUrl = '' }) {
   const all = [...venue.map(l => ({ l, list: 'booking' })), ...sync.map(l => ({ l, list: 'sync' })), ...brand.map(l => ({ l, list: 'brand' }))];

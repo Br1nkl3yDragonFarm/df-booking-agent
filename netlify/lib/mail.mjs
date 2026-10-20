@@ -5,6 +5,7 @@ export const fromAddress = () => process.env.DF_FROM_EMAIL || 'Dragon Farm Booki
 export const replyTo = () => process.env.DF_REPLY_TO || 'booking@dragonfarm.net';
 
 // Send one plain-text email through Resend from the label's address.
+// `to` is one address or a list.
 // Returns { ok: true, id } or { ok: false, error } with a message for people.
 export async function sendMail({ to, subject, text, bcc, idempotencyKey }) {
   const key = process.env.RESEND_API_KEY;
@@ -16,7 +17,7 @@ export async function sendMail({ to, subject, text, bcc, idempotencyKey }) {
     res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ from: fromAddress(), to: [to], ...(bcc ? { bcc: [bcc] } : {}), reply_to: replyTo(), subject, text })
+      body: JSON.stringify({ from: fromAddress(), to: Array.isArray(to) ? to : [to], ...(bcc ? { bcc: [bcc] } : {}), reply_to: replyTo(), subject, text })
     });
     data = await res.json().catch(() => ({}));
   } catch {

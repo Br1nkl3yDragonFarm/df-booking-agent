@@ -15,7 +15,7 @@ import { passcodeMatches } from '../lib/passcode.mjs';
 import { activityStore, clean, json, labelToday, readList, updateJSON } from '../lib/store.mjs';
 import { MAX_WEEKLY, weeklyStore } from '../lib/weekly.mjs';
 
-const setup = () => ({ email: !!process.env.RESEND_API_KEY, to: digestTo(), discord: !!process.env.DISCORD_WEBHOOK_URL });
+const setup = () => ({ email: !!process.env.RESEND_API_KEY, to: digestTo().join(', '), discord: !!process.env.DISCORD_WEBHOOK_URL });
 const sameQuery = (a, b) => ['mode', 'location', 'artist', 'similar', 'count'].every(k => String(a[k]) === String(b[k]))
   && [...a.categories].sort().join() === [...b.categories].sort().join();
 

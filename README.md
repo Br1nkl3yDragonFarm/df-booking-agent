@@ -65,7 +65,7 @@ Each payment link takes one payment. When a deposit is paid, the lead's deposit 
 
 ### 6. Weekly Searches and the Monday Digest (optional)
 In **Find bookers** or **Find sync contacts**, set up a search and tap **⟳ Run this search every Monday**. Every Monday at about 8 am Nashville time (7 am in winter), the saved searches run, places not already in a pipeline are added as new leads due that day, and a digest goes out listing new leads, follow-ups due (unanswered replies first), overdue deposits and this week's shows.
-- **Email:** goes out through Resend (step 4) to the booking inbox. To send it somewhere else, add `DF_DIGEST_TO` in Netlify.
+- **Email:** goes out through Resend (step 4) to the booking inbox. To send it somewhere else, add `DF_DIGEST_TO` in Netlify: one address, or several separated by commas.
 - **Discord (optional):** in your Discord server, open the channel's **Edit Channel → Integrations → Webhooks → New Webhook**, copy its URL and add it in Netlify as `DISCORD_WEBHOOK_URL` (mark it secret).
 - **Run all now** and **Send a digest now** on the finder let you try it without waiting for Monday. Each search costs about the same as running it by hand.
 
