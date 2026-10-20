@@ -96,7 +96,15 @@ The tool can tell [n8n](https://n8n.io) (a drag-and-drop workflow tool) when som
 3. In Netlify, add `N8N_WEBHOOK_URL` (that URL). Optionally add `N8N_WEBHOOK_SECRET` (any long random text) and put the same text in the workflow's **Settings** step, so n8n ignores events that didn't come from you.
 4. Open **Automations** (`automations.html`) and send a test event.
 
-The workflow's Discord and Google Sheets steps start switched off: paste a Discord channel webhook in **Settings**, or connect Google and pick a sheet, then switch the step on. If n8n is down, nothing in the tool breaks; that event just isn't sent.
+**Discord:** paste a channel webhook (Server Settings → Integrations → Webhooks) as `discordWebhook` in **Settings**.
+
+**Google Sheet log** (booked shows, card payments and new fans, one tab each):
+1. Make a Google Sheet with tabs named **Shows**, **Payments** and **Fans**, column names in row 1 (see the `sheet` rows in the workflow's "Write the message" step; any order, extra columns are fine).
+2. **Extensions → Apps Script**, replace the code with `n8n/google-sheets-log.gs`, save.
+3. **Deploy → New deployment → Web app**, execute as *Me*, access *Anyone*, then authorize (Google warns the script is unverified because it's yours: **Advanced → Go to …**).
+4. Copy the web app URL into **Settings** as `sheetsWebhook` and publish the workflow.
+
+Empty addresses just skip that step. If n8n is down, nothing in the tool breaks; that event just isn't sent.
 
 ### 12. Captions for Videos and Songs
 Open **Captions** (`captions.html`), drop in a clip, and download an SRT for YouTube or CapCut (or copy the text). It runs OpenAI's Whisper speech model in the browser through Transformers.js (Apache-2.0, loaded from jsDelivr), so files never leave the computer and there's no key or cost. The model downloads once (40–250 MB depending on the speed setting) and the browser keeps it. English only. Sung lyrics come out rougher than speech; check every line against the lyric sheet.
@@ -143,7 +151,8 @@ Connect this repo to Netlify:
 ├── captions.html    # Captions for videos and songs (Whisper in the browser): edit, preview, SRT/VTT/text
 ├── captions.js      # Caption timing, line splitting and SRT/VTT/text output
 ├── captions-worker.js # Runs Whisper (Transformers.js) off the main thread
-├── n8n/dragon-farm-events.json              # Ready-to-import n8n workflow: checks the signature, writes a message, routes by event
+├── n8n/dragon-farm-events.json              # Ready-to-import n8n workflow: checks the signature, writes a message, posts to Discord, logs to a sheet, routes by event
+├── n8n/google-sheets-log.gs                 # Apps Script for the log spreadsheet: adds each posted row under matching column names
 ├── vendor/          # Third-party browser libraries, all MIT, each with its license header:
 │                    #   qrcode.js, signature_pad.js, datebook.js, papaparse.js, geolib.js, mailcheck.js, libphonenumber.js, chart.js,
 │                    #   us-cities.json (US-Cities-Database by Kelvin S. do Prado, MIT)
