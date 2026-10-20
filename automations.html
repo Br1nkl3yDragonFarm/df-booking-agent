@@ -64,11 +64,11 @@
     <ol>
       <li>Get n8n: <a href="https://n8n.io/cloud/" target="_blank" rel="noopener">n8n Cloud</a> (paid, nothing to run) or the free self-hosted version on a small server (<a href="https://docs.n8n.io/hosting/" target="_blank" rel="noopener">hosting guide</a>).</li>
       <li>In n8n: <b>Workflows → Import from file</b> and pick <code>n8n/dragon-farm-events.json</code> from this project. It starts with a Webhook block and splits each kind of event to its own path.</li>
-      <li>Open the Webhook block, copy its <b>Production URL</b>, then turn the workflow on (the Active switch).</li>
-      <li>In Netlify: <b>Site configuration → Environment variables</b>, add <code>N8N_WEBHOOK_URL</code> with that URL. Optionally add <code>N8N_WEBHOOK_SECRET</code> (any long random text) and the same text in the workflow's “Check signature” block, so n8n ignores anything that didn't come from you. Redeploy.</li>
+      <li>Open the Webhook block, copy its <b>Production URL</b>, then turn the workflow on (<b>Publish</b>, or the Active switch in older n8n).</li>
+      <li>In Netlify: <b>Site configuration → Environment variables</b>, add <code>N8N_WEBHOOK_URL</code> with that URL. Optionally add <code>N8N_WEBHOOK_SECRET</code> (any long random text) and the same text as <code>secret</code> in the workflow's <b>Settings</b> step, so n8n ignores anything that didn't come from you. Redeploy.</li>
       <li>Come back here and press <b>Send test</b> on an event. It shows up under <b>Executions</b> in n8n.</li>
     </ol>
-    <p class="note">The workflow comes with Discord and Google Sheets steps switched off. Open one, connect your account, and switch it on. The other steps are yours to add: Instagram or Facebook posts, a text message through Twilio, a Trello card, anything n8n connects to.</p>
+    <p class="note">The workflow comes with Discord and Google Sheets steps switched off. For Discord, paste a channel webhook URL as <code>discordWebhook</code> in <b>Settings</b>; for Sheets, connect Google and paste the sheet's link. Then switch the step on. The other steps are yours to add: Instagram or Facebook posts, a text message through Twilio, a Trello card, anything n8n connects to.</p>
     <details class="note"><summary>What an event looks like</summary>
 <pre>{
   "type": "show.booked",

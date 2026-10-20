@@ -92,13 +92,16 @@ It starts from the bio on the public site. Add only facts you can stand behind: 
 ### 11. Automations with n8n (optional)
 The tool can tell [n8n](https://n8n.io) (a drag-and-drop workflow tool) when something happens: a show is booked, a sync is licensed, a brand deal is signed, someone replies, a deposit is paid, an agreement is signed, an inquiry or a fan sign-up comes in, the Monday rundown goes out. n8n then does the follow-on chores: post to Discord or social media, add a row to a Google Sheet, text you.
 1. Get n8n: n8n Cloud, or self-host the free version.
-2. In n8n, **Import from file** → `n8n/dragon-farm-events.json`. Open its **Webhook** step, copy the **Production URL**, and turn the workflow on.
+2. In n8n, **Import from file** → `n8n/dragon-farm-events.json`. Open its **Webhook** step, copy the **Production URL**, and turn the workflow on (**Publish**).
 3. In Netlify, add `N8N_WEBHOOK_URL` (that URL). Optionally add `N8N_WEBHOOK_SECRET` (any long random text) and put the same text in the workflow's **Settings** step, so n8n ignores events that didn't come from you.
 4. Open **Automations** (`automations.html`) and send a test event.
 
 The workflow's Discord and Google Sheets steps start switched off: paste a Discord channel webhook in **Settings**, or connect Google and pick a sheet, then switch the step on. If n8n is down, nothing in the tool breaks; that event just isn't sent.
 
-### 12. Deploy to Netlify
+### 12. Captions for Videos and Songs
+Open **Captions** (`captions.html`), drop in a clip, and download an SRT for YouTube or CapCut (or copy the text). It runs OpenAI's Whisper speech model in the browser through Transformers.js (Apache-2.0, loaded from jsDelivr), so files never leave the computer and there's no key or cost. The model downloads once (40–250 MB depending on the speed setting) and the browser keeps it. English only. Sung lyrics come out rougher than speech; check every line against the lyric sheet.
+
+### 13. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -137,6 +140,9 @@ Connect this repo to Netlify:
 ├── fan-list.html    # Fan list by town, CSV export, QR maker (private)
 ├── fans.js          # Fan list helpers and the QR code / printable sign
 ├── automations.html # n8n status and test events (private)
+├── captions.html    # Captions for videos and songs (Whisper in the browser): edit, preview, SRT/VTT/text
+├── captions.js      # Caption timing, line splitting and SRT/VTT/text output
+├── captions-worker.js # Runs Whisper (Transformers.js) off the main thread
 ├── n8n/dragon-farm-events.json              # Ready-to-import n8n workflow: checks the signature, writes a message, routes by event
 ├── vendor/          # Third-party browser libraries, all MIT, each with its license header:
 │                    #   qrcode.js, signature_pad.js, datebook.js, papaparse.js, geolib.js, mailcheck.js, libphonenumber.js, chart.js,
