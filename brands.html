@@ -100,6 +100,8 @@
 <script src="outreach.js"></script>
 <script src="vendor/mailcheck.js"></script>
 <script src="emailcheck.js"></script>
+<script src="vendor/libphonenumber.js"></script>
+<script src="phone.js"></script>
 <script src="esign.js"></script>
 <script src="vendor/papaparse.js"></script>
 <script src="importer.js"></script>
@@ -157,7 +159,7 @@ function render() {
     <tr data-id="${esc(l.id)}">
       <td><b>${esc(l.name)}</b>${l.city ? `<small>${esc(l.city)}</small>` : ''}${l.website && /^https?:\/\//.test(l.website) ? `<small><a href="${esc(l.website)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Website</a></small>` : ''}</td>
       <td>${esc(l.category || '')}</td>
-      <td>${esc(l.contact || '')}${l.email ? `<small><a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a></small>` : ''}</td>
+      <td>${esc(l.contact || '')}${l.email ? `<small><a href="mailto:${esc(l.email)}" onclick="event.stopPropagation()">${esc(l.email)}</a></small>` : ''}${l.phone ? `<small>${DFPhone.links(l.phone)}</small>` : ''}</td>
       <td><span class="status status-${esc(l.status)}">${esc(label(STATUSES, l.status) || l.status)}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}</td>
       <td>${esc([l.offer, label(PAYS, l.payType)].filter(Boolean).join(' · '))}${flagHtml(l)}</td>
       <td onclick="event.stopPropagation()"><div class="row-actions">
@@ -197,6 +199,7 @@ function edit(id) {
         <label class="dfo-field"><span>Where</span><input type="text" data-k="city" value="${esc(l.city)}" /></label>
         <label class="dfo-field"><span>Website</span><input type="url" data-k="website" value="${esc(l.website)}" /></label>
       </div>
+      <label class="dfo-field"><span>Phone</span><input type="tel" data-k="phone" value="${esc(l.phone)}" /></label>
       <div class="dfo-row">
         <label class="dfo-field"><span>Status</span><select data-k="status">${options(STATUSES, l.status)}</select></label>
         <label class="dfo-field"><span>Next follow-up</span><input type="date" data-k="followUp" value="${esc(l.followUp)}" /></label>
@@ -223,7 +226,7 @@ function edit(id) {
   const f = k => box.querySelector(`[data-k="${k}"]`);
   const read = () => {
     const out = {};
-    ['name', 'category', 'contact', 'email', 'city', 'website', 'status', 'followUp', 'offer', 'payType', 'term', 'exclusivity', 'rights', 'control', 'notes'].forEach(k => { out[k] = f(k).value.trim(); });
+    ['name', 'category', 'contact', 'email', 'phone', 'city', 'website', 'status', 'followUp', 'offer', 'payType', 'term', 'exclusivity', 'rights', 'control', 'notes'].forEach(k => { out[k] = f(k).value.trim(); });
     out.inWriting = f('inWriting').checked;
     return out;
   };

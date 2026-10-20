@@ -682,6 +682,8 @@
 <script src="outreach.js"></script>
 <script src="vendor/mailcheck.js"></script>
 <script src="emailcheck.js"></script>
+<script src="vendor/libphonenumber.js"></script>
+<script src="phone.js"></script>
 <script src="vendor/qrcode.js"></script>
 <script src="fans.js"></script>
 <script src="esign.js"></script>
@@ -825,7 +827,7 @@ function renderVenuePipe(){
   const q=document.getElementById('vp-search').value.toLowerCase();
   const filtered=vLeads.filter(l=>(vFilter==='all'||l.status===vFilter)&&(!q||[l.name,l.city,l.type,l.contactName,l.contactEmail].join(' ').toLowerCase().includes(q)));
   const tb=document.getElementById('vp-tbody');
-  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editVLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.city)}${window.DFDist?DFDist.badge(l,vLeads):''}</td><td><span class="type-badge tb-green">${esc(l.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(l.artist)}</td><td class="cell-contact">${l.contactName?`<div>${esc(l.contactName)}</div>`:''} ${l.contactEmail?`<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}${[...DFDeals.issues(l),...DFShow.issues(l)].some(i=>i.level==='red')?'<div class="deal-flag deal-flag-red">🚩 Needs attention</div>':''}</td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromVLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delVLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div>No leads found.</div></td></tr>`;
+  tb.innerHTML=filtered.length?filtered.map(l=>`<tr onclick="editVLead('${l.id}')"><td><div class="cell-name">${esc(l.name)}</div>${l.notes?`<div class="cell-sub" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>`:''}</td><td class="cell-contact">${esc(l.city)}${window.DFDist?DFDist.badge(l,vLeads):''}</td><td><span class="type-badge tb-green">${esc(l.type)}</span></td><td style="font-size:0.8rem;color:var(--gray-light)">${esc(l.artist)}</td><td class="cell-contact">${l.contactName?`<div>${esc(l.contactName)}</div>`:''} ${l.contactEmail?`<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>`:''}${l.contactPhone&&window.DFPhone?`<div>${DFPhone.links(l.contactPhone)}</div>`:''}</td><td><span class="status-badge s-${l.status}">${l.status}</span><div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}${[...DFDeals.issues(l),...DFShow.issues(l)].some(i=>i.level==='red')?'<div class="deal-flag deal-flag-red">🚩 Needs attention</div>':''}</td><td style="font-size:0.75rem;color:var(--gray)">${fmtDate(l.dateAdded)}</td><td onclick="event.stopPropagation()"><div class="row-actions"><button class="btn btn-ghost" onclick="pitchFromVLead('${l.id}')">✉</button><button class="btn btn-danger" onclick="delVLead('${l.id}')">✕</button></div></td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div>No leads found.</div></td></tr>`;
 }
 
 // ---- SYNC PIPELINE ----

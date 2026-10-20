@@ -349,7 +349,9 @@
     function add(i) {
       const r = state.results[i];
       if (!r || state.added[i]) return;
-      if (opts.onAdd(M.toLead(r, state.query || {}, TYPE[r.category] || 'Other')) !== false) state.added[i] = true;
+      const lead = M.toLead(r, state.query || {}, TYPE[r.category] || 'Other');
+      for (const k of ['contactPhone', 'phone']) if (lead[k] && window.DFPhone) lead[k] = DFPhone.format(lead[k]);
+      if (opts.onAdd(lead) !== false) state.added[i] = true;
       remember();
       renderResults();
     }
@@ -391,7 +393,7 @@
             </div>
             ${r.contact_name || r.contact_role ? `<div class="fb-line">👤 ${esc([r.contact_name, r.contact_role].filter(Boolean).join(' · '))}</div>` : ''}
             ${r.email ? `<div class="fb-line">✉️ <a href="mailto:${esc(r.email)}">${esc(r.email)}</a></div>` : ''}
-            ${r.phone ? `<div class="fb-line">📞 <a href="tel:${esc(r.phone.replace(/[^\d+]/g, ''))}">${esc(r.phone)}</a></div>` : ''}
+            ${r.phone ? `<div class="fb-line">${window.DFPhone ? DFPhone.links(r.phone) : `📞 <a href="tel:${esc(r.phone.replace(/[^\d+]/g, ''))}">${esc(r.phone)}</a>`}</div>` : ''}
             ${!r.email && !r.phone ? `<div class="fb-line fb-muted">No email or phone listed. ${safeUrl(r.booking_url) ? `Use the ${M.linkLabel.toLowerCase()}.` : 'Check the source page for how to reach them.'}</div>` : ''}
             ${links ? `<div class="fb-line fb-links">${links}</div>` : ''}
             ${dist ? DFDist.fromLine(placeOf(r), q.near) : ''}

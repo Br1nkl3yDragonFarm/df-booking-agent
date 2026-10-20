@@ -82,7 +82,7 @@
     if (l.setTime) bits.push(`Set ${time12(l.setTime)}${num(l.setLength) ? ` (${num(l.setLength)} min)` : ''}`);
     let html = bits.length ? `<div class="sd-line">🕐 ${esc(bits.join(' · '))}</div>` : '';
     if (l.dayContact || l.dayPhone) {
-      html += `<div class="sd-line">👤 ${esc(l.dayContact || 'Day-of contact')}${l.dayPhone ? ` · <a href="tel:${esc(l.dayPhone.replace(/[^\d+]/g, ''))}" onclick="event.stopPropagation()">${esc(l.dayPhone)}</a>` : ''}</div>`;
+      html += `<div class="sd-line">👤 ${esc(l.dayContact || 'Day-of contact')}${l.dayPhone ? ` · ${window.DFPhone ? DFPhone.links(l.dayPhone) : `<a href="tel:${esc(l.dayPhone.replace(/[^\d+]/g, ''))}" onclick="event.stopPropagation()">${esc(l.dayPhone)}</a>`}` : ''}</div>`;
     }
     html += `<div class="sd-line">📍 <a href="${mapLink(l)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(l.address || 'Find on map')}</a></div>`;
     return html;
@@ -199,6 +199,7 @@
         <div class="sd-card-contact">
           ${l.contactName ? `<div>${esc(l.contactName)}</div>` : ''}
           ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>` : ''}
+          ${l.contactPhone && window.DFPhone ? `<div>${DFPhone.links(l.contactPhone)}</div>` : ''}
         </div>
       </div>`;
   }

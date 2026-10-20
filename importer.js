@@ -82,6 +82,7 @@
       for (const [key] of FIELDS[list]) if (key !== 'state' && get(key)) lead[key] = get(key);
       if (list === 'venue' && get('state') && !/,\s*\w/.test(lead.city || '')) lead.city = [lead.city, get('state')].filter(Boolean).join(', ');
       if (lead.website && !/^https?:\/\//i.test(lead.website)) lead.website = 'https://' + lead.website;
+      for (const k of ['contactPhone', 'phone']) if (lead[k] && window.DFPhone) lead[k] = DFPhone.format(lead[k]);
       if (list === 'venue') lead.artist = 'Timothy Chance and Rasta Country';
       if (list === 'sync') lead.track = 'Mr. Iron Man (Live)';
       if (dueToday) lead.followUp = today;

@@ -617,6 +617,8 @@
 <script src="outreach.js"></script>
 <script src="vendor/mailcheck.js"></script>
 <script src="emailcheck.js"></script>
+<script src="vendor/libphonenumber.js"></script>
+<script src="phone.js"></script>
 <script src="vendor/qrcode.js"></script>
 <script src="fans.js"></script>
 <script src="esign.js"></script>
@@ -856,6 +858,7 @@ function renderLeads() {
       <td>
         ${l.contactName ? `<div style="font-size:0.88rem">${esc(l.contactName)}</div>` : ''}
         ${l.contactEmail ? `<a href="mailto:${esc(l.contactEmail)}" style="font-size:0.85rem" onclick="event.stopPropagation()">${esc(l.contactEmail)}</a>` : ''}
+        ${l.contactPhone && window.DFPhone ? `<div style="font-size:0.85rem">${DFPhone.links(l.contactPhone)}</div>` : ''}
       </td>
       <td>${statusBadge(l.status)}<div>${DFFollow.badge(l)}</div>${DFOut.badges(l)}${[...DFDeals.issues(l), ...DFShow.issues(l)].some(i => i.level === 'red') ? '<div class="deal-flag deal-flag-red">🚩 Needs attention</div>' : ''}</td>
       <td style="font-size:0.85rem;color:var(--bone-dim);white-space:nowrap">${formatDate(l.dateAdded)}</td>

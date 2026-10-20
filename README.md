@@ -26,6 +26,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Real distances: leads show “📍 ~17 mi from Exit/In (Nov 9)” when they're near an upcoming booked show, “Fill nearby dates” results are sorted by miles from the show (too-far ones flagged), and booked shows show the drive to the next one, flagging long drives on back-to-back days
   - Email typo hints: “Did you mean jane@gmail.com?” under any email field (leads, the send window, fan sign-up), with one tap to fix
   - Fan newsletters: from the Fan list, email everyone or chosen towns a branded email (MJML) with a headline, message, ticket button and upcoming shows; each fan gets a one-click unsubscribe link, and the label's mailing address is in every email as US law requires
+  - Phone numbers: tidied as you type them in, impossible ones flagged, and tap-to-call and text links on leads, show cards, brands and finder results
   - Fan list: a QR code for the merch table (from any booked show) opens a sign-up page; fans land on a private list counted by town, with CSV export, removal on request, counts for the press kit's draw and a fans-by-town table in the report
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
@@ -122,6 +123,7 @@ Connect this repo to Netlify:
 ├── importer.js      # Import leads from a CSV (Papa Parse): column matching, duplicates skipped
 ├── distance.js      # Miles between towns (geolib + US city coordinates)
 ├── emailcheck.js    # “Did you mean …?” hints for mistyped email addresses (Mailcheck)
+├── phone.js         # Phone formatting, checks and call/text links (libphonenumber-js)
 ├── fans.html        # Public fan sign-up page the merch-table QR code opens (Netlify form "fan-signup")
 ├── fan-list.html    # Fan list by town, CSV export, QR maker (private)
 ├── fans.js          # Fan list helpers and the QR code / printable sign
