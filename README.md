@@ -17,7 +17,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Shared lead pipelines with follow-ups, calendar, deals and show-day settlement
   - "Fill nearby dates": from a booked show, search for gigs within a 3-hour drive on the open days around it
   - Invoices (print, PDF or email) with optional Stripe card payment links; deposits paid online are marked received, and overdue deposits get a one-tap reminder
-  - What's working (`report.html`): which kinds of leads, towns and lead sources turn into shows or placements, what they pay on average, and which emails get answered
+  - What's working (`report.html`): which kinds of leads, towns and lead sources turn into shows or placements, what they pay on average, and which emails get answered, plus charts of emails sent and replies by week and show money by month (Chart.js)
   - Sync kit: a fee quote for each kind of placement (from the label's sync playbook, adjusted for use, term, territory and exclusivity), a printable one-stop sync + master license, links to the full mix, clean, instrumental and edits ready to tick into a pitch, and a pitch log of which song and versions went to which supervisor
   - Brand deals (`brands.html`): find sponsors and lifestyle brands that fit the band (drinks, outdoor, Western lifestyle, trucks, food, gear, events, cannabis where legal), an AI-drafted pitch that leads with fit and a content idea, and a deal check that flags exposure-only pay, rights grabs and forever exclusivity
   - Sign deals online: a performance agreement written from the deal (or the sync license, or a brand partnership agreement) goes out as a private link; they draw a signature on their phone, both sides get the signed PDF, and the deal is marked signed

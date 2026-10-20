@@ -162,6 +162,7 @@
       fans: fanTowns(fans, v)
     };
     report.advice = advice(report);
+    report.trends = trends([...v, ...s, ...b], v);
     return report;
   }
 
@@ -191,6 +192,75 @@
     </section>`;
   }
 
+  // ---- trends over time (drawn with Chart.js, vendor/chart.js) ----
+  const WEEKS = 12, MONTHS_BACK = 5, MONTHS_AHEAD = 6;
+  const pad = n => String(n).padStart(2, '0');
+  const isoDay = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  function monday(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+
+  // Emails sent and replies per week (last 12 weeks, Monday to Sunday), and
+  // show money per month: paid once settled, otherwise what the deal says.
+  function trends(rows, venueRows) {
+    const start = monday(new Date()); start.setDate(start.getDate() - 7 * (WEEKS - 1));
+    const weeks = Array.from({ length: WEEKS }, (_, i) => { const d = new Date(start); d.setDate(d.getDate() + 7 * i); return { start: isoDay(d), label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), sent: 0, replies: 0 }; });
+    const weekOf = iso => { if (!iso) return null; const k = isoDay(monday(new Date(iso))); return weeks.find(w => w.start === k) || null; };
+    rows.forEach(r => {
+      r.sent.forEach(s => { const w = weekOf(s.at); if (w) w.sent++; });
+      r.replies.forEach(x => { const w = weekOf(x.at); if (w) w.replies++; });
+    });
+    const now = new Date();
+    const months = Array.from({ length: MONTHS_BACK + MONTHS_AHEAD + 1 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - MONTHS_BACK + i, 1);
+      return { key: `${d.getFullYear()}-${pad(d.getMonth() + 1)}`, label: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), paid: 0, booked: 0, shows: 0 };
+    });
+    venueRows.forEach(r => {
+      const l = r.lead;
+      if (l.status !== 'booked' || !l.eventDate) return;
+      const m = months.find(x => x.key === l.eventDate.slice(0, 7));
+      if (!m) return;
+      m.shows++;
+      if (l.settled && num(l.paid)) m.paid += num(l.paid);
+      else m.booked += pay(l, 'venue') || 0;
+    });
+    return { weeks, months, hasEmail: weeks.some(w => w.sent || w.replies), hasShows: months.some(m => m.shows) };
+  }
+
+  // The two chart sections; charts(r, el) draws them once the markup is in the page.
+  function trendsHtml(t) {
+    const numbers = (head, rows) => `<details class="rp-numbers"><summary>Show the numbers</summary><div class="rp-scroll"><table class="rp-table"><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`;
+    return (t.hasEmail ? `<section class="rp-block"><h2>Emails sent and replies, by week</h2><div class="rp-chart"><canvas id="rp-chart-email" role="img" aria-label="Line chart of emails sent and replies per week for the last 12 weeks"></canvas></div>${numbers(['Week of', 'Emails sent', 'Replies'], t.weeks.map(w => [w.label, w.sent, w.replies]))}</section>` : '')
+      + (t.hasShows ? `<section class="rp-block"><h2>Show money by month</h2><p class="rp-note" style="margin:0 0 0.5rem">Paid is what settled shows actually paid; booked is what the deals say for shows not settled yet.</p><div class="rp-chart"><canvas id="rp-chart-money" role="img" aria-label="Stacked bar chart of show money per month, paid and booked"></canvas></div>${numbers(['Month', 'Shows', 'Paid', 'Booked'], t.months.map(m => [m.label, m.shows, money(m.paid), money(m.booked)]))}</section>` : '');
+  }
+
+  // Dark-surface steps of the reference categorical palette (validated against #131c1e).
+  const SERIES = ['#3987e5', '#d95926'];
+  const INK = { text: '#c9c2ae', muted: '#9aa39c', grid: 'rgba(255,255,255,0.07)', surface: '#131c1e' };
+  let drawn = [];
+  function charts(r, root) {
+    drawn.forEach(c => c.destroy()); drawn = [];
+    if (!window.Chart) return;
+    const base = {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'top', align: 'start', labels: { color: INK.text, boxWidth: 12, boxHeight: 12, usePointStyle: true } },
+        tooltip: { backgroundColor: '#0e1517', borderColor: 'rgba(255,255,255,0.14)', borderWidth: 1, titleColor: '#e8dfc8', bodyColor: INK.text, padding: 10 } },
+      scales: { x: { grid: { display: false }, ticks: { color: INK.muted }, border: { color: INK.grid } },
+        y: { beginAtZero: true, grid: { color: INK.grid }, border: { display: false }, ticks: { color: INK.muted, precision: 0 } } }
+    };
+    const email = root.querySelector('#rp-chart-email');
+    if (email) drawn.push(new Chart(email, { type: 'line', data: { labels: r.trends.weeks.map(w => w.label), datasets: [
+      { label: 'Emails sent', data: r.trends.weeks.map(w => w.sent), borderColor: SERIES[0], backgroundColor: SERIES[0], borderWidth: 2, pointRadius: 4, pointHoverRadius: 6, pointBorderColor: INK.surface, pointBorderWidth: 2, tension: 0 },
+      { label: 'Replies', data: r.trends.weeks.map(w => w.replies), borderColor: SERIES[1], backgroundColor: SERIES[1], borderWidth: 2, pointRadius: 4, pointHoverRadius: 6, pointBorderColor: INK.surface, pointBorderWidth: 2, pointStyle: 'rectRot', tension: 0 }
+    ] }, options: base }));
+    const cash = root.querySelector('#rp-chart-money');
+    if (cash) drawn.push(new Chart(cash, { type: 'bar', data: { labels: r.trends.months.map(m => m.label), datasets: [
+      { label: 'Paid', data: r.trends.months.map(m => m.paid), backgroundColor: SERIES[0], borderColor: INK.surface, borderWidth: { top: 2 }, borderRadius: 0, maxBarThickness: 32, stack: 'm' },
+      { label: 'Booked', data: r.trends.months.map(m => m.booked), backgroundColor: SERIES[1], borderRadius: { topLeft: 4, topRight: 4 }, borderSkipped: 'bottom', maxBarThickness: 32, stack: 'm' }
+    ] }, options: { ...base,
+      plugins: { ...base.plugins, tooltip: { ...base.plugins.tooltip, callbacks: { label: c => `${c.dataset.label}: ${money(c.parsed.y)}`, footer: items => { const m = r.trends.months[items[0].dataIndex]; return `${m.shows} show${m.shows === 1 ? '' : 's'}`; } } } },
+      scales: { x: { ...base.scales.x, stacked: true }, y: { ...base.scales.y, stacked: true, ticks: { color: INK.muted, callback: v => money(v) } } } } }));
+  }
+
   function html(r) {
     const pitched = [...r.venue.rows, ...r.sync.rows, ...r.brand.rows].filter(x => x.pitched).length;
     const early = pitched < 10
@@ -199,6 +269,7 @@
       <section class="rp-block rp-advice"><h2>Where the money is</h2>${r.advice.length
         ? `<ul>${r.advice.map(t => `<li>${t}</li>`).join('')}</ul>`
         : `<p class="rp-empty">Not enough results yet to call a pattern. Each kind of lead or town needs at least ${MIN_FOR_ADVICE} pitches before it shows up here.</p>`}</section>
+      ${trendsHtml(r.trends)}
       ${table('Booking: by kind of lead', 'Kind', r.venue.byType, 'Booked', 'Avg pay')}
       ${table('Booking: by town', 'Town', r.venue.byTown, 'Booked', 'Avg pay')}
       ${table('Booking: where the lead came from', 'Source', r.venue.byOrigin, 'Booked', 'Avg pay')}
@@ -212,5 +283,5 @@
       </table></div></section>` : ''}`;
   }
 
-  window.DFReport = { build, html, town };
+  window.DFReport = { build, html, charts, town };
 })();

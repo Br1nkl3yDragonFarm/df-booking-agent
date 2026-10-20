@@ -43,6 +43,10 @@
     .rp-list small { color: var(--gray); font-size: 0.76rem; }
     .rp-note, .rp-empty { color: var(--gray); font-size: 0.86rem; margin: 0.6rem 0 0; }
     .wrap > .rp-note { margin: 0 0 1rem; }
+    .rp-chart { position: relative; height: 260px; }
+    .rp-numbers { margin-top: 0.6rem; font-size: 0.82rem; color: var(--gray); }
+    .rp-numbers summary { cursor: pointer; }
+    .rp-numbers .rp-table { margin-top: 0.4rem; }
   </style>
 </head>
 <body>
@@ -61,12 +65,15 @@
 <script src="showday.js"></script>
 <script src="calendar.js"></script>
 <script src="outreach.js"></script>
+<script src="vendor/chart.js"></script>
 <script src="report.js"></script>
 <script src="fans.js"></script>
 <script>
 function renderReport() {
   const report = DFReport.build(DFStore.load('df_leads'), DFStore.load('df_sync_leads'), DFOut.activity, DFStore.load('df_brand_leads'), DFFans.all());
-  document.getElementById('report').innerHTML = DFReport.html(report);
+  const el = document.getElementById('report');
+  el.innerHTML = DFReport.html(report);
+  DFReport.charts(report, el);
 }
 DFOut.init(renderReport);
 DFStore.connect('df_leads', renderReport);
