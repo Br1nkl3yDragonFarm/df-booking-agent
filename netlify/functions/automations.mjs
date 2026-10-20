@@ -21,6 +21,18 @@ const SAMPLES = {
   'inquiry.received': { list: 'venue', lead: { id: 'inq-sample', name: 'The Basement East', city: 'Nashville, TN', contactName: 'Dana Reed', contactEmail: 'dana@example.com', eventDate: '2026-12-05' }, notes: 'Website inquiry (Bar / Club Night). Budget: $500-$1,000.' },
   'fan.signed_up': { email: 'fan@example.com', name: 'Rae', city: 'Nashville, TN', show: 'Exit/In, Nashville, TN · Thu, Nov 19', fans: 42 },
   'digest.sent': { subject: 'Dragon Farm Monday rundown, Mon, Oct 26: 3 due', text: 'Dragon Farm Monday rundown…', counts: { due: 3, added: 2, deposits: 0, shows: 1 } },
+  'social.drafts': {
+    show: { date: '2026-11-19', venue: 'Exit/In', city: 'Nashville, TN', artist: 'Timothy Chance and Rasta Country', time: '21:00', tickets: 'https://tickets.example.com/exitin' },
+    posts: {
+      instagram: 'Nashville, we’re coming home. 🎻🌴\nTimothy Chance & Rasta Country at Exit/In, Thursday, November 19. Show at 9 PM.\nTickets at the link in our bio.',
+      facebook: 'Nashville! Timothy Chance & Rasta Country play Exit/In on Thursday, November 19. Show at 9 PM. Tickets: https://tickets.example.com/exitin',
+      story: 'Exit/In · Thu Nov 19\nTickets in bio',
+      short: 'Country reggae at Exit/In, Nashville, Thu Nov 19, 9 PM. Tickets: https://tickets.example.com/exitin',
+      dayOf: 'Tonight, Nashville! Exit/In, show at 9 PM. Tickets at the link in our bio.'
+    },
+    hashtags: ['#countryreggae', '#nashvillemusic', '#exitin'],
+    link: 'https://dragonfarmgrowth.net/dashboard.html#posts=sample'
+  },
   test: { message: 'Hello from the Dragon Farm booking tool' }
 };
 

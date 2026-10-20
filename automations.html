@@ -68,7 +68,7 @@
       <li>In Netlify: <b>Site configuration → Environment variables</b>, add <code>N8N_WEBHOOK_URL</code> with that URL. Optionally add <code>N8N_WEBHOOK_SECRET</code> (any long random text) and the same text as <code>secret</code> in the workflow's <b>Settings</b> step, so n8n ignores anything that didn't come from you. Redeploy.</li>
       <li>Come back here and press <b>Send test</b> on an event. It shows up under <b>Executions</b> in n8n.</li>
     </ol>
-    <p class="note">Discord and the Google Sheet log turn on by pasting their addresses into the workflow's <b>Settings</b> step: a Discord channel webhook as <code>discordWebhook</code>, the sheet's Apps Script web app URL as <code>sheetsWebhook</code> (README step 11 shows how to make it with <code>n8n/google-sheets-log.gs</code>), and a private <a href="https://ntfy.sh" target="_blank" rel="noopener">ntfy</a> topic as <code>ntfyTopic</code> for phone alerts on card payments and replies. Left empty, that step is skipped. Other steps are yours to add: Instagram or Facebook posts, a text message through Twilio, a Trello card, anything n8n connects to.</p>
+    <p class="note">Discord and the Google Sheet log turn on by pasting their addresses into the workflow's <b>Settings</b> step: a Discord channel webhook as <code>discordWebhook</code>, the sheet's Apps Script web app URL as <code>sheetsWebhook</code> (README step 11 shows how to make it with <code>n8n/google-sheets-log.gs</code>), and a private <a href="https://ntfy.sh" target="_blank" rel="noopener">ntfy</a> topic as <code>ntfyTopic</code> for phone alerts on card payments, replies and new post drafts. Left empty, that step is skipped. Other steps are yours to add: Instagram or Facebook posts, a text message through Twilio, a Trello card, anything n8n connects to.</p>
     <details class="note"><summary>What an event looks like</summary>
 <pre>{
   "type": "show.booked",
@@ -95,6 +95,7 @@ const ABOUT = {
   'inquiry.received': 'A new inquiry comes in from the public page',
   'fan.signed_up': 'A fan signs up from the merch-table QR',
   'digest.sent': 'The Monday rundown goes out',
+  'social.drafts': 'Post drafts are ready for a booked show',
   test: 'Just checking the connection'
 };
 

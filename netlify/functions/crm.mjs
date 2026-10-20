@@ -10,6 +10,9 @@
 import { getStore } from '@netlify/blobs';
 import { timingSafeEqual } from 'node:crypto';
 import { emit, leadSummary } from '../lib/events.mjs';
+import { isPublic } from '../lib/listing.mjs';
+import { socialStore } from '../lib/social.mjs';
+import { labelToday } from '../lib/store.mjs';
 
 // A lead reaching this status is news for the automations (lib/events.mjs).
 const WON = { venue: ['booked', 'show.booked'], sync: ['licensed', 'sync.licensed'], brand: ['signed', 'brand.signed'] };
@@ -34,6 +37,27 @@ function validItem(item) {
   return item && typeof item === 'object' && !Array.isArray(item)
     && typeof item.id === 'string' && item.id.length > 0 && item.id.length <= 100
     && JSON.stringify(item).length <= MAX_ITEM_BYTES;
+}
+
+// Newly booked public shows get social post drafts (social-background.mjs),
+// unless they already have some. The background job answers at once.
+async function draftPosts(won, req, origin) {
+  const today = labelToday();
+  const shows = won.filter(l => isPublic(l) && l.eventDate >= today);
+  if (!shows.length || !process.env.ANTHROPIC_API_KEY) return;
+  const store = socialStore();
+  await Promise.all(shows.map(async l => {
+    try {
+      const saved = await store.get(l.id, { type: 'json' });
+      if (saved && saved.status !== 'error') return;
+      await fetch(`${origin}/.netlify/functions/social-background`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-df-passcode': req.headers.get('x-df-passcode') },
+        body: JSON.stringify({ id: l.id }),
+        signal: AbortSignal.timeout(5000)
+      });
+    } catch {}
+  }));
 }
 
 export default async (req) => {
@@ -88,6 +112,7 @@ export default async (req) => {
       const [status, type] = WON[list] || [];
       const won = upserts.filter(item => status && item.status === status && before.get(item.id) !== status);
       if (won.length) await Promise.all(won.map(item => emit(type, leadSummary(item), url.origin)));
+      if (list === 'venue') await draftPosts(won, req, url.origin);
       return json(200, { items });
     }
   }
