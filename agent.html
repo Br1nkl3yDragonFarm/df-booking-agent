@@ -681,6 +681,7 @@
 <script src="outreach.js"></script>
 <script src="vendor/qrcode.js"></script>
 <script src="fans.js"></script>
+<script src="esign.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — UNIFIED APP
@@ -888,7 +889,8 @@ function calMove(step){calState.month=step?new Date(calState.month.getFullYear()
 function calFilter(a){calState.artist=a;renderCalendar()}
 function calSelect(date){calState.selected=calState.selected===date?'':date;renderCalendar()}
 function calAdd(date){openVModal();document.getElementById('vm-date').value=date}
-function renderShows(){DFShow.renderShows({totals:document.getElementById('shows-totals'),list:document.getElementById('shows-list')},vLeads,'editVLead',{gaps:'fillGaps',invoice:'openInvoice',remind:'remindDeposit',fans:'fanQr'})}
+function renderShows(){DFShow.renderShows({totals:document.getElementById('shows-totals'),list:document.getElementById('shows-list')},vLeads,'editVLead',{gaps:'fillGaps',invoice:'openInvoice',remind:'remindDeposit',fans:'fanQr',sign:'signShow'})}
+function signShow(id){const l=vLeads.find(x=>x.id===id);if(!l)return;const artist=l.artist&&l.artist!=='Both'?l.artist:'Timothy Chance and Rasta Country';DFSign.open({lead:l,list:'venue',title:`Performance agreement: ${artist} at ${l.name}${l.eventDate?`, ${l.eventDate}`:''}`,text:DFSign.venueText(l),onChange:()=>{renderShows();renderVenuePipe()}})}
 function fanQr(id){const l=vLeads.find(x=>x.id===id);if(l)DFFans.openForShow(l)}
 
 // ---- FOLLOW-UPS ----
@@ -962,7 +964,7 @@ function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateStrin
 
 // ---- INIT ----
 // Mark deposits paid online as received, then redraw with the latest activity.
-function onActivity(){if(DFOut.reconcile(vLeads).length)saveVLeads();renderOverview();renderVenuePipe();renderSyncPipe();renderCalendar();renderShows()}
+function onActivity(){if(DFOut.reconcile(vLeads).length)saveVLeads();if(DFOut.reconcile(sLeads,'sync').length)saveSLeads();renderOverview();renderVenuePipe();renderSyncPipe();renderCalendar();renderShows()}
 renderOverview();
 renderVenuePipe();
 renderSyncPipe();

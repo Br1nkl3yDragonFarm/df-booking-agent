@@ -128,7 +128,7 @@
 
   // Booked Shows: totals, then Upcoming and Played lists. `open` is the
   // page's global function name that opens a lead for editing; `actions`
-  // optionally names the page's functions for { gaps, invoice, remind, fans }.
+  // optionally names the page's functions for { gaps, invoice, remind, fans, sign }.
   function renderShows(els, leads, open, actions) {
     const booked = leads.filter(l => l.status === 'booked')
       .sort((a, b) => (a.eventDate || '9999').localeCompare(b.eventDate || '9999'));
@@ -164,6 +164,7 @@
     const buttons = [
       !isPlayed(l) && l.eventDate && btn(actions.gaps, '🗺 Fill nearby dates', 'Find shows within a few hours’ drive on the open days around this one'),
       btn(actions.invoice, '🧾 Invoice', 'Make, print or email an invoice'),
+      l.contract !== 'signed' && btn(actions.sign, '✍ Contract', 'Send the performance agreement to sign online'),
       depositOverdue(l) && btn(actions.remind, '⏰ Deposit reminder', 'Email a polite reminder about the overdue deposit'),
       btn(actions.fans, '📱 Fan QR', 'QR code for the merch table: fans sign up for the email list')
     ].filter(Boolean);

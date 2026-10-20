@@ -583,6 +583,7 @@
 <script src="finder.js"></script>
 <script src="outreach.js"></script>
 <script src="sync-kit.js"></script>
+<script src="esign.js"></script>
 <script>
 // ---- STATE ----
 let leads = DFStore.load('df_sync_leads');
@@ -984,7 +985,7 @@ function formatDate(iso) { if (!iso) return '—'; return new Date(iso).toLocale
 
 // ---- INIT ----
 updateStats(); renderOverview();
-DFOut.init(() => { renderOverview(); renderLeads(); if (document.getElementById('page-log').classList.contains('active')) renderLog(); });
+DFOut.init(() => { if (DFOut.reconcile(leads, 'sync').length) saveLeads(); renderOverview(); renderLeads(); if (document.getElementById('page-log').classList.contains('active')) renderLog(); });
 DFStore.connect('df_sync_leads', items => {
   leads = items;
   updateStats(); renderOverview(); renderLeads(); renderLicensed();

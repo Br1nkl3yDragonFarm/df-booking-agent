@@ -91,15 +91,22 @@
     return handled(DFFollow.logTouch(lead, contactedStatus));
   }
 
-  // Online payments mark the deposit received. Returns the leads that changed.
-  function reconcile(leads) {
+  // An agreement signed online marks the deal signed: contract for shows,
+  // inWriting for brand deals, licenseSigned for sync.
+  const SIGNED_FIELD = { venue: ['contract', 'signed'], brand: ['inWriting', true], sync: ['licenseSigned', true] };
+
+  // Online payments mark the deposit received, and online signatures the deal
+  // signed, so a page saving an older copy of a lead can't undo them.
+  // Returns the leads that changed.
+  function reconcile(leads, list = 'venue') {
     const changed = [];
+    const [field, value] = SIGNED_FIELD[list] || SIGNED_FIELD.venue;
     leads.forEach((l, i) => {
+      let next = l;
       const paidDeposit = (activity(l).payments || []).some(p => p.kind === 'deposit');
-      if (paidDeposit && Number(l.deposit) && !l.depositPaid) {
-        leads[i] = { ...l, depositPaid: true };
-        changed.push(leads[i]);
-      }
+      if (paidDeposit && Number(l.deposit) && !l.depositPaid) next = { ...next, depositPaid: true };
+      if ((activity(l).signs || []).some(s => s.status === 'signed') && next[field] !== value) next = { ...next, [field]: value };
+      if (next !== l) { leads[i] = next; changed.push(next); }
     });
     return changed;
   }
@@ -117,6 +124,10 @@
     }
     if (a.views && a.views.count) out.push(`<span class="dfo-badge dfo-b-view" title="First opened ${shortStamp(a.views.first)}">👀 Kit opened ${a.views.count}×</span>`);
     (a.payments || []).forEach(p => out.push(`<span class="dfo-badge dfo-b-paid">💳 ${money(p.amount)} paid online</span>`));
+    // Agreements sent for signature (sign.mjs): the latest one that wasn't withdrawn.
+    const sign = [...(a.signs || [])].reverse().find(s => s.status !== 'cancelled');
+    if (sign && sign.status === 'signed') out.push(`<a class="dfo-badge dfo-b-paid" href="/.netlify/functions/sign?t=${encodeURIComponent(sign.token)}&pdf=1" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${esc(sign.title)}, signed by ${esc(sign.signedBy || '')}">✅ Signed ${shortStamp(sign.signedAt)}</a>`);
+    else if (sign) out.push(`<span class="dfo-badge dfo-b-in" title="${esc(sign.title)}">✍ Out for signature</span>`);
     return out.length ? `<div class="dfo-badges">${out.join('')}</div>` : '';
   }
 
@@ -482,6 +493,8 @@ ${inv.notes ? `<p class="muted">${esc(inv.notes)}</p>` : ''}
 
   window.DFOut = {
     init, setup: () => setupInfo, activity, lastReply, needsReply, handled, markSent, reconcile, badges,
-    kitUrl, send, followUp, invoice, reminder, gaps, show, close
+    kitUrl, send, followUp, invoice, reminder, gaps, show, close,
+    // Record something the server just stored for a lead, without waiting for a reload.
+    remember(leadId, change) { acts[leadId] = change({ ...(acts[leadId] || {}) }); }
   };
 })();

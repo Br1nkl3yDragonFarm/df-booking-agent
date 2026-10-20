@@ -203,6 +203,14 @@ ol{padding-left:20px}li{margin:6px 0}.blank{display:inline-block;min-width:220px
 </main></body></html>`;
   }
 
+  // The license as plain text, for signing online.
+  function licenseText(lead, q, own) {
+    const doc = new DOMParser().parseFromString(licenseHtml(lead, q, own), 'text/html');
+    const rows = [...doc.querySelectorAll('table tr')].map(tr => `${tr.cells[0].textContent}: ${tr.cells[1].textContent.trim() || '______________'}`);
+    const terms = [...doc.querySelectorAll('ol li')].map((li, i) => `${i + 1}. ${li.textContent.replace(/\s+/g, ' ').trim()}`);
+    return [...rows, '', ...terms].join('\n');
+  }
+
   async function openLicense(lead) {
     await load();
     const q = { ...quoteFor(lead) };
@@ -213,8 +221,12 @@ ol{padding-left:20px}li{margin:6px 0}.blank{display:inline-block;min-width:220px
         <label class="dfo-check"><input type="checkbox" data-k="own" /> We control 100% of both the master and the publishing for this song (only tick this if it's true: every writer, co-writer and sample cleared)</label>
         <div class="dfo-status" data-k="status"></div>
       </div>
-      <div class="dfo-actions"><button class="btn btn-gold" data-a="print">🖨 Open the license</button></div>`);
+      <div class="dfo-actions"><button class="btn btn-gold" data-a="print">🖨 Open the license</button>${window.DFSign ? '<button class="btn btn-ghost" data-a="sign">✍ Send for signature</button>' : ''}</div>`);
     box.querySelector('[data-a="close"]').addEventListener('click', DFOut.close);
+    box.querySelector('[data-a="sign"]')?.addEventListener('click', () => {
+      const own = box.querySelector('[data-k="own"]').checked;
+      DFSign.open({ lead, list: 'sync', title: `One-stop license: "${trackOf(lead).title}" for ${lead.project || lead.name}`, text: licenseText(lead, q, own), onChange: openLicense.onChange });
+    });
     box.querySelector('[data-a="print"]').addEventListener('click', () => {
       const w = window.open('', '_blank');
       if (!w) { box.querySelector('[data-k="status"]').textContent = 'Your browser blocked the window. Allow pop-ups for this site.'; return; }

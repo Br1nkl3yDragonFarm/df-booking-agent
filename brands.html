@@ -98,6 +98,7 @@
 <script src="calendar.js"></script>
 <script src="finder.js"></script>
 <script src="outreach.js"></script>
+<script src="esign.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM — BRAND DEALS
@@ -157,12 +158,17 @@ function render() {
       <td>${esc([l.offer, label(PAYS, l.payType)].filter(Boolean).join(' · '))}${flagHtml(l)}</td>
       <td onclick="event.stopPropagation()"><div class="row-actions">
         <button class="btn" data-a="pitch" title="Write and send a pitch" aria-label="Pitch ${esc(l.name)}">✉</button>
+        <button class="btn" data-a="sign" title="Send the partnership agreement to sign" aria-label="Agreement for ${esc(l.name)}">✍</button>
         <button class="btn" data-a="del" title="Remove" aria-label="Remove ${esc(l.name)}">✕</button>
       </div></td>
     </tr>`).join('') : `<tr><td colspan="6"><div class="empty">${leads.length ? 'Nothing with that status.' : 'No brands yet. Use Find brands, or add one you already know.'}</div></td></tr>`;
   $('rows').querySelectorAll('tr[data-id]').forEach(tr => {
     tr.addEventListener('click', () => edit(tr.dataset.id));
     tr.querySelector('[data-a="pitch"]').addEventListener('click', () => pitch(tr.dataset.id));
+    tr.querySelector('[data-a="sign"]').addEventListener('click', () => {
+      const l = leads.find(x => x.id === tr.dataset.id);
+      DFSign.open({ lead: l, list: 'brand', title: `Partnership agreement: Timothy Chance and Rasta Country x ${l.name}`, text: DFSign.brandText(l), onChange: render });
+    });
     tr.querySelector('[data-a="del"]').addEventListener('click', () => {
       if (!confirm('Remove this brand?')) return;
       leads = leads.filter(l => l.id !== tr.dataset.id); save();
@@ -281,7 +287,7 @@ DFFinder.mount($('finder'), {
   }
 });
 
-DFOut.init(render);
+DFOut.init(() => { if (DFOut.reconcile(leads, 'brand').length) DFStore.save('df_brand_leads', leads); render(); });
 DFStore.connect('df_brand_leads', items => { leads = items; render(); });
 leads = DFStore.load('df_brand_leads');
 render();

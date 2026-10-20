@@ -616,6 +616,7 @@
 <script src="outreach.js"></script>
 <script src="vendor/qrcode.js"></script>
 <script src="fans.js"></script>
+<script src="esign.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -861,7 +862,7 @@ function renderLeads() {
 
 function renderBooked() {
   DFShow.renderShows({ totals: document.getElementById('deal-totals'), list: document.getElementById('booked-list') }, leads, 'editLead',
-    { gaps: 'fillGaps', invoice: 'openInvoice', remind: 'remindDeposit', fans: 'fanQr' });
+    { gaps: 'fillGaps', invoice: 'openInvoice', remind: 'remindDeposit', fans: 'fanQr', sign: 'signShow' });
 }
 
 // ---- LEAD CRUD ----
@@ -1055,6 +1056,13 @@ function fillGaps(id) {
   if (!gap.dates.length) { toast('No open dates within 3 days of this show', 'error'); return; }
   showPage('finder');
   bookers.run({ location: `Within about a 3-hour drive of ${lead.city || lead.name}`, artist: ACT, dates: gap.text, categories: ['venues', 'buyers', 'breweries', 'community'] });
+}
+
+function signShow(id) {
+  const l = leads.find(x => x.id === id);
+  if (!l) return;
+  const artist = l.artist && l.artist !== 'Both' ? l.artist : 'Timothy Chance and Rasta Country';
+  DFSign.open({ lead: l, list: 'venue', title: `Performance agreement: ${artist} at ${l.name}${l.eventDate ? `, ${l.eventDate}` : ''}`, text: DFSign.venueText(l), onChange: () => { renderBooked(); renderLeads(); } });
 }
 
 function fanQr(id) {

@@ -4,10 +4,12 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 export const fromAddress = () => process.env.DF_FROM_EMAIL || 'Dragon Farm Booking <booking@dragonfarm.net>';
 export const replyTo = () => process.env.DF_REPLY_TO || 'booking@dragonfarm.net';
 
-// Send one plain-text email through Resend from the label's address.
-// `to` is one address or a list.
+// Send one email through Resend from the label's address. `to` is one
+// address or a list; html is optional next to the plain text; attachments
+// are [{ filename, content (base64) }]; emailHeaders are extra headers
+// such as List-Unsubscribe.
 // Returns { ok: true, id } or { ok: false, error } with a message for people.
-export async function sendMail({ to, subject, text, bcc, idempotencyKey }) {
+export async function sendMail({ to, subject, text, html, bcc, idempotencyKey, attachments, emailHeaders }) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { ok: false, error: 'Sending is not set up yet (RESEND_API_KEY is missing in Netlify).' };
   const headers = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
@@ -17,7 +19,8 @@ export async function sendMail({ to, subject, text, bcc, idempotencyKey }) {
     res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers,
-      body: JSON.stringify({ from: fromAddress(), to: Array.isArray(to) ? to : [to], ...(bcc ? { bcc: [bcc] } : {}), reply_to: replyTo(), subject, text })
+      body: JSON.stringify({ from: fromAddress(), to: Array.isArray(to) ? to : [to], ...(bcc ? { bcc: [bcc] } : {}), reply_to: replyTo(), subject, text,
+        ...(html ? { html } : {}), ...(attachments ? { attachments } : {}), ...(emailHeaders ? { headers: emailHeaders } : {}) })
     });
     data = await res.json().catch(() => ({}));
   } catch {
