@@ -104,6 +104,8 @@ The tool can tell [n8n](https://n8n.io) (a drag-and-drop workflow tool) when som
 3. **Deploy → New deployment → Web app**, execute as *Me*, access *Anyone*, then authorize (Google warns the script is unverified because it's yours: **Advanced → Go to …**).
 4. Copy the web app URL into **Settings** as `sheetsWebhook` and publish the workflow.
 
+**Phone alerts** (card payments and replies to pitches): install the free **ntfy** app (iPhone or Android), tap **+** and subscribe to a topic name only you know (long and random, e.g. `dragonfarm-7kq2m9xv4t`), then put the same name in **Settings** as `ntfyTopic`. Tapping an alert opens the booking dashboard. Anyone who knows the topic name can read the alerts, so keep it hard to guess.
+
 Empty addresses just skip that step. If n8n is down, nothing in the tool breaks; that event just isn't sent.
 
 ### 12. Captions for Videos and Songs
@@ -151,7 +153,7 @@ Connect this repo to Netlify:
 ├── captions.html    # Captions for videos and songs (Whisper in the browser): edit, preview, SRT/VTT/text
 ├── captions.js      # Caption timing, line splitting and SRT/VTT/text output
 ├── captions-worker.js # Runs Whisper (Transformers.js) off the main thread
-├── n8n/dragon-farm-events.json              # Ready-to-import n8n workflow: checks the signature, writes a message, posts to Discord, logs to a sheet, routes by event
+├── n8n/dragon-farm-events.json              # Ready-to-import n8n workflow: checks the signature, writes a message, posts to Discord, logs to a sheet, alerts your phone (ntfy), routes by event
 ├── n8n/google-sheets-log.gs                 # Apps Script for the log spreadsheet: adds each posted row under matching column names
 ├── vendor/          # Third-party browser libraries, all MIT, each with its license header:
 │                    #   qrcode.js, signature_pad.js, datebook.js, papaparse.js, geolib.js, mailcheck.js, libphonenumber.js, chart.js,
