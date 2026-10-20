@@ -23,6 +23,7 @@
       </a>
       <nav aria-label="Main">
         <ul class="nav-links">
+          <li><a href="shows.html">Shows</a></li>
           <li><a href="#artists">The band</a></li>
           <li><a href="#sync">Licensing</a></li>
           <li><a href="#book" class="nav-cta">Book a show</a></li>
@@ -33,6 +34,7 @@
       </button>
     </div>
     <div class="mobile-menu" id="mobile-menu">
+      <a href="shows.html">Shows</a>
       <a href="#artists">The band</a>
       <a href="#sync">Licensing</a>
       <a href="#book">Book a show</a>
@@ -63,6 +65,15 @@
             <p class="slot"><span>Your date</span></p>
           </div>
         </figure>
+      </div>
+    </section>
+
+    <!-- NEXT UP: filled in from the public show list when there are dates -->
+    <section id="next-up" hidden>
+      <div class="container">
+        <h2>Next up</h2>
+        <div id="next-list"></div>
+        <a class="btn-text" href="shows.html">All dates, tickets and directions</a>
       </div>
     </section>
 
@@ -241,5 +252,13 @@
 
   <script src="config.js"></script>
   <script src="app.js"></script>
+  <script src="shows.js"></script>
+  <script>
+    DFShows.load().then(({ upcoming }) => {
+      if (!upcoming.length) return;
+      document.getElementById('next-list').innerHTML = DFShows.stripHtml(upcoming, 3);
+      document.getElementById('next-up').hidden = false;
+    }).catch(() => {});
+  </script>
 </body>
 </html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shows: Timothy Chance &amp; Rasta Country live</title>
+  <meta name="description" content="Upcoming shows for Timothy Chance and Rasta Country, country reggae from Nashville. Dates, tickets and directions." />
+  <meta property="og:title" content="Timothy Chance &amp; Rasta Country: upcoming shows" />
+  <meta property="og:description" content="Country reggae out of Nashville. See where the band plays next and get tickets." />
+  <meta property="og:image" content="/logo-badge.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:ital,wdth,wght@0,62..125,300..800;1,62..125,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <a class="skip-link" href="#shows">Skip to the shows</a>
+
+  <header id="nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="index.html">
+        <img src="logo-badge.webp" alt="" width="40" height="43" />
+        <span>Dragon Farm Records</span>
+      </a>
+      <nav aria-label="Main">
+        <ul class="nav-links">
+          <li><a href="shows.html" aria-current="page">Shows</a></li>
+          <li><a href="index.html#artists">The band</a></li>
+          <li><a href="index.html#sync">Licensing</a></li>
+          <li><a href="index.html#book" class="nav-cta">Book a show</a></li>
+        </ul>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="shows.html" aria-current="page">Shows</a>
+      <a href="index.html#artists">The band</a>
+      <a href="index.html#sync">Licensing</a>
+      <a href="index.html#book">Book a show</a>
+    </div>
+  </header>
+
+  <main id="shows">
+    <div class="container">
+      <h1>Shows</h1>
+      <p class="section-sub">Timothy Chance &amp; Rasta Country, live. Country soul over reggae roots, fiddles and riddims, and a dance floor that fills up.</p>
+
+      <p class="shows-status" id="shows-status" role="status">Loading the dates…</p>
+      <div id="shows-list"></div>
+
+      <div class="shows-more">
+        <section id="recent" hidden>
+          <h2>Recently played</h2>
+          <div id="recent-list"></div>
+        </section>
+        <section>
+          <h2>Hear about new dates first</h2>
+          <p>Leave your email and town and we'll tell you when the band is playing near you. No spam, and one click to leave.</p>
+          <a class="btn btn-line" href="fans.html">Get show alerts</a>
+        </section>
+        <section>
+          <h2>Want us in your town?</h2>
+          <p>Venues, festivals and private events: tell us about your show and we'll reply within 48 hours.</p>
+          <a class="btn btn-flame" href="index.html#book">Book a show</a>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer id="footer">
+    <div class="container footer-inner">
+      <img src="logo-badge.webp" alt="" width="56" height="60" />
+      <div>
+        <p class="footer-name">Dragon Farm Records</p>
+        <p>Independent label in Nashville, Tennessee. The dragon on the badge is Chance, our mascot.</p>
+      </div>
+      <p class="footer-mail"><a href="mailto:booking@dragonfarm.net">booking@dragonfarm.net</a></p>
+    </div>
+    <p class="container footer-copy">© 2026 Dragon Farm Records</p>
+  </footer>
+
+  <script src="shows.js"></script>
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => hamburger.setAttribute('aria-expanded', String(mobileMenu.classList.toggle('open'))));
+
+    const status = document.getElementById('shows-status');
+    const list = document.getElementById('shows-list');
+    const EMPTY = `
+      <div class="poster shows-empty">
+        <p class="poster-presents">Dragon Farm Records presents</p>
+        <p class="poster-act">New dates coming soon</p>
+        <p>The band is booking the next run now.</p>
+        <p>Get an email the moment a show is announced near you.</p>
+        <a class="btn btn-flame" href="fans.html">Get show alerts</a>
+      </div>`;
+
+    DFShows.load().then(({ upcoming, recent }) => {
+      status.hidden = true;
+      if (upcoming.length) {
+        list.innerHTML = DFShows.listHtml(upcoming);
+        DFShows.wireIcs(list, upcoming);
+        const ld = document.createElement('script');
+        ld.type = 'application/ld+json';
+        ld.textContent = JSON.stringify(DFShows.jsonLd(upcoming, location.origin));
+        document.head.appendChild(ld);
+      } else {
+        list.innerHTML = EMPTY;
+      }
+      if (recent.length) {
+        document.getElementById('recent-list').innerHTML = DFShows.recentHtml(recent);
+        document.getElementById('recent').hidden = false;
+      }
+    }).catch(() => {
+      status.textContent = 'The dates couldn’t load just now. Refresh the page, or write to booking@dragonfarm.net.';
+    });
+  </script>
+</body>
+</html>

@@ -5,6 +5,8 @@
 //    loadIn, setTime ('HH:MM'), setLength (minutes),
 //    dayContact, dayPhone, address, sound (who provides sound/backline),
 //    hospitality
+//  Public listing (the public Shows page, netlify/functions/shows.mjs):
+//    ticketUrl, ticketPrice, doors ('HH:MM'), ages, unlisted (keep it off)
 //  Settlement fields, filled in after the show:
 //    settled, paid (what we were actually paid), doorNet (door after the
 //    venue's expenses, used to check door deals), attendance,
@@ -222,6 +224,17 @@
         <div class="field"><label>Hospitality</label><input type="text" id="${p}-sd-hospitality" placeholder="Green room, 4 drink tickets, meal buyout" /></div>
       </div>
     </details>
+    <details class="deal-box" id="${p}-public">
+      <summary>Public Shows page</summary>
+      <div class="deal-grid">
+        <div class="field"><label>Ticket Link</label><input type="url" id="${p}-pl-tickets" placeholder="https://… (Eventbrite, the venue's site)" /></div>
+        <div class="field"><label>Ticket Price</label><input type="text" id="${p}-pl-price" maxlength="60" placeholder="$15 adv / $20 door, or Free" /></div>
+        <div class="field"><label>Doors</label><input type="time" id="${p}-pl-doors" /></div>
+        <div class="field"><label>Ages</label><input type="text" id="${p}-pl-ages" maxlength="30" placeholder="21+ or All ages" /></div>
+      </div>
+      <label class="deal-check" style="margin-top:0.75rem"><input type="checkbox" id="${p}-pl-unlisted" /> Keep this show off the public Shows page</label>
+      <div class="sd-hint" id="${p}-pl-status"></div>
+    </details>
     <details class="deal-box" id="${p}-settle">
       <summary>Settlement (after the show)</summary>
       <div class="deal-grid">
@@ -242,6 +255,7 @@
   const FIELDS = {
     loadIn: 'sd-loadin', setTime: 'sd-settime', setLength: 'sd-setlength', dayContact: 'sd-contact', dayPhone: 'sd-phone',
     address: 'sd-address', sound: 'sd-sound', hospitality: 'sd-hospitality',
+    ticketUrl: 'pl-tickets', ticketPrice: 'pl-price', doors: 'pl-doors', ages: 'pl-ages',
     paid: 'st-paid', doorNet: 'st-door', attendance: 'st-attendance', merch: 'st-merch', costs: 'st-costs', settleNotes: 'st-notes'
   };
   const NUMBERS = ['setLength', 'paid', 'doorNet', 'attendance', 'merch', 'costs'];
@@ -249,10 +263,12 @@
   function fill(prefix, l) {
     Object.entries(FIELDS).forEach(([k, id]) => { document.getElementById(`${prefix}-${id}`).value = l[k] ?? ''; });
     document.getElementById(`${prefix}-st-settled`).checked = !!l.settled;
+    document.getElementById(`${prefix}-pl-unlisted`).checked = !!l.unlisted;
     const booked = l.status === 'booked';
     const days = l.eventDate ? daysUntil(l.eventDate) : null;
     document.getElementById(`${prefix}-showday`).open = booked && (days == null || days >= 0) && (days == null || days <= 30 || !!l.loadIn);
     document.getElementById(`${prefix}-settle`).open = booked && days != null && days < 0;
+    document.getElementById(`${prefix}-public`).open = booked && days != null && days >= 0 && !l.ticketUrl && !l.unlisted;
     sync(prefix);
   }
 
@@ -264,7 +280,18 @@
       else out[k] = v.trim();
     });
     out.settled = document.getElementById(`${prefix}-st-settled`).checked;
+    out.unlisted = document.getElementById(`${prefix}-pl-unlisted`).checked;
     return out;
+  }
+
+  // Whether (and why not) this show appears on the public Shows page; same rule as shows.mjs.
+  function publicStatus(l) {
+    if (l.ticketUrl && !/^https?:\/\/\S+\.\S+/i.test(l.ticketUrl)) return '⚠️ The ticket link should start with https://';
+    if (l.type === 'Private Event') return 'Private events never appear on the public Shows page.';
+    if (l.unlisted) return 'Hidden from the public Shows page.';
+    if (l.status !== 'booked' || !l.eventDate) return 'Appears on the public Shows page once it’s booked with a date.';
+    if (l.eventDate < today()) return 'Listed under “Recently played” on the public Shows page.';
+    return `Listed on the public <a href="shows.html" target="_blank" rel="noopener">Shows page</a>${l.ticketUrl ? ' with a ticket button' : '. Add the ticket link so fans can buy'}.`;
   }
 
   // Show the expected pay next to "what we were paid", and live warnings.
@@ -278,10 +305,12 @@
     document.getElementById(`${prefix}-st-door`).closest('.field').style.display = (lead.dealType === 'door' || lead.dealType === 'vs') ? '' : 'none';
     document.getElementById(`${prefix}-st-net`).textContent = lead.settled || num(lead.paid) ? `Net for the night: ${money(net(lead))}` : '';
     document.getElementById(`${prefix}-sd-flags`).innerHTML = issuesHtml(lead);
+    const type = document.getElementById(`${prefix}-type`);
+    document.getElementById(`${prefix}-pl-status`).innerHTML = publicStatus({ ...lead, type: type ? type.value : '' });
   }
 
   function wire(prefix) {
-    const ids = Object.values(FIELDS).concat('st-settled', 'status', 'date', 'deal-type', 'deal-guarantee', 'deal-door');
+    const ids = Object.values(FIELDS).concat('st-settled', 'pl-unlisted', 'type', 'status', 'date', 'deal-type', 'deal-guarantee', 'deal-door');
     ids.forEach(id => {
       const el = document.getElementById(`${prefix}-${id}`);
       if (el) ['input', 'change'].forEach(ev => el.addEventListener(ev, () => sync(prefix)));

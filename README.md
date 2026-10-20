@@ -108,10 +108,13 @@ The tool can tell [n8n](https://n8n.io) (a drag-and-drop workflow tool) when som
 
 Empty addresses just skip that step. If n8n is down, nothing in the tool breaks; that event just isn't sent.
 
-### 12. Captions for Videos and Songs
+### 12. Public Shows Page
+`shows.html` lists every booked show with a date, soonest first, with ticket buttons, add-to-calendar and directions, plus a "Recently played" list from the past year. The home page shows the next three under **Next up**. Edit a booked show and open **Public Shows page** to add the ticket link, price, doors time and ages. **Private Event** shows never appear, and a box keeps any other show off. Only the date, venue, city, address, times, tickets and ages are published, never money, contacts or notes. The page also carries Google's event data (schema.org MusicEvent), so shows can appear in Google search; check one with Google's Rich Results Test after the first real show is listed.
+
+### 13. Captions for Videos and Songs
 Open **Captions** (`captions.html`), drop in a clip, and download an SRT for YouTube or CapCut (or copy the text). It runs OpenAI's Whisper speech model in the browser through Transformers.js (Apache-2.0, loaded from jsDelivr), so files never leave the computer and there's no key or cost. The model downloads once (40–250 MB depending on the speed setting) and the browser keeps it. English only. Sung lyrics come out rougher than speech; check every line against the lyric sheet.
 
-### 13. Deploy to Netlify
+### 14. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -150,6 +153,8 @@ Connect this repo to Netlify:
 ├── fan-list.html    # Fan list by town, CSV export, QR maker (private)
 ├── fans.js          # Fan list helpers and the QR code / printable sign
 ├── automations.html # n8n status and test events (private)
+├── shows.html       # Public Shows page: upcoming dates, tickets, calendar, directions, event data for Google
+├── shows.js         # Draws the public show list (Shows page and the home page's "Next up")
 ├── captions.html    # Captions for videos and songs (Whisper in the browser): edit, preview, SRT/VTT/text
 ├── captions.js      # Caption timing, line splitting and SRT/VTT/text output
 ├── captions-worker.js # Runs Whisper (Transformers.js) off the main thread
@@ -185,6 +190,7 @@ Connect this repo to Netlify:
 ├── netlify/lib/finder.mjs                   # The finder search itself, shared by the page searches and the weekly run
 ├── netlify/lib/digest.mjs                   # Builds and sends the Monday digest (email and/or Discord)
 ├── netlify/lib/weekly.mjs                   # Where weekly searches and the last run are kept
+├── netlify/functions/shows.mjs              # Public list of booked shows (only fan-facing details)
 ├── netlify/functions/automations.mjs        # Automations status and sample events (passcode)
 ├── netlify/lib/events.mjs                   # Sends events to n8n (signed, never blocks the thing that caused it)
 ├── netlify/lib/passcode.mjs                 # Shared passcode check
