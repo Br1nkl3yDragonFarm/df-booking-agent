@@ -44,7 +44,17 @@
     .bar input { max-width: 260px; }
     .note { color: var(--gray); font-size: 0.82rem; margin: 0.6rem 0 0; }
     .empty { color: var(--gray); font-size: 0.88rem; }
-    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+    textarea { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r); padding: 0.5rem 0.65rem; color: var(--cream); font: inherit; font-size: 0.88rem; width: 100%; resize: vertical; }
+    .nl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 0.8rem; }
+    .nl-wide { grid-column: 1 / -1; }
+    .nl-check { display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; color: var(--gray-light); margin: 0.7rem 0; }
+    .nl-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .towns-pick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .towns-pick label { display: inline-flex; gap: 5px; align-items: center; border: 1px solid var(--border2); border-radius: 999px; padding: 4px 10px; font-size: 0.8rem; color: var(--gray-light); cursor: pointer; }
+    #nl-frame { width: 100%; height: 640px; border: 1px solid var(--border2); border-radius: var(--r); background: #fff; margin-top: 0.8rem; }
+    .warn { color: var(--gold-light); font-size: 0.85rem; margin: 0 0 0.75rem; }
+    .nl-log { font-size: 0.82rem; color: var(--gray); margin-top: 0.8rem; }
+    @media (max-width: 720px) { .grid, .nl-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -66,6 +76,29 @@
       <button class="btn btn-gold" id="qr-go">Make QR</button>
     </div>
     <p class="note">Booked shows have a “📱 Fan QR” button on the booking page that fills these in for you.</p>
+  </div>
+
+  <div class="box" id="news">
+    <h2>Email your fans</h2>
+    <p class="note" style="margin:0 0 0.75rem">A branded email to everyone on the list, or just some towns: a show announcement, a new song, a ticket link. Each fan gets their own copy with a one-click unsubscribe.</p>
+    <div id="news-setup"></div>
+    <div class="field" style="margin-bottom:0.6rem">Send to<div class="towns-pick" id="news-towns"></div></div>
+    <div class="nl-grid">
+      <label class="field">Subject<input type="text" id="nl-subject" maxlength="150" placeholder="We're back in Nashville Nov 19" /></label>
+      <label class="field">Headline<input type="text" id="nl-headline" maxlength="150" placeholder="Exit/In, Thursday Nov 19" /></label>
+      <label class="field nl-wide">Message<textarea id="nl-body" rows="6" placeholder="A few short paragraphs. Leave a blank line between paragraphs."></textarea></label>
+      <label class="field">Button text<input type="text" id="nl-cta-text" maxlength="40" placeholder="Get tickets" /></label>
+      <label class="field">Button link<input type="url" id="nl-cta-url" placeholder="https://…" /></label>
+    </div>
+    <label class="nl-check"><input type="checkbox" id="nl-shows" checked /> List our upcoming shows</label>
+    <div class="nl-actions">
+      <button class="btn" id="nl-preview">Preview</button>
+      <button class="btn" id="nl-test">Send me a test</button>
+      <button class="btn btn-gold" id="nl-send">Send</button>
+      <span class="note" id="nl-status" style="margin:0"></span>
+    </div>
+    <iframe id="nl-frame" title="Newsletter preview" hidden></iframe>
+    <div id="nl-log"></div>
   </div>
 
   <div class="box">
@@ -117,7 +150,7 @@ function render() {
     : `<p class="empty">${fans.length ? 'No one matches.' : 'No one yet.'}</p>`;
   $('list').querySelectorAll('.x').forEach(b => b.addEventListener('click', async () => {
     if (!confirm(`Remove ${b.dataset.email} from the fan list?`)) return;
-    if (await DFFans.remove(b.dataset.email)) render();
+    if (await DFFans.remove(b.dataset.email)) { render(); renderTowns(); }
   }));
 }
 
@@ -133,7 +166,63 @@ $('csv').addEventListener('click', () => {
   a.download = 'dragon-farm-fan-list.csv';
   a.click();
 });
-DFFans.load().then(render);
+// ---- newsletter ----
+const NEWS = '/.netlify/functions/newsletter';
+async function newsCall(body) {
+  const go = () => fetch(NEWS, body ? { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-df-passcode': DFStore.passcode() }, body: JSON.stringify(body) } : { headers: { 'x-df-passcode': DFStore.passcode() } });
+  let res = await go();
+  if (res.status === 401 && DFStore.askPasscode()) res = await go();
+  return { res, data: await res.json().catch(() => ({})) };
+}
+const nlStatus = (m, err) => { $('nl-status').textContent = m; $('nl-status').style.color = err ? '#ff8a80' : ''; };
+function message(action) {
+  return { action, subject: $('nl-subject').value.trim(), headline: $('nl-headline').value.trim(), body: $('nl-body').value, ctaText: $('nl-cta-text').value.trim(), ctaUrl: $('nl-cta-url').value.trim(), includeShows: $('nl-shows').checked,
+    towns: [...document.querySelectorAll('#news-towns input:checked')].map(i => i.value).filter(v => v !== '*') };
+}
+function renderTowns() {
+  const towns = DFFans.byTown(DFFans.all());
+  const was = new Set([...document.querySelectorAll('#news-towns input:checked')].map(i => i.value));
+  $('news-towns').innerHTML = `<label><input type="checkbox" value="*" ${was.size && !was.has('*') ? '' : 'checked'} /> Everyone (${DFFans.all().length})</label>` +
+    towns.filter(t => t.town !== 'No town set').map(t => `<label><input type="checkbox" value="${esc(t.town)}" ${was.has(t.town) ? 'checked' : ''} /> ${esc(t.town)} (${t.count})</label>`).join('');
+  $('news-towns').querySelectorAll('input').forEach(i => i.addEventListener('change', () => {
+    if (i.value === '*' && i.checked) $('news-towns').querySelectorAll('input:not([value="*"])').forEach(x => { x.checked = false; });
+    if (i.value !== '*' && i.checked) $('news-towns').querySelector('[value="*"]').checked = false;
+  }));
+}
+async function loadNews() {
+  const { res, data } = await newsCall();
+  if (!res.ok) return;
+  const s = data.setup || {};
+  $('news-setup').innerHTML = [!s.email && 'Sending needs Resend set up (RESEND_API_KEY in Netlify).', !s.address && 'Add the label’s postal address in Netlify as DF_MAILING_ADDRESS (a PO box works). US law requires it in every marketing email.'].filter(Boolean).map(t => `<p class="warn">⚠ ${esc(t)}</p>`).join('');
+  $('nl-log').innerHTML = (data.log || []).length ? `<div class="nl-log"><b>Sent before:</b><br>${data.log.slice(0, 5).map(l => `${esc(day(l.at))}: “${esc(l.subject)}” to ${l.sent} fan${l.sent === 1 ? '' : 's'}${l.towns.length ? ` in ${esc(l.towns.join(', '))}` : ''}${l.failed ? `, ${l.failed} failed` : ''}`).join('<br>')}</div>` : '';
+}
+$('nl-preview').addEventListener('click', async () => {
+  nlStatus('Building the preview…');
+  const { res, data } = await newsCall(message('preview'));
+  if (!res.ok) return nlStatus(data.error || 'Couldn’t build the preview.', true);
+  $('nl-frame').hidden = false;
+  $('nl-frame').srcdoc = data.html;
+  nlStatus(`This would go to ${data.count} fan${data.count === 1 ? '' : 's'}.`);
+});
+$('nl-test').addEventListener('click', async () => {
+  nlStatus('Sending a test…');
+  const { res, data } = await newsCall(message('test'));
+  nlStatus(res.ok ? `Test sent to ${data.sent}.` : (data.error || 'The test didn’t send.'), !res.ok);
+});
+$('nl-send').addEventListener('click', async () => {
+  const pre = await newsCall(message('preview'));
+  if (!pre.res.ok) return nlStatus(pre.data.error || 'Check the message.', true);
+  const n = pre.data.count;
+  if (!n) return nlStatus('No fans on the list for those towns yet.', true);
+  if (!confirm(`Send “${$('nl-subject').value.trim()}” to ${n} fan${n === 1 ? '' : 's'}? This can’t be undone.`)) return;
+  nlStatus('Sending…');
+  const { res, data } = await newsCall({ ...message('send'), expected: n });
+  nlStatus(res.ok ? `Sent to ${data.sent} fan${data.sent === 1 ? '' : 's'}${data.failed ? `; ${data.failed} failed: ${data.error}` : ''}.` : (data.error || 'It didn’t send.'), !res.ok || data.failed);
+  loadNews();
+});
+
+DFFans.load().then(() => { render(); renderTowns(); });
+loadNews();
 </script>
 </body>
 </html>

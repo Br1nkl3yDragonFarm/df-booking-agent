@@ -32,3 +32,11 @@ export function addFan(input) {
     return { fans: fans.map((x, j) => j === i ? next : x) };
   });
 }
+
+// "nashville, tn" and "Nashville, TN" are one town (same rule as report.js and fans.js).
+export function townOf(city) {
+  const c = String(city || '').trim().replace(/\s+/g, ' ');
+  if (!c) return 'No town set';
+  return c.split(', ').map((part, i) => i > 0 && part.length === 2 ? part.toUpperCase()
+    : part.replace(/\b\w/g, ch => ch.toUpperCase())).join(', ');
+}

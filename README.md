@@ -25,6 +25,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Import from a spreadsheet: “Import CSV” on the booking, sync and brand pipelines reads a CSV from Excel, Google Sheets or another CRM, matches its columns to the lead's fields, previews it and skips anyone already in the pipeline
   - Real distances: leads show “📍 ~17 mi from Exit/In (Nov 9)” when they're near an upcoming booked show, “Fill nearby dates” results are sorted by miles from the show (too-far ones flagged), and booked shows show the drive to the next one, flagging long drives on back-to-back days
   - Email typo hints: “Did you mean jane@gmail.com?” under any email field (leads, the send window, fan sign-up), with one tap to fix
+  - Fan newsletters: from the Fan list, email everyone or chosen towns a branded email (MJML) with a headline, message, ticket button and upcoming shows; each fan gets a one-click unsubscribe link, and the label's mailing address is in every email as US law requires
   - Fan list: a QR code for the merch table (from any booked show) opens a sign-up page; fans land on a private list counted by town, with CSV export, removal on request, counts for the press kit's draw and a fans-by-town table in the report
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
@@ -80,11 +81,14 @@ On the sync page, open **Pitch composer → Versions ready to send** and paste s
 ### 8. Fan List at Shows
 On **Booked shows**, tap **📱 Fan QR** on a show and **Print a sign** for the merch table. Fans scan it, add their email and town, and land on the private **Fan list** (`fan-list.html`). Sign-ups come in through Netlify Forms (the form is named `fan-signup`; Netlify's spam filter applies), so form detection must stay on in Netlify. Export the list as CSV to your email tool to send news, and remove anyone who asks. In the press kit editor, **+ Add fan list numbers** puts the real counts in the draw.
 
-### 9. Press Kits
+### 9. Fan Newsletters
+On the **Fan list** page, **Email your fans** sends a branded email to everyone or to chosen towns, through Resend (step 4). Before the first send, add the label's postal address in Netlify as `DF_MAILING_ADDRESS` (a PO box works): US law (CAN-SPAM) requires it in marketing email, and the tool won't send without it. Use **Send me a test** first. Resend's free plan sends up to 100 emails a day; a bigger list needs a paid plan.
+
+### 10. Press Kits
 Open **Press Kits** (`epk-edit.html`) and fill in the artist's photo link, music and video links, past shows, draw and stage info.
 It starts from the bio on the public site. Add only facts you can stand behind: buyers check.
 
-### 10. Deploy to Netlify
+### 11. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -138,6 +142,10 @@ Connect this repo to Netlify:
 ├── netlify/functions/sign.mjs               # Signing links, signatures, signed PDFs (pdf-lib), emails both sides
 ├── netlify/functions/calendar-feed.mjs      # Subscribable calendar of shows and holds (ical-generator), behind a secret link
 ├── netlify/lib/showtime.mjs                 # Reads typed show times ("9 PM", "21:00")
+├── netlify/functions/newsletter.mjs         # Fan newsletter: preview, test, send by town through Resend (batches)
+├── netlify/functions/unsubscribe.mjs        # One-click unsubscribe from the newsletter
+├── netlify/lib/newsletter.mjs               # The newsletter email (MJML) and its text version
+├── netlify/lib/unsubscribe.mjs              # Signed unsubscribe links
 ├── netlify/functions/fans.mjs               # Fan list: read and remove (passcode)
 ├── netlify/lib/fans.mjs                     # Adds fan sign-ups (one entry per email)
 ├── netlify/functions/catalog.mjs            # Song versions (links) and metadata for sync pitches
