@@ -148,9 +148,18 @@
       return;
     }
     const box = list => `<div class="sd-box">${list.map(l => showCard(l, open, actions)).join('')}</div>`;
+    // Between upcoming shows: the drive to the next one (distance.js, when loaded).
+    const legs = window.DFDist && DFDist.ready() ? DFDist.legs(leads) : [];
+    const legLine = l => {
+      const leg = legs.find(x => x.to.id === l.id);
+      if (!leg) return '';
+      const when = leg.days === 0 ? 'the same day' : leg.days === 1 ? 'the next day' : `${leg.days} days later`;
+      return `<div class="dfd-leg${leg.long ? ' dfd-leg-long' : ''}">${leg.long ? '⚠' : '🚐'} ~${leg.miles} mi from ${esc(leg.from.name)} to ${esc(l.name)}, ${when}${leg.long ? ': a long drive between shows' : ''}</div>`;
+    };
+    const upcomingBox = list => `<div class="sd-box">${list.map(l => legLine(l) + showCard(l, open, actions)).join('')}</div>`;
     els.list.innerHTML =
       '<div class="sd-section-title">Upcoming</div>' +
-      (upcoming.length ? box(upcoming) : '<div class="sd-empty">No upcoming shows.</div>') +
+      (upcoming.length ? upcomingBox(upcoming) : '<div class="sd-empty">No upcoming shows.</div>') +
       (played.length ? `<div class="sd-section-title">Played</div>${artistTable(leads)}${box(played)}` : '');
   }
 

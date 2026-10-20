@@ -164,6 +164,7 @@
     const TYPE = Object.fromEntries(M.categories.map(([k, , t]) => [k, t]));
     let state = { job: null, results: [], query: null, added: {} };
     let timer = null;
+    let nextNear = null;   // the show a "Fill nearby dates" search is filling around
 
     const $ = name => root.querySelector(`[data-f="${name}"]`);
     const remember = () => { try { localStorage.setItem(M.storageKey, JSON.stringify(state)); } catch {} };
@@ -289,7 +290,8 @@
       const location = $('location').value.trim();
       if (!categories.length) return showStatus(`Pick at least one kind of ${M.noun}.`, 'warn');
       if (M.where.required && !location) return showStatus('Enter where to look.', 'warn');
-      const query = { mode: opts.mode || 'booking', categories, location, artist: $('artist').value, similar: $('similar').value.trim(), dates: $('dates') ? $('dates').value.trim() : '', count: $('count').value };
+      const query = { mode: opts.mode || 'booking', categories, location, artist: $('artist').value, similar: $('similar').value.trim(), dates: $('dates') ? $('dates').value.trim() : '', count: $('count').value, near: nextNear };
+      nextNear = null;
       const jobId = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
       state = { job: jobId, startedAt: Date.now(), results: [], query, added: {} };
       remember();
@@ -360,12 +362,18 @@
       const el = $('results');
       if (!state.results.length) { el.innerHTML = ''; return; }
       const q = state.query || {};
+      // Around a show: nearest first, with the distance on each card (distance.js).
+      const dist = q.near && window.DFDist && DFDist.ready();
+      const placeOf = r => [r.city, r.state].filter(Boolean).join(', ');
+      const order = state.results.map((r, i) => i);
+      if (dist) order.sort((a, b) => (DFDist.miles(placeOf(state.results[a]), q.near.city) ?? 1e9) - (DFDist.miles(placeOf(state.results[b]), q.near.city) ?? 1e9));
       el.innerHTML = `
         <div class="fb-results-hdr">
           <div><b>${state.results.length} found</b>${q.location ? ` · ${esc(q.location)}` : ''}${q.dates ? ` · for ${esc(q.dates)}` : ''}${state.searches ? ` · ${state.searches} web searches` : ''}</div>
           <button class="btn btn-ghost" data-f="add-all">+ Add all to leads</button>
         </div>
-        <div class="fb-list">${state.results.map((r, i) => {
+        <div class="fb-list">${order.map(i => {
+          const r = state.results[i];
           const links = [
             safeUrl(r.website) && `<a href="${esc(r.website)}" target="_blank" rel="noopener">Website</a>`,
             safeUrl(r.booking_url) && `<a href="${esc(r.booking_url)}" target="_blank" rel="noopener">${M.linkLabel}</a>`,
@@ -386,6 +394,7 @@
             ${r.phone ? `<div class="fb-line">📞 <a href="tel:${esc(r.phone.replace(/[^\d+]/g, ''))}">${esc(r.phone)}</a></div>` : ''}
             ${!r.email && !r.phone ? `<div class="fb-line fb-muted">No email or phone listed. ${safeUrl(r.booking_url) ? `Use the ${M.linkLabel.toLowerCase()}.` : 'Check the source page for how to reach them.'}</div>` : ''}
             ${links ? `<div class="fb-line fb-links">${links}</div>` : ''}
+            ${dist ? DFDist.fromLine(placeOf(r), q.near) : ''}
             ${r.project ? `<div class="fb-fit"><b>Projects:</b> ${esc(r.project)}</div>` : ''}
             ${r.fit ? `<div class="fb-fit">${esc(r.fit)}</div>` : ''}
             ${r.how_to_approach ? `<div class="fb-fit"><b>How to approach:</b> ${esc(r.how_to_approach)}</div>` : ''}
@@ -415,10 +424,13 @@
     }
 
     return {
+      // Draw the results again (e.g. once distances have loaded).
+      refresh: renderResults,
       // Fill the form (anything not given is cleared) and start a search.
       run(q) {
         if (state.job) return showStatus('A search is already running. Wait for it to finish first.', 'warn');
         fill({ ...q, categories: q.categories || M.defaults });
+        nextNear = q.near || null;
         start();
       }
     };

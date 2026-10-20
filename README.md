@@ -23,6 +23,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Sign deals online: a performance agreement written from the deal (or the sync license, or a brand partnership agreement) goes out as a private link; they draw a signature on their phone, both sides get the signed PDF, and the deal is marked signed
   - Shows in your calendar: “📅 Calendar” on a booked show adds it to Google, Outlook or Apple Calendar; “📲 Subscribe” on the Calendar page gives one secret link that puts every booked show and hold on the band's phones and keeps them up to date
   - Import from a spreadsheet: “Import CSV” on the booking, sync and brand pipelines reads a CSV from Excel, Google Sheets or another CRM, matches its columns to the lead's fields, previews it and skips anyone already in the pipeline
+  - Real distances: leads show “📍 ~17 mi from Exit/In (Nov 9)” when they're near an upcoming booked show, “Fill nearby dates” results are sorted by miles from the show (too-far ones flagged), and booked shows show the drive to the next one, flagging long drives on back-to-back days
   - Fan list: a QR code for the merch table (from any booked show) opens a sign-up page; fans land on a private list counted by town, with CSV export, removal on request, counts for the press kit's draw and a fans-by-town table in the report
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
 
@@ -114,11 +115,13 @@ Connect this repo to Netlify:
 ├── esign.js         # Writes agreements from the deal and sends them for signature
 ├── showcal.js       # Add a show to a calendar (datebook) and the subscribe link
 ├── importer.js      # Import leads from a CSV (Papa Parse): column matching, duplicates skipped
+├── distance.js      # Miles between towns (geolib + US city coordinates)
 ├── fans.html        # Public fan sign-up page the merch-table QR code opens (Netlify form "fan-signup")
 ├── fan-list.html    # Fan list by town, CSV export, QR maker (private)
 ├── fans.js          # Fan list helpers and the QR code / printable sign
 ├── vendor/          # Third-party browser libraries, all MIT, each with its license header:
-│                    #   qrcode.js, signature_pad.js, datebook.js, papaparse.js, geolib.js, mailcheck.js, libphonenumber.js, chart.js
+│                    #   qrcode.js, signature_pad.js, datebook.js, papaparse.js, geolib.js, mailcheck.js, libphonenumber.js, chart.js,
+│                    #   us-cities.json (US-Cities-Database by Kelvin S. do Prado, MIT)
 ├── report.js        # Report numbers: conversion and pay by kind, town and source; which pitches get replies
 ├── netlify/functions/finder-background.mjs  # Runs a search (Claude + web search) in the background, booking or sync mode
 ├── netlify/functions/finder-status.mjs      # Returns a finished search

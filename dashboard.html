@@ -622,6 +622,8 @@
 <script src="showcal.js"></script>
 <script src="vendor/papaparse.js"></script>
 <script src="importer.js"></script>
+<script src="vendor/geolib.js"></script>
+<script src="distance.js"></script>
 <script>
 // ============================================================
 //  DRAGON FARM BOOKING AGENT — APP LOGIC
@@ -846,7 +848,7 @@ function renderLeads() {
   tbody.innerHTML = filtered.map(l => `
     <tr onclick="editLead('${l.id}')">
       <td><div style="font-weight:600">${esc(l.name)}</div>${l.notes ? `<div style="font-size:0.8rem;color:var(--bone-dim);margin-top:2px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.notes)}</div>` : ''}</td>
-      <td>${esc(l.city)}</td>
+      <td>${esc(l.city)}${window.DFDist ? DFDist.badge(l, leads) : ''}</td>
       <td><span class="venue-type-badge">${esc(l.type)}</span></td>
       <td style="font-size:0.85rem;color:var(--bone-dim)">${esc(l.artist === 'Both' ? 'Both artists' : l.artist)}</td>
       <td>
@@ -1060,7 +1062,7 @@ function fillGaps(id) {
   const gap = DFOut.gaps(leads, lead);
   if (!gap.dates.length) { toast('No open dates within 3 days of this show', 'error'); return; }
   showPage('finder');
-  bookers.run({ location: `Within about a 3-hour drive of ${lead.city || lead.name}`, artist: ACT, dates: gap.text, categories: ['venues', 'buyers', 'breweries', 'community'] });
+  bookers.run({ location: `Within about a 3-hour drive of ${lead.city || lead.name}`, artist: ACT, dates: gap.text, categories: ['venues', 'buyers', 'breweries', 'community'], near: lead.city ? { city: lead.city, label: `${lead.name}, ${lead.city}` } : null });
 }
 
 function addToCalendar(id) {
@@ -1193,6 +1195,8 @@ DFStore.connect('df_leads', items => {
   leads = items;
   onActivity();
 });
+// City coordinates load in the background; distances appear once they're in.
+DFDist.load().then(ok => { if (ok) { renderLeads(); renderBooked(); bookers.refresh(); } });
 </script>
 </body>
 </html>
