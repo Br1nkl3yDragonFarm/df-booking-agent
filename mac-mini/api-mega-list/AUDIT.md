@@ -40,4 +40,4 @@ Audited 2026-10-21 at commit `b7c914f`.
 - Spotify artist and playlist scrapers, 46 entries: curator and playlist research (`apisearch spotify`)
 - Instagram and TikTok profile scrapers: fan and brand research. Expect ToS risk (`apisearch instagram`)
 - Google Maps business scrapers: breweries, bars and wedding venues by town, which overlaps with the hub's Find Bookers (`apisearch google maps`)
-- MCP servers category, 289 entries: tools Claude can call directly once connected through Apify's MCP server with your own Apify token
+- MCP servers category, 289 entries: tools Claude can call directly once Apify is connected. See `CONNECT-APIFY.md`
