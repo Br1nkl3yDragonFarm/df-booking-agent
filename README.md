@@ -29,6 +29,7 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Phone numbers: tidied as you type them in, impossible ones flagged, and tap-to-call and text links on leads, show cards, brands and finder results
   - Fan list: a QR code for the merch table (from any booked show) opens a sign-up page; fans land on a private list counted by town, with CSV export, removal on request, counts for the press kit's draw and a fans-by-town table in the report
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
+- **AI team** (`.claude/agents/`) — Eight specialists for Claude Code that work together: a coordinator (SNOOP) who splits up a goal and hands it out, a booker, sync scout, deal checker, promoter, PR specialist, web and app designer, and coder. They draft; nothing is sent, posted or signed without your OK
 
 ---
 
@@ -117,7 +118,23 @@ When a show is marked **Booked** with a date (and isn't a Private Event or kept 
 ### 14. Captions for Videos and Songs
 Open **Captions** (`captions.html`), drop in a clip, and download an SRT for YouTube or CapCut (or copy the text). It runs OpenAI's Whisper speech model in the browser through Transformers.js (Apache-2.0, loaded from jsDelivr), so files never leave the computer and there's no key or cost. The model downloads once (40–250 MB depending on the speed setting) and the browser keeps it. English only. Sung lyrics come out rougher than speech; check every line against the lyric sheet.
 
-### 15. Deploy to Netlify
+### 15. AI Team in Claude Code
+The files in `.claude/agents/` are specialists Claude Code can hand work to. Open this repo in Claude Code and say what you want, e.g. "Use the snoop-coordinator to book a Southeast run in March and promote it." Or ask one directly: "Have the deal-checker read this offer."
+
+| Specialist | Does |
+|---|---|
+| `snoop-coordinator` | Splits a goal into tasks, hands them out, checks the work, reports back |
+| `booker` | Venues, buyers, festivals, pitches, filling dates, routing |
+| `sync-scout` | Supervisor briefs, sync pitches, fee quotes, song versions |
+| `deal-checker` | Reads every offer and contract before signing; flags bad terms (read-only) |
+| `promoter` | Posts, captions, short videos, fan emails, ads |
+| `pr-specialist` | Press releases, bios, media and radio lists, bad press |
+| `designer` | Look and layout of the site, press kit and tools; graphics briefs |
+| `coder` | New features, fixes, automations, security checks |
+
+They use the SNOOP and TUPAC skills when those plugins are installed. Every specialist drafts only: emails, posts, signatures and payments wait for you. Edit any file in plain English to change how a specialist works.
+
+### 16. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -198,6 +215,7 @@ Connect this repo to Netlify:
 ├── netlify/lib/listing.mjs                  # Which shows are public, and their fan-facing details
 ├── netlify/functions/social-background.mjs  # Drafts a booked show's social posts with Claude (background)
 ├── netlify/functions/social.mjs             # Reads, edits and marks off the post drafts (passcode)
+├── .claude/agents/                          # The AI team for Claude Code: coordinator, booker, sync scout, deal checker, promoter, PR, designer, coder
 ├── netlify/lib/social.mjs                   # The post-drafting prompt and output shape
 ├── netlify/functions/automations.mjs        # Automations status and sample events (passcode)
 ├── netlify/lib/events.mjs                   # Sends events to n8n (signed, never blocks the thing that caused it)
