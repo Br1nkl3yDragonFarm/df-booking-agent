@@ -1,0 +1,112 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--pine:#142a1f;--deep:#0f2118;--scale:#2f5a41;--bone:#efe8d6;--dim:#b9b8a6;--gold:#d2a84e;--flame:#f28c28;--card:#1a3326;--green:#8fd0a6}
+*{box-sizing:border-box;margin:0}
+body{width:1920px;height:1080px;overflow:hidden;background:radial-gradient(1200px 700px at 80% 0%,#1d3a2a,var(--deep));color:var(--bone);font-family:Archivo,sans-serif}
+.top{position:absolute;left:64px;top:44px;right:64px;display:flex;align-items:center;gap:18px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:20px;color:var(--gold)}
+.top img{width:44px;height:44px;border-radius:50%}
+.top .ch{margin-left:auto;color:var(--dim);letter-spacing:.08em}
+.prog{position:absolute;left:0;bottom:0;height:8px;background:var(--flame)}
+/* split layout */
+.shot{position:absolute;left:64px;top:120px;width:1180px;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);border:1px solid #2f5a41;background:#0b1a12}
+.bar{height:38px;background:#0b1a12;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid #22412f}
+.bar i{width:12px;height:12px;border-radius:50%;background:#3b5d48;display:block}
+.bar .url{margin-left:14px;flex:1;background:#14281d;border-radius:8px;padding:5px 14px;font-size:16px;color:var(--dim)}
+.bar .url b{color:var(--bone);font-weight:600}
+.shot img{display:block;width:100%}
+.panel{position:absolute;left:1290px;top:120px;width:566px}
+.step{font-family:'Alfa Slab One';color:var(--flame);font-size:26px;letter-spacing:.04em}
+h1{font-family:'Alfa Slab One';font-weight:400;font-size:58px;line-height:1.05;margin:10px 0 18px;color:var(--bone)}
+.lede{font-size:25px;line-height:1.4;color:var(--dim);margin-bottom:26px}
+ul{list-style:none;padding:0}
+li{font-size:24px;line-height:1.38;padding:13px 0 13px 46px;position:relative;border-top:1px solid #2a4a37}
+li:before{content:attr(data-n);position:absolute;left:0;top:13px;width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--deep);font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center}
+li b{color:var(--bone)} li{color:#d9d3c2}
+.tip{margin-top:22px;background:rgba(242,140,40,.12);border-left:5px solid var(--flame);padding:14px 18px;border-radius:6px;font-size:21px;line-height:1.4;color:var(--bone)}
+.tip b{color:var(--flame)}
+/* full layouts */
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 160px}
+.center img.logo{width:230px;margin-bottom:30px}
+.center h1{font-size:92px}
+.center .lede{font-size:34px;max-width:1300px}
+.kicker{font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-size:24px}
+.grid{position:absolute;left:64px;right:64px;top:250px;display:grid;gap:20px}
+.card{background:var(--card);border:1px solid #2f5a41;border-radius:14px;padding:22px 24px}
+.card h3{font-family:'Alfa Slab One';font-weight:400;color:var(--gold);font-size:28px;margin-bottom:8px}
+.card p{font-size:21px;line-height:1.38;color:#d9d3c2}
+.card code,.mono{font-family:ui-monospace,Menlo,monospace;font-size:19px;color:var(--green)}
+.hdr{position:absolute;left:64px;top:110px;right:64px}
+.hdr h1{font-size:62px}
+.hdr .lede{margin:0}
+.term{background:#07120c;border:1px solid #2f5a41;border-radius:14px;padding:26px 30px;font-family:ui-monospace,Menlo,monospace;font-size:24px;line-height:1.55;color:#cfe9d8}
+.term .p{color:var(--flame)} .term .c{color:#7d9886}
+.flow{display:flex;align-items:stretch;gap:0}
+.flow .card{flex:1;position:relative}
+.flow .arrow{width:46px;display:flex;align-items:center;justify-content:center;color:var(--flame);font-size:40px;font-weight:800}
+.num{font-family:'Alfa Slab One';color:var(--flame);font-size:40px}
+</style></head><body>
+<div class="top"><img id="lg" alt=""><span>Dragon Farm Records · Booking Hub</span><span class="ch" id="ch"></span></div>
+<div id="stage"></div><div class="prog" id="prog"></div>
+<script>
+const LOGO='http://localhost:8080/logo.jpg', BADGE='http://localhost:8080/logo-badge.webp';
+document.getElementById('lg').src=LOGO;
+const S=[
+{t:'title',k:'Video walkthrough',h:'Run the label from one dashboard',l:'How to use <b style="color:var(--gold)">dragonfarm.net/dashboard</b>, every tool in the hub, and the AI team of agents and skills behind it.'},
+{t:'split',ch:'Getting started',img:'hub',url:'dragonfarm.net/<b>hub</b>',s:'Step 1',h:'Open the Command Center',l:'Start here every day. It\'s the front door to all the private tools.',b:['<b>Unlock</b> with the team password, then enter the CRM passcode once per device','<b>Today</b> shows follow-ups due, your next show and anything that needs attention','<b>Pipelines</b> count booking, sync and brand leads in one place','Badge at bottom left: <b>☁️ Synced</b> means your phone and computer share the same list'],tip:'<b>Tip:</b> Add the hub to your phone\'s home screen and it works like an app.'},
+{t:'split',ch:'Booking dashboard',img:'overview',url:'dragonfarm.net/<b>dashboard</b>',s:'Step 2',h:'The Dashboard overview',l:'Your booking home base: leads, follow-ups and next steps.',b:['Top row: <b>leads, contacted, interested, booked</b>','<b>Follow-ups due</b>: tap Draft for a ready follow-up, Done when it\'s handled, or Snooze','<b>Get booked</b>: Find bookers, Write a pitch, or Add a lead','The left menu holds every booking tool, with links to the other hubs below it']},
+{t:'split',ch:'Booking dashboard',img:'dash-finder',url:'dragonfarm.net/dashboard · <b>Find bookers</b>',s:'Step 3',h:'Find bookers',l:'A live web search for the people who book bands.',b:['Pick types: <b>venues, talent buyers, agencies, festivals, colleges, breweries, fairs, private events</b>','Set <b>where</b>, the act, similar artists and the dates to fill','Every result links to its source: <b>check the contact before you pitch</b>','Add good results to the Lead tracker with one tap'],tip:'<b>⟳ Run this search every Monday</b> saves it. New places land in your pipeline and a digest goes to email or Discord.'},
+{t:'split',ch:'Booking dashboard',img:'dash-composer',url:'dragonfarm.net/dashboard · <b>Email composer</b>',s:'Step 4',h:'Write and send the pitch',l:'Claude writes a booking pitch you edit and send.',b:['<b>Start from a lead</b>, or fill in venue, contact, city, type and dates','Choose a tone, add anything to mention, press <b>Write the email</b>','<b>Review and send</b> sends it from booking@dragonfarm.net, with a tracked press kit link','Replies are caught and flag the lead, and one tap drafts your answer'],tip:'<b>No email setup yet?</b> Use <b>Open in mail app</b>, then tap <b>I sent it</b> to log the touch.'},
+{t:'split',ch:'Booking dashboard',img:'dash-crm',url:'dragonfarm.net/dashboard · <b>Lead tracker</b>',s:'Step 5',h:'Work the Lead tracker',l:'Every venue and buyer you\'re talking to, in one pipeline.',b:['Move leads along: <b>New → Contacted → Interested → Follow up → Booked</b> (or Passed)','Filter by status, search, and set a <b>follow-up date</b> on every lead','<b>📍 ~17 mi from Exit/In</b> marks leads near a booked show','<b>Import CSV</b> from Excel or Google Sheets (duplicates are skipped). <b>Export CSV</b> any time'],tip:'<b>Rhythm:</b> follow up after 5–7 days, then 1–2 weeks. Two or three touches max, adding something new each time.'},
+{t:'split',ch:'Booking dashboard',img:'dash-calendar',url:'dragonfarm.net/dashboard · <b>Calendar</b>',s:'Step 6',h:'Calendar and holds',l:'See confirmed shows and holds month by month.',b:['Select a day to see it or add a hold','Filter by artist. Double-bookings are flagged','<b>📲 Subscribe</b> gives one secret link that puts every show and hold on the band\'s phones','Each booked show has <b>📅 Calendar</b> for Google, Outlook or Apple']},
+{t:'split',ch:'Booking dashboard',img:'dash-booked',url:'dragonfarm.net/dashboard · <b>Booked shows</b>',s:'Step 7',h:'From booked to paid',l:'Every confirmed show, with the business around it.',b:['<b>Deal terms</b>, deposit and an <b>invoice</b> (print, PDF, email, Stripe card link)','<b>Contract</b>: send the agreement as a link and they sign on their phone','<b>Fill nearby dates</b>: gigs within a 3-hour drive on open days nearby','<b>📣 Posts</b> for social drafts, <b>📱 Fan QR</b> for the merch table, and show-day settlement'],tip:'Overdue deposits get a one-tap reminder. Deposits paid by card are marked received automatically.'},
+{t:'split',ch:'More tools',img:'sync',url:'dragonfarm.net/<b>sync</b>',s:'Step 8',h:'Sync agent',l:'The same flow, built to place songs in TV, film, ads and games.',b:['<b>Find sync contacts</b>: supervisors, trailer houses, ad agencies, game studios, libraries, open briefs','<b>Pitch composer</b> with <b>Versions ready to send</b>: full mix, clean, instrumental','<b>Sync kit</b>: fee quote by use, term, territory and exclusivity, plus a one-stop license','<b>Pitch log</b> records which song went to which supervisor'],tip:'Paste share links for the clean and instrumental versions first. Without them, placements get lost.'},
+{t:'split',ch:'More tools',img:'brands',url:'dragonfarm.net/<b>brands</b>',s:'Step 9',h:'Brand deals',l:'Sponsors and lifestyle brands that fit the band.',b:['<b>Find brands</b>: drinks, outdoor, Western lifestyle, trucks, food, gear, events','Claude drafts a pitch that leads with <b>fit and a content idea</b>','<b>Deal check</b> flags exposure-only pay, rights grabs and forever exclusivity','Signed deals go out as a link to sign on a phone, like contracts']},
+{t:'split',ch:'More tools',img:'epk-edit',url:'dragonfarm.net/<b>epk-edit</b>',s:'Step 10',h:'Press kits',l:'One public page buyers open from every pitch.',b:['Fill in photo, music and video links, past shows, draw and stage info','It starts from the bio on the public site','<b>+ Add fan list numbers</b> fills the draw with real counts','Pitches carry a tracked link, so you see when a buyer opened it'],tip:'<b>Only list facts you can stand behind.</b> Buyers check.'},
+{t:'split',ch:'More tools',img:'fan-list',url:'dragonfarm.net/<b>fan-list</b>',s:'Step 11',h:'Fan list and newsletters',l:'Build an audience you own, one show at a time.',b:['<b>Make a QR code</b> for a show and print a sign for the merch table','Fans add email and town. Counts by town feed the press kit and the report','<b>Email your fans</b>: everyone or chosen towns, with a ticket button and upcoming shows','<b>Send me a test</b> first. One-click unsubscribe is built in']},
+{t:'split',ch:'More tools',img:'report',url:'dragonfarm.net/<b>report</b>',s:'Step 12',h:'What\'s working',l:'Let the numbers tell you where to spend your time.',b:['Which <b>kinds of leads, towns and sources</b> turn into shows or placements','What they pay on average, and which emails get answered','Charts: emails and replies by week, show money by month','Fans by town, so you can route where the crowd already is']},
+{t:'split',ch:'More tools',img:'captions',url:'dragonfarm.net/<b>captions</b>',s:'Step 13',h:'Captions for videos',l:'Drop in a clip, get subtitles. Free, and nothing leaves your computer.',b:['Download an <b>SRT</b> for YouTube or CapCut, or copy the text','Runs the Whisper speech model in your browser, with no key and no cost','The first run downloads the model once','Sung lyrics come out rougher than speech: <b>check every line</b>']},
+{t:'split',ch:'More tools',img:'automations',url:'dragonfarm.net/<b>automations</b>',s:'Step 14',h:'Automations',l:'When something happens, n8n handles the follow-on chores.',b:['Events: <b>show booked, deposit paid, reply received, agreement signed, fan sign-up</b>…','Post to <b>Discord</b>, log to a <b>Google Sheet</b>, alert your phone with <b>ntfy</b>','Press <b>Send test</b> next to any event to check the setup','If n8n is down, nothing breaks. That one event just isn\'t sent']},
+{t:'split',ch:'More tools',img:'shows',url:'dragonfarm.net/<b>shows</b>',s:'Step 15',h:'Public Shows page',l:'Booked shows publish themselves for fans.',b:['Soonest first, with tickets, add-to-calendar and directions','Shows only date, venue, city, times, tickets and ages. <b>Never money or contacts</b>','Private events stay off automatically','Google event data helps shows appear in search']},
+{t:'cards',ch:'The AI team',h:'Meet your AI team',l:'Eight specialists in Claude Code. Open the repo in Claude Code and say what you want.',cards:[
+ ['snoop-coordinator','Team lead. Splits a big goal into tasks, hands each to the right specialist, checks the work and brings back one plan.'],
+ ['booker','Venues, talent buyers, festivals and fairs. Writes pitches and follow-ups, fills dates, plans routing.'],
+ ['sync-scout','Music supervisors and briefs. Matches songs to scenes, quotes fees, preps versions.'],
+ ['deal-checker','Reads every offer and contract before signing. Plain English, red flags. <b>Read-only.</b>'],
+ ['promoter','Posts, captions, short video scripts, fan newsletters, ad copy and release rollouts.'],
+ ['pr-specialist','Press releases, bios, one-sheets, media and radio lists, and handling bad press.'],
+ ['designer','Look and layout of the site, press kit and tools. Mobile, accessibility, graphics briefs.'],
+ ['coder','New features, fixes, Netlify functions, n8n, Resend, Stripe and Discord wiring, security reviews.']]},
+{t:'prompts',ch:'The AI team',h:'Just ask in plain English',l:'Name the agent, or let SNOOP route it. Here\'s what to type in Claude Code:',lines:[
+ ['snoop-coordinator','Use the snoop-coordinator to book a Southeast run in March and promote it.'],
+ ['booker','Have the booker find breweries and fairs within 3 hours of Exit/In for the open dates around Nov 9.'],
+ ['deal-checker','Have the deal-checker read this performance agreement before I sign it.'],
+ ['sync-scout','Ask the sync-scout which of our songs fit this truck-ad brief, and quote a fee.'],
+ ['promoter','Have the promoter write a 30-second Reel script and captions for the MTSU show.'],
+ ['pr-specialist','Have the pr-specialist write a one-sheet and a college radio list for the new single.'],
+ ['coder','Have the coder add a "travel budget" field to booked shows.']]},
+{t:'cards3',ch:'Skills',h:'Skills: the know-how behind the agents',l:'Agents load skills automatically when the plugins are installed. You can also call one yourself.',cards:[
+ ['SNOOP · label operations','<code>dragon-farm-snoop:</code><br>venue-booking · tour-routing · crm-management · contract-review · sync-licensing · music-publishing · royalty-tracking · budget-planning · biblical-ethics …<br><br><b>Used by:</b> SNOOP, booker, sync-scout, deal-checker, pr-specialist'],
+ ['TUPAC · social & marketing','<code>dragon-farm-tupac:</code><br>caption-writing · hook-writing · short-form-script · content-calendar · meta-ads-setup · tiktok-ads · visual-brand-guide · accessibility …<br><br><b>Used by:</b> promoter, designer'],
+ ['Built-in & repo skills','<code>frontend-design</code> · <code>claude-api</code> · <code>supabase</code><br>plus document skills for PDF, Word, Excel and slides.<br><br><b>Used by:</b> designer, coder<br><br><b>Try:</b> “Use the contract-review skill on this offer.”']]},
+{t:'flow',ch:'Putting it together',h:'A week with the hub',l:'The routine that turns open dates into paid shows.',steps:[
+ ['Mon','Read the <b>Monday digest</b>: new leads from saved searches, follow-ups due, overdue deposits, this week\'s shows.'],
+ ['Tue–Wed','<b>Find bookers</b>, then <b>Email composer</b>. Or ask the <b>booker</b> agent to draft the batch.'],
+ ['Thu','<b>Lead tracker</b>: answer replies and send follow-ups. Run offers past the <b>deal-checker</b>.'],
+ ['Booked','Contract link, deposit invoice, <b>Fill nearby dates</b>, 📣 Posts. Then the <b>promoter</b> sells tickets.'],
+ ['Monthly','<b>What\'s working</b>: double down on the towns and lead types that pay.']]},
+{t:'title',k:'The golden rule',h:'AI drafts. You approve.',l:'Nothing is sent, posted, signed or paid without your OK. Check every contact and every fact. Then hit send.<br><br><span style="color:var(--gold);font-weight:700">dragonfarm.net/dashboard</span>'}
+];
+const n=+new URLSearchParams(location.search).get('s')||0, s=S[n], st=document.getElementById('stage');
+document.getElementById('ch').textContent=s.ch||'';
+document.getElementById('prog').style.width=((n+1)/S.length*100)+'%';
+if(s.t==='title') st.innerHTML=`<div class="center"><img class="logo" src="${BADGE}"><div class="kicker">${s.k}</div><h1>${s.h}</h1><p class="lede">${s.l}</p></div>`, document.querySelector('.top').style.visibility='hidden';
+if(s.t==='split') st.innerHTML=`<div class="shot"><div class="bar"><i></i><i></i><i></i><div class="url">🔒 ${s.url}</div></div><img src="shots/${s.img}.png"></div>
+ <div class="panel"><div class="step">${s.s}</div><h1>${s.h}</h1><p class="lede">${s.l}</p><ul>${s.b.map((x,i)=>`<li data-n="${i+1}">${x}</li>`).join('')}</ul>${s.tip?`<div class="tip">${s.tip}</div>`:''}</div>`;
+if(s.t==='cards'){st.innerHTML=`<div class="hdr"><h1>${s.h}</h1><p class="lede">${s.l}</p></div><div class="grid" style="grid-template-columns:repeat(4,1fr);top:330px">${s.cards.map(c=>`<div class="card"><h3>${c[0]}</h3><p>${c[1]}</p></div>`).join('')}</div>`}
+if(s.t==='cards3'){st.innerHTML=`<div class="hdr"><h1>${s.h}</h1><p class="lede">${s.l}</p></div><div class="grid" style="grid-template-columns:repeat(3,1fr);top:330px">${s.cards.map(c=>`<div class="card" style="padding:30px"><h3>${c[0]}</h3><p style="font-size:23px;line-height:1.5">${c[1]}</p></div>`).join('')}</div>`}
+if(s.t==='prompts'){st.innerHTML=`<div class="hdr"><h1>${s.h}</h1><p class="lede">${s.l}</p></div><div class="grid" style="top:320px"><div class="term">${s.lines.map(x=>`<div><span class="p">›</span> ${x[1]} <span class="c">  # ${x[0]}</span></div>`).join('')}</div></div>`}
+if(s.t==='flow'){st.innerHTML=`<div class="hdr"><h1>${s.h}</h1><p class="lede">${s.l}</p></div><div class="grid flow" style="top:360px">${s.steps.map((x,i)=>`${i?'<div class="arrow">→</div>':''}<div class="card"><div class="num">${x[0]}</div><p style="margin-top:12px;font-size:23px;line-height:1.45">${x[1]}</p></div>`).join('')}</div>`}
+window.SCENES=S.length;
+</script></body></html>
