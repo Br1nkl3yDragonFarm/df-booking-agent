@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sets up ARTEMIS (github.com/google/artemis) on the Mac mini so Claude Code
-# can drive an Android phone or emulator. Safe to run again: it skips what's done.
+# can drive your Android phone (the Galaxy). Safe to run again: it skips what's done.
 #
 #   bash macmini/artemis/setup.sh
 #
@@ -129,15 +129,15 @@ devices=$(adb devices | awk 'NR>1 && $2=="device"' | wc -l | tr -d ' ')
 if [ "$devices" -gt 0 ]; then
   ok "$devices Android device(s) connected"
 else
-  warn "No Android phone or emulator connected yet (see the README in this folder)."
+  warn "The phone isn't connected yet: run phone.sh check (below)."
 fi
 (cd "$ARTEMIS_DIR" && uv run artemis doctor) || warn "artemis doctor reported problems (see above)."
 
 say "Done."
 cat <<EOF
   Next:
-  • Plug in the Android phone (USB debugging on) or start an emulator, and tap "Allow" on the phone.
-  • Install the helper app once on that phone:  cd $ARTEMIS_DIR && uv run artemis helper install
+  • Connect the Galaxy:  bash $(cd "$(dirname "$0")" && pwd)/phone.sh check   (it says which phone setting is missing)
+  • Once, add the helper app:  bash $(cd "$(dirname "$0")" && pwd)/phone.sh helper
   • Try a task:  cd $ARTEMIS_DIR && uv run artemis run "Open Settings and tell me the battery level" --profile flash
   • Or open the web console:  bash $(cd "$(dirname "$0")" && pwd)/console.sh
 EOF
