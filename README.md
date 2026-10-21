@@ -117,7 +117,10 @@ When a show is marked **Booked** with a date (and isn't a Private Event or kept 
 ### 14. Captions for Videos and Songs
 Open **Captions** (`captions.html`), drop in a clip, and download an SRT for YouTube or CapCut (or copy the text). It runs OpenAI's Whisper speech model in the browser through Transformers.js (Apache-2.0, loaded from jsDelivr), so files never leave the computer and there's no key or cost. The model downloads once (40–250 MB depending on the speed setting) and the browser keeps it. English only. Sung lyrics come out rougher than speech; check every line against the lyric sheet.
 
-### 15. Deploy to Netlify
+### 15. Local AI Tools on the Mac mini
+`mac-mini/` has an audit of local AI tools (slide decks, video editing, a label knowledge base, data analysis) with verdicts for Dragon Farm, a one-step-at-a-time `setup.sh`, and `export-crm.mjs`, which copies the pipelines to the Mac every morning for those tools to read. Start with `mac-mini/README.md`.
+
+### 16. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -204,6 +207,9 @@ Connect this repo to Netlify:
 ├── netlify/lib/passcode.mjs                 # Shared passcode check
 ├── netlify/lib/store.mjs                    # Shared Blobs helpers (pipelines, activity)
 ├── netlify/lib/mail.mjs                     # Sending through Resend, addresses and webhook signature checks
+├── mac-mini/README.md       # Audit of local AI tools for the Mac mini, setup and prompts
+├── mac-mini/setup.sh        # Installs the tools that passed the audit, one step at a time
+├── mac-mini/export-crm.mjs  # Copies the pipelines (and optionally fans) to CSV/JSON/Markdown on the Mac
 ├── netlify.toml     # Netlify deploy config
 └── README.md
 ```
