@@ -29,7 +29,8 @@ Independent multi-genre record label booking hub. Built for Dragon Farm Records,
   - Phone numbers: tidied as you type them in, impossible ones flagged, and tap-to-call and text links on leads, show cards, brands and finder results
   - Fan list: a QR code for the merch table (from any booked show) opens a sign-up page; fans land on a private list counted by town, with CSV export, removal on request, counts for the press kit's draw and a fans-by-town table in the report
   - Weekly automatic searches: save any finder search to run every Monday morning; new places land in the pipeline, and a digest of what's due goes out by email and/or Discord
-- **AI team** (`.claude/agents/`) — Eight specialists for Claude Code that work together: a coordinator (SNOOP) who splits up a goal and hands it out, a booker, sync scout, deal checker, promoter, PR specialist, web and app designer, and coder. They draft; nothing is sent, posted or signed without your OK
+- **AI team** (`.claude/agents/`) — Nine specialists for Claude Code that work together: a coordinator (SNOOP) who splits up a goal and hands it out, a booker, sync scout, deal checker, promoter, PR specialist, web and app designer, coder, and a read-only code reviewer. They draft; nothing is sent, posted or signed without your OK
+- **Claude Code setup** (`CLAUDE.md`, `.claude/`) — House rules Claude reads every session, guards that block force-deleting folders and reading secret files, an automatic syntax check after every code edit, and skills for shipping a change (`ship-change`), cutting show footage into social clips with the free Concat editor (`show-clips`), and finding more skills (`find-skills`). Which outside tools were checked and why is in `docs/tool-audit.md`
 
 ---
 
@@ -131,8 +132,13 @@ The files in `.claude/agents/` are specialists Claude Code can hand work to. Ope
 | `pr-specialist` | Press releases, bios, media and radio lists, bad press |
 | `designer` | Look and layout of the site, press kit and tools; graphics briefs |
 | `coder` | New features, fixes, automations, security checks |
+| `code-reviewer` | Reads a code change and lists bugs, security problems and rule breaks by file and line (read-only) |
 
 They use the SNOOP and TUPAC skills when those plugins are installed. Every specialist drafts only: emails, posts, signatures and payments wait for you. Edit any file in plain English to change how a specialist works.
+
+Skills in `.claude/skills/` load when your request matches: say "ship it" (`ship-change`), "make clips from last night's show" (`show-clips`), or "is there a skill for…" (`find-skills`). `show-clips` needs the free [Concat](https://github.com/jub0t/Concat/releases) video editor on your computer, connected once with `claude mcp add concat -- <path to concat> --mcp` (the skill gives the exact path for Mac, Windows and Linux).
+
+`.claude/settings.json` lets Claude run safe read-only commands without asking, blocks it from reading `.env` files or force-pushing, and runs two guards in `.claude/hooks/`: one stops recursive force-deletes and reads of secret files, one runs `node --check` on every JS file Claude edits. To run two Claude sessions side by side, start the second with `claude --worktree`.
 
 ### 16. Deploy to Netlify
 Connect this repo to Netlify:
@@ -215,7 +221,13 @@ Connect this repo to Netlify:
 ├── netlify/lib/listing.mjs                  # Which shows are public, and their fan-facing details
 ├── netlify/functions/social-background.mjs  # Drafts a booked show's social posts with Claude (background)
 ├── netlify/functions/social.mjs             # Reads, edits and marks off the post drafts (passcode)
-├── .claude/agents/                          # The AI team for Claude Code: coordinator, booker, sync scout, deal checker, promoter, PR, designer, coder
+├── .claude/agents/                          # The AI team for Claude Code: coordinator, booker, sync scout, deal checker, promoter, PR, designer, coder, code reviewer
+├── .claude/skills/                          # Skills: ship-change, show-clips (Concat), find-skills, plus the Claude API, design and Supabase skills
+├── .claude/hooks/                           # Guards: block recursive force-deletes and secret reads; syntax-check edited JS
+├── .claude/settings.json                    # Claude Code permissions and hooks
+├── CLAUDE.md                                # House rules Claude Code reads at the start of every session
+├── docs/tool-audit.md                       # Which outside AI tools and repos were checked, and the verdict on each
+├── skills-lock.json                         # Where each installed skill came from (npx skills)
 ├── netlify/lib/social.mjs                   # The post-drafting prompt and output shape
 ├── netlify/functions/automations.mjs        # Automations status and sample events (passcode)
 ├── netlify/lib/events.mjs                   # Sends events to n8n (signed, never blocks the thing that caused it)

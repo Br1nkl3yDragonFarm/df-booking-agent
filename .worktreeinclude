@@ -1,0 +1,2 @@
+# Gitignored files a new git worktree needs to run (copied in by claude --worktree)
+.env
