@@ -117,7 +117,10 @@ When a show is marked **Booked** with a date (and isn't a Private Event or kept 
 ### 14. Captions for Videos and Songs
 Open **Captions** (`captions.html`), drop in a clip, and download an SRT for YouTube or CapCut (or copy the text). It runs OpenAI's Whisper speech model in the browser through Transformers.js (Apache-2.0, loaded from jsDelivr), so files never leave the computer and there's no key or cost. The model downloads once (40–250 MB depending on the speed setting) and the browser keeps it. English only. Sung lyrics come out rougher than speech; check every line against the lyric sheet.
 
-### 15. Deploy to Netlify
+### 15. Test the Sites on an Android Phone with ARTEMIS (Mac mini, optional)
+[ARTEMIS](https://github.com/google/artemis) lets Claude Code use an Android phone (or an emulator) by looking at the screen and tapping, so you can ask it to open the press kit, Shows page or fan sign-up on a real phone and report what's broken. On the Mac mini run `bash macmini/artemis/setup.sh`; it installs everything with safer settings than the default and connects Claude Code. Needs an Android phone or emulator and a Gemini API key. Details, what it's not for (automated posting on social apps), and privacy notes are in `macmini/artemis/README.md`. Nothing on the website uses it.
+
+### 16. Deploy to Netlify
 Connect this repo to Netlify:
 - **Build command:** *(leave blank)*
 - **Publish directory:** `.`
@@ -164,6 +167,9 @@ Connect this repo to Netlify:
 ├── captions-worker.js # Runs Whisper (Transformers.js) off the main thread
 ├── n8n/dragon-farm-events.json              # Ready-to-import n8n workflow: checks the signature, writes a message, posts to Discord, logs to a sheet, alerts your phone (ntfy), routes by event
 ├── n8n/google-sheets-log.gs                 # Apps Script for the log spreadsheet: adds each posted row under matching column names
+├── macmini/artemis/setup.sh                 # Mac mini: installs ARTEMIS (Android phone control for Claude Code) with safer settings
+├── macmini/artemis/console.sh               # Mac mini: opens the ARTEMIS web console on localhost
+├── macmini/artemis/README.md                # What ARTEMIS is for here, phone/emulator setup, privacy notes
 ├── vendor/          # Third-party browser libraries, all MIT, each with its license header:
 │                    #   qrcode.js, signature_pad.js, datebook.js, papaparse.js, geolib.js, mailcheck.js, libphonenumber.js, chart.js,
 │                    #   us-cities.json (US-Cities-Database by Kelvin S. do Prado, MIT)
