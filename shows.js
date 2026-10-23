@@ -74,8 +74,8 @@
       <div class="gig-body">
         ${when ? `<p class="gig-soon">${when}</p>` : ''}
         <h3 class="gig-venue">${esc(s.venue)}</h3>
-        <p class="gig-where"><span class="sr-only">${esc(fmt(s.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }))}, </span>${esc(s.city || '')}${s.address ? ` · <span class="gig-address">${esc(s.address)}</span>` : ''}</p>
-        ${facts.length ? `<p class="gig-facts">${facts.map(esc).join(' · ')}</p>` : ''}
+        <p class="gig-where"><span class="sr-only">${esc(fmt(s.date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }))}, </span>${esc(s.city || '')}${s.address ? ` <span class="gig-address">${esc(s.address)}</span>` : ''}</p>
+        ${facts.length ? `<p class="gig-facts">${facts.map(esc).join(', ')}</p>` : ''}
         <div class="gig-actions">
           ${s.tickets ? `<a class="btn btn-flame" href="${esc(s.tickets)}" target="_blank" rel="noopener">Tickets<span class="sr-only"> for ${esc(s.venue)}</span></a>` : `<span class="gig-door">${free ? 'Free show' : 'Tickets at the door'}</span>`}
           <details class="gig-cal">

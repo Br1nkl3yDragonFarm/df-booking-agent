@@ -45,11 +45,13 @@
 
   <main id="shows">
     <div class="container">
-      <h1>Shows</h1>
-      <p class="section-sub">Timothy Chance &amp; Rasta Country, live. Country soul over reggae roots, fiddles and riddims, and a dance floor that fills up.</p>
-
-      <p class="shows-status" id="shows-status" role="status">Loading the dates…</p>
-      <div id="shows-list"></div>
+      <article class="poster tour" aria-labelledby="tour-title">
+        <p class="poster-presents">Dragon Farm Records presents</p>
+        <h1 class="poster-act" id="tour-title">Timothy Chance &amp; Rasta Country</h1>
+        <p class="poster-with">Country soul over reggae roots, live. Fiddles, riddims and a dance floor that fills up.</p>
+        <p class="shows-status" id="shows-status" role="status">Loading the dates…</p>
+        <div id="shows-list"></div>
+      </article>
 
       <div class="shows-more">
         <section id="recent" hidden>
@@ -91,11 +93,9 @@
     const status = document.getElementById('shows-status');
     const list = document.getElementById('shows-list');
     const EMPTY = `
-      <div class="poster shows-empty">
-        <p class="poster-presents">Dragon Farm Records presents</p>
-        <p class="poster-act">New dates coming soon</p>
-        <p>The band is booking the next run now.</p>
-        <p>Get an email the moment a show is announced near you.</p>
+      <div class="tour-empty">
+        <p class="tour-empty-head">New dates coming soon</p>
+        <p>The band is booking the next run now. Get an email the moment a show is announced near you.</p>
         <a class="btn btn-flame" href="fans.html">Get show alerts</a>
       </div>`;
 
