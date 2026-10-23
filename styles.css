@@ -534,6 +534,52 @@ legend {
 .next-list a { color: var(--flame); font-weight: 700; }
 #next-up .btn-text { display: inline-block; margin-top: 1.25rem; }
 
+/* ---- PRESS KIT ---- */
+/* For talent buyers: the paper one-sheet answers draw, stage and contact at a glance. */
+.kit-switch { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; padding-top: 1rem; }
+.kit-switch[hidden] { display: none; }
+.kit-switch a { font-weight: 600; }
+.kit-note { padding: 4rem var(--gutter); color: var(--bone-dim); }
+.kit {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 7vw, 5rem) var(--gutter) clamp(4rem, 8vw, 6rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
+  grid-template-areas: "hero hero" "main sheet";
+  gap: clamp(2.5rem, 6vw, 4.5rem);
+  align-items: start;
+}
+.kit + .kit { border-top: 1px solid var(--scale); }
+.kit-hero { grid-area: hero; display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: clamp(2rem, 5vw, 4rem); align-items: end; }
+.kit-hero.no-photo { grid-template-columns: minmax(0, 52rem); }
+.kit-photo { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 2px; background: var(--pine-deep); }
+.kit h1 { font-size: clamp(2.75rem, 1.5rem + 5vw, 5.75rem); line-height: 0.95; text-shadow: 3px 3px 0 var(--pine-deep); }
+.kit-tagline { margin-top: 1.25rem; max-width: 30rem; font-size: var(--step-1); font-style: italic; color: var(--bone); }
+.kit-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; margin-top: 2rem; }
+
+.kit-sheet { grid-area: sheet; position: sticky; top: 5.5rem; text-align: left; }
+.kit-sheet-head { font-family: var(--font-display); font-size: var(--step-2); line-height: 1; text-shadow: 2px 2px 0 var(--ink-2); padding-bottom: 0.9rem; border-bottom: 3px double var(--ink); }
+.kit-sheet dl div { padding: 0.85rem 0; }
+.kit-sheet dl div + div { border-top: 1px solid rgba(23, 48, 31, 0.3); }
+.kit-sheet dt { font-style: italic; font-size: var(--step--1); opacity: 0.75; }
+.kit-sheet dd { margin-top: 0.15rem; font-weight: 600; white-space: pre-line; overflow-wrap: anywhere; }
+.kit-sheet a { color: var(--ink); text-underline-offset: 0.2em; }
+.kit-sheet :focus-visible { outline-color: var(--ink); }
+
+.kit-main { grid-area: main; }
+.kit-main h2 { font-size: var(--step-2); margin-top: clamp(2.5rem, 5vw, 3.5rem); }
+.kit-main h2:first-child { margin-top: 0; }
+.kit-bio { margin-top: 1rem; max-width: var(--measure); white-space: pre-line; }
+.kit-videos { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1.25rem; margin-top: 1.25rem; }
+.kit-frame { position: relative; aspect-ratio: 16 / 9; background: var(--pine-deep); border-radius: 2px; overflow: hidden; }
+.kit-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.kit-spotify { margin-top: 1.25rem; }
+.kit-spotify iframe { display: block; width: 100%; height: 152px; border: 0; border-radius: 12px; }
+.kit-links { list-style: none; margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem; }
+.kit-links a, .kit-main .btn-text { font-weight: 600; text-underline-offset: 0.3em; text-decoration-thickness: 1px; }
+.kit-links a:hover { color: var(--gold); }
+
 /* ---- RESPONSIVE ---- */
 @media (max-width: 900px) {
   .hero-inner,
@@ -542,6 +588,8 @@ legend {
   .poster-hero { max-width: 30rem; transform: rotate(1deg); }
   .book-side { position: static; }
   .poster-live { display: none; }
+  .kit { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "sheet" "main"; }
+  .kit-sheet { position: static; max-width: 34rem; }
   .contact { margin-top: 0; }
 }
 
@@ -558,6 +606,8 @@ legend {
     padding-top: 3rem;
   }
   .form-row { grid-template-columns: 1fr; gap: 0; }
+  .kit-hero { grid-template-columns: minmax(0, 1fr); }
+  .kit-photo { aspect-ratio: 1 / 1; }
   .gig { grid-template-columns: 3.75rem 1fr; }
   .gig-date b { font-size: 2rem; }
   .gig:first-child .gig-date b { font-size: 2.6rem; }

@@ -3,65 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Press Kit — Dragon Farm Records</title>
+  <title>Press kit: Dragon Farm Records</title>
   <meta name="description" content="Electronic press kit: bio, music, live video, past shows and booking contact." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --black: #080c09; --deep: #0d1610; --card: #111b14; --gold: #c8922a; --gold-light: #e0a832;
-      --cream: #f2e8d0; --gray: #8a9690; --gray-light: #c5cfc8; --border: rgba(200, 146, 42, 0.18);
-      --line: rgba(255, 255, 255, 0.08);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; background: var(--black); color: var(--cream); font: 16px/1.65 'DM Sans', system-ui, sans-serif; overflow-x: hidden; }
-    a { color: var(--gold-light); }
-    .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
-    header.top { border-bottom: 1px solid var(--line); }
-    header.top .wrap { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-top: 14px; padding-bottom: 14px; flex-wrap: wrap; }
-    .label { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.06em; font-size: 1.3rem; color: var(--cream); text-decoration: none; }
-    .switch { display: flex; gap: 6px; flex-wrap: wrap; }
-    .switch a { font-size: 0.8rem; color: var(--gray-light); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; }
-    .switch a:hover { border-color: var(--gold); color: var(--cream); }
-    .artist { padding: 48px 0 24px; border-bottom: 1px solid var(--line); }
-    .hero { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; align-items: center; }
-    .hero.no-photo { grid-template-columns: 1fr; }
-    .photo { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 14px; border: 1px solid var(--border); background: var(--deep); }
-    .genre { font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-light); }
-    h1 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: clamp(2.6rem, 7vw, 4.2rem); line-height: 0.95; margin: 8px 0 12px; letter-spacing: 0.01em; }
-    .tagline { font-size: 1.1rem; color: var(--gray-light); font-style: italic; margin: 0 0 20px; }
-    .cta { display: flex; gap: 10px; flex-wrap: wrap; }
-    .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; font-weight: 500; font-size: 0.92rem; text-decoration: none; }
-    .btn-gold { background: var(--gold); color: #120d03; }
-    .btn-line { border: 1px solid var(--border); color: var(--cream); }
-    h2 { font-family: 'Bebas Neue', sans-serif; font-weight: 400; letter-spacing: 0.05em; font-size: 1.6rem; margin: 40px 0 12px; color: var(--cream); }
-    .bio { white-space: pre-line; color: var(--gray-light); max-width: 68ch; }
-    .videos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-    .frame { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: var(--deep); border: 1px solid var(--line); }
-    .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-    .spotify iframe { width: 100%; height: 152px; border: 0; border-radius: 12px; }
-    .links { display: flex; flex-wrap: wrap; gap: 8px; }
-    .links a { text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 0.88rem; color: var(--cream); }
-    .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-    .fact { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
-    .fact b { display: block; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); font-weight: 500; margin-bottom: 6px; }
-    .fact div { white-space: pre-line; color: var(--gray-light); }
-    footer { color: var(--gray); font-size: 0.85rem; padding: 32px 0 48px; }
-    .note { color: var(--gray); font-size: 0.9rem; padding: 48px 0; }
-    @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } .photo { aspect-ratio: 1 / 1; } }
-  </style>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:ital,wdth,wght@0,62..125,300..800;1,62..125,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="top"><div class="wrap">
-    <a class="label" href="index.html">🐉 Dragon Farm Records</a>
-    <nav class="switch" id="switch" aria-label="Artists"></nav>
-  </div></header>
-  <main class="wrap" id="kits"><div class="note">Loading press kit…</div></main>
-  <footer class="wrap">Dragon Farm Records · Nashville, TN · <a href="mailto:booking@dragonfarm.net">booking@dragonfarm.net</a></footer>
+
+  <a class="skip-link" href="#kits">Skip to the press kit</a>
+
+  <header id="nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="index.html">
+        <img src="logo-badge.webp" alt="" width="40" height="43" />
+        <span>Dragon Farm Records</span>
+      </a>
+      <nav aria-label="Main">
+        <ul class="nav-links">
+          <li><a href="shows.html">Shows</a></li>
+          <li><a href="index.html#artists">The band</a></li>
+          <li><a href="index.html#sync">Licensing</a></li>
+          <li><a href="index.html#book" class="nav-cta">Book a show</a></li>
+        </ul>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="shows.html">Shows</a>
+      <a href="index.html#artists">The band</a>
+      <a href="index.html#sync">Licensing</a>
+      <a href="index.html#book">Book a show</a>
+    </div>
+  </header>
+
+  <nav class="kit-switch container" id="switch" aria-label="Artists" hidden></nav>
+  <main id="kits"><p class="container kit-note">Loading the press kit…</p></main>
+
+  <footer id="footer">
+    <div class="container footer-inner">
+      <img src="logo-badge.webp" alt="" width="56" height="60" />
+      <div>
+        <p class="footer-name">Dragon Farm Records</p>
+        <p>Independent label in Nashville, Tennessee. The dragon on the badge is Chance, our mascot.</p>
+      </div>
+      <p class="footer-mail"><a href="mailto:booking@dragonfarm.net">booking@dragonfarm.net</a></p>
+    </div>
+    <p class="container footer-copy">© 2026 Dragon Farm Records</p>
+  </footer>
 
 <script src="epk-data.js"></script>
 <script>
 (function () {
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  hamburger.addEventListener('click', () => hamburger.setAttribute('aria-expanded', String(mobileMenu.classList.toggle('open'))));
+
   const params = new URLSearchParams(location.search);
   const keys = (params.get('a') || DFEpk.ARTISTS.join(',')).split(',').filter(k => DFEpk.ARTISTS.includes(k));
   const show = keys.length ? keys : DFEpk.ARTISTS;
@@ -78,45 +78,51 @@
   }
 
   function kitHtml(key, k) {
-    const mail = `mailto:${encodeURIComponent(k.contact || 'booking@dragonfarm.net')}?subject=${encodeURIComponent('Booking inquiry: ' + k.name)}`;
+    const contact = k.contact || 'booking@dragonfarm.net';
+    const mail = `mailto:${encodeURIComponent(contact)}?subject=${encodeURIComponent('Booking inquiry: ' + k.name)}`;
     const videos = (k.videos || []).filter(v => isHttp(v.url));
     const music = (k.music || []).filter(v => isHttp(v.url));
     const socials = (k.socials || []).filter(v => isHttp(v.url));
-    const facts = [['Draw', k.draw], ['Past shows', k.shows], ['Stage & tech', k.stage], ['Based in', k.hometown]].filter(([, v]) => v);
-    return `<section class="artist" id="${key}">
-      <div class="hero${isHttp(k.photo) ? '' : ' no-photo'}">
-        ${isHttp(k.photo) ? `<img class="photo" src="${esc(k.photo)}" alt="${esc(k.name)}" />` : ''}
+    const sheet = [['Sound', esc(k.genre)], ['Based in', esc(k.hometown)], ['Draw', esc(k.draw)], ['Past shows', esc(k.shows)], ['Stage and tech', esc(k.stage)],
+      ['Booking', `<a href="${mail}">${esc(contact)}</a>`]].filter(([, v]) => v);
+    const players = music.filter(m => spotifyEmbed(m.url));
+    const listenLinks = music.filter(m => !spotifyEmbed(m.url));
+    return `<section class="kit" id="${key}" aria-labelledby="${key}-name">
+      <div class="kit-hero${isHttp(k.photo) ? '' : ' no-photo'}">
+        ${isHttp(k.photo) ? `<img class="kit-photo" src="${esc(k.photo)}" alt="${esc(k.name)} on stage" />` : ''}
         <div>
-          <div class="genre">${esc(k.genre)}</div>
-          <h1>${esc(k.name)}</h1>
-          ${k.tagline ? `<p class="tagline">${esc(k.tagline)}</p>` : ''}
-          <div class="cta">
-            <a class="btn btn-gold" href="${mail}">Book ${esc(k.name.split(' and ')[0])}</a>
-            <a class="btn btn-line" href="index.html#book">Booking form</a>
+          <h1 id="${key}-name">${esc(k.name)}</h1>
+          ${k.tagline ? `<p class="kit-tagline">${esc(k.tagline)}</p>` : ''}
+          <div class="kit-cta">
+            <a class="btn btn-flame" href="${mail}">Book ${esc(k.name.split(' and ')[0])}</a>
+            <a class="btn-text" href="index.html#book">Open the booking form</a>
           </div>
         </div>
       </div>
-      <h2>About</h2>
-      <div class="bio">${esc(k.bio)}</div>
-      ${videos.length ? `<h2>Watch</h2><div class="videos">${videos.map(v => youtubeId(v.url)
-        ? `<div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${youtubeId(v.url)}" title="${esc(v.label || k.name)}" loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
-        : `<div class="links"><a href="${esc(v.url)}" target="_blank" rel="noopener">▶ ${esc(v.label || 'Watch')}</a></div>`).join('')}</div>` : ''}
-      ${music.length ? `<h2>Listen</h2>${music.map(m => spotifyEmbed(m.url)
-        ? `<div class="spotify"><iframe src="${spotifyEmbed(m.url)}" title="${esc(m.label || k.name)}" loading="lazy" allow="encrypted-media"></iframe></div>`
-        : '').join('')}<div class="links">${music.filter(m => !spotifyEmbed(m.url)).map(m => `<a href="${esc(m.url)}" target="_blank" rel="noopener">🎧 ${esc(m.label || 'Listen')}</a>`).join('')}</div>` : ''}
-      ${facts.length ? `<h2>Live</h2><div class="facts">${facts.map(([t, v]) => `<div class="fact"><b>${t}</b><div>${esc(v)}</div></div>`).join('')}</div>` : ''}
-      ${socials.length ? `<h2>Follow</h2><div class="links">${socials.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label || 'Link')}</a>`).join('')}</div>` : ''}
-      <h2>Booking</h2>
-      <p><a href="${mail}">${esc(k.contact || 'booking@dragonfarm.net')}</a> · Dragon Farm Records, Nashville, TN</p>
+      <aside class="poster kit-sheet" aria-label="At a glance">
+        <p class="kit-sheet-head">At a glance</p>
+        <dl>${sheet.map(([t, v]) => `<div><dt>${t}</dt><dd>${v}</dd></div>`).join('')}</dl>
+      </aside>
+      <div class="kit-main">
+        <h2>About</h2>
+        <div class="kit-bio">${esc(k.bio)}</div>
+        ${videos.length ? `<h2>Watch</h2><div class="kit-videos">${videos.map(v => youtubeId(v.url)
+          ? `<div class="kit-frame"><iframe src="https://www.youtube-nocookie.com/embed/${youtubeId(v.url)}" title="${esc(v.label || k.name)}" loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
+          : `<a class="btn-text" href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.label || 'Watch the video')}</a>`).join('')}</div>` : ''}
+        ${music.length ? `<h2>Listen</h2>${players.map(m => `<div class="kit-spotify"><iframe src="${spotifyEmbed(m.url)}" title="${esc(m.label || k.name)}" loading="lazy" allow="encrypted-media"></iframe></div>`).join('')}
+          ${listenLinks.length ? `<ul class="kit-links">${listenLinks.map(m => `<li><a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.label || 'Listen')}</a></li>`).join('')}</ul>` : ''}` : ''}
+        ${socials.length ? `<h2>Follow</h2><ul class="kit-links">${socials.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label || 'Link')}</a></li>`).join('')}</ul>` : ''}
+      </div>
     </section>`;
   }
 
   function render(saved) {
     document.getElementById('kits').innerHTML = show.map(key => kitHtml(key, DFEpk.merge(key, saved[key]))).join('');
-    document.getElementById('switch').innerHTML = show.length > 1
-      ? show.map(key => `<a href="#${key}">${esc(DFEpk.merge(key, saved[key]).name)}</a>`).join('') : '';
+    const sw = document.getElementById('switch');
+    sw.innerHTML = show.map(key => `<a href="#${key}">${esc(DFEpk.merge(key, saved[key]).name)}</a>`).join('');
+    sw.hidden = show.length < 2;
     const names = show.map(key => DFEpk.merge(key, saved[key]).name);
-    document.title = `${names.join(' & ')} — Press Kit`;
+    document.title = `Press kit: ${names.join(' & ')}`;
   }
 
   // r= marks a link sent to a specific buyer, so the label sees it was opened.
